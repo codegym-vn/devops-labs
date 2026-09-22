@@ -14,7 +14,7 @@ Bạn đã xuất sắc vượt qua các nội dung cốt lõi về **TCP/IP, Su
 | **Phân giải DNS cơ bản** | `dig <domain> +short` | Trả về trực tiếp IP đích nhanh chóng cho script |
 | **Kiểm tra loại Record** | `dig <domain> <TYPE> +short` | Kiểm tra các bản ghi: `A`, `CNAME`, `MX`, `TXT`, `NS` |
 | **Kiểm tra chéo DNS Server** | `dig @8.8.8.8 <domain>` | Truy vấn trực tiếp một DNS Server cụ thể qua cổng 53 |
-| **Theo dõi đường đi DNS** | `dig <domain> +trace` | Đi từ Root Server $\rightarrow$ TLD Server $\rightarrow$ Authoritative Server |
+| **Theo dõi đường đi DNS** | `dig <domain> +trace` | Đi từ Root Server -> TLD Server -> Authoritative Server |
 | **Ghi đè DNS cục bộ** | `/etc/hosts` | Mapping thủ công `<IP> <domain>` ưu tiên hơn DNS ngoài |
 | **Cấu hình DNS client** | `/etc/resolv.conf` | Định nghĩa nameserver và search domain cho máy/container |
 

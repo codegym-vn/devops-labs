@@ -24,9 +24,9 @@ Một địa chỉ IP luôn bao gồm 2 phần:
 
 ### Ký hiệu CIDR (Classless Inter-Domain Routing)
 CIDR biểu diễn số bit dành cho phần Network ID bằng dấu gạch chéo `/X`:
-- `/24`: 24 bit mạng, 8 bit còn lại cho host $\rightarrow 2^8 - 2 = 254$ IP khả dụng cho thiết bị.
-- `/16`: 16 bit mạng, 16 bit cho host $\rightarrow 2^{16} - 2 = 65,534$ IP khả dụng.
-- `/28`: 28 bit mạng, 4 bit cho host $\rightarrow 2^4 - 2 = 14$ IP khả dụng.
+- `/24`: 24 bit mạng, 8 bit còn lại cho host -> (2^8 - 2 = 254) IP khả dụng cho thiết bị.
+- `/16`: 16 bit mạng, 16 bit cho host -> (2^16 - 2 = 65,534) IP khả dụng.
+- `/28`: 28 bit mạng, 4 bit cho host -> (2^4 - 2 = 14) IP khả dụng.
 
 > **Lưu ý:** Thông thường ta phải trừ 2 vì:
 > 1. **Địa chỉ đầu tiên**: Dành cho **Network Address** (địa chỉ định danh mạng).
@@ -107,7 +107,7 @@ default via 172.x.x.1 dev eth0
 
 Một team phát triển yêu cầu bạn cấp một subnet có thể chứa tối đa **25 containers**.
 1. Subnet mask CIDR nào nhỏ nhất đáp ứng được yêu cầu trên?
-   *(Gợi ý: $2^4 - 2 = 14$ [không đủ], $2^5 - 2 = 30$ [đủ] $\rightarrow 32 - 5 = 27$)*
+   *(Gợi ý: 2^4 - 2 = 14 [không đủ], 2^5 - 2 = 30 [đủ] -> 32 - 5 = 27)*
 2. Hãy chạy `ipcalc` với dải `10.20.0.0/27` để kiểm tra kết quả tính toán:
 
 ```bash
