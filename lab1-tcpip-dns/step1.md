@@ -1,20 +1,12 @@
-# Bước 1: Phân Tích Mạng, Subnetting & Ký Hiệu CIDR
+# Bước 1: Tầng Network - Subnetting, Ký Hiệu CIDR & Định Tuyến
 
-Trong môi trường Cloud (AWS, Azure, GCP) và Containerization (Docker, Kubernetes), việc thiết kế dải IP và phân chia Subnet hợp lý giúp tối ưu hóa bảo mật (chia tách Public/Private subnet) và ngăn ngừa việc cạn kiệt địa chỉ IP.
+Trong môi trường Cloud (AWS VPC, Azure VNet, GCP VPC) và Containerization (Docker, Kubernetes), việc thiết kế dải IP và phân chia Subnet hợp lý giúp tối ưu hóa bảo mật (tách biệt Public/Private Subnet) và ngăn ngừa việc cạn kiệt địa chỉ IP cho Pods/Containers.
 
----
-
-## 1. Chuẩn Bị Môi Trường Thực Hành
-
-Trước tiên, hãy cài đặt các gói công cụ mạng chuyên dụng trên Linux bao gồm `ipcalc`, `iproute2` và `dnsutils`:
-
-```bash
-apt-get update && apt-get install -y ipcalc iproute2 dnsutils curl
-```{{exec}}
+> 💡 **Môi trường thực hành:** Hệ thống Killercoda đã tự động cài đặt sẵn các gói công cụ mạng chuyên dụng (`ipcalc`, `iproute2`, `dnsutils`, `netcat`, `curl`) ở chế độ nền. Bạn có thể bắt đầu gõ lệnh ngay mà không cần chờ đợi.
 
 ---
 
-## 2. Nền Tảng Lý Thuyết: IPv4 và Ký Hiệu CIDR
+## 1. Nền Tảng Lý Thuyết: IPv4 và Ký Hiệu CIDR
 
 Địa chỉ IPv4 gồm **32 bit**, chia làm 4 octet (mỗi octet 8 bit), phân cách bởi dấu chấm (ví dụ: `192.168.1.1`).
 
@@ -36,7 +28,7 @@ CIDR biểu diễn số bit dành cho phần Network ID bằng dấu gạch ché
 
 ---
 
-## 3. Thực Hành: Phân Tích Subnet Với `ipcalc`
+## 2. Thực Hành: Phân Tích Subnet Với `ipcalc`
 
 Công cụ `ipcalc` giúp tính toán nhanh Netmask, Wildcard, Network Address, Broadcast và số Host tối đa.
 
@@ -72,7 +64,7 @@ Quan sát:
 
 ---
 
-## 4. Khám Phá Network Interfaces & Bảng Định Tuyến (Routing Table)
+## 3. Khám Phá Network Interfaces & Bảng Định Tuyến (Routing Table)
 
 Trên hệ điều hành Linux hiện đại, bộ công cụ `iproute2` (thay thế cho `ifconfig` và `route` đã cũ) là tiêu chuẩn bắt buộc.
 
@@ -85,7 +77,7 @@ ip -brief address show
 
 Bạn sẽ thấy ít nhất 2 interface:
 - `lo`: Local Loopback (`127.0.0.1`), dùng cho giao tiếp nội bộ giữa các tiến trình trên cùng một máy chủ.
-- `eth0` (hoặc `ensX`): Card mạng vật lý hoặc ảo, kết nối với mạng bên ngoài kèm theo địa chỉ IP và dải CIDR của máy lab.
+- `eth0` (hoặc `ensX`): Card mạng vật lý hoặc ảo kết nối ra ngoài kèm theo địa chỉ IP và dải CIDR của máy lab.
 
 ### Xem bảng định tuyến (Routing Table)
 Khi một packet muốn rời khỏi máy chủ, Linux sẽ tra cứu bảng routing để biết cần gửi qua card mạng nào và Gateway nào:
@@ -103,15 +95,31 @@ default via 172.x.x.1 dev eth0
 
 ---
 
-## 5. Thử Thách Nhanh
+## 4. Thử Thách & Xác Thực (Verification)
 
 Một team phát triển yêu cầu bạn cấp một subnet có thể chứa tối đa **25 containers**.
-1. Subnet mask CIDR nào nhỏ nhất đáp ứng được yêu cầu trên?
-   *(Gợi ý: 2^4 - 2 = 14 [không đủ], 2^5 - 2 = 30 [đủ] -> 32 - 5 = 27)*
-2. Hãy chạy `ipcalc` với dải `10.20.0.0/27` để kiểm tra kết quả tính toán:
+
+1. Hãy tìm tiền tố CIDR nhỏ nhất (ví dụ: `26`, `27`, `28`,...) đáp ứng yêu cầu trên.
+
+<details>
+<summary>💡 Bấm vào đây nếu bạn cần gợi ý công thức tính toán</summary>
+
+- Công thức số host khả dụng: $2^h - 2 \ge 25$ (với $h$ là số bit dành cho host).
+- Thử $h = 4 \rightarrow 2^4 - 2 = 14$ (không đủ cho 25 containers).
+- Thử $h = 5 \rightarrow 2^5 - 2 = 30$ (đủ cho 25 containers).
+- Tiền tố CIDR = $32 - h = 32 - 5 = 27$.
+</details>
+
+2. Sau khi đã tìm ra đáp án, hãy lưu giá trị prefix vào file `/tmp/subnet.txt`:
+
+```bash
+echo "27" > /tmp/subnet.txt
+```{{exec}}
+
+3. Dùng `ipcalc` kiểm tra lại số máy chủ hợp lệ:
 
 ```bash
 ipcalc 10.20.0.0/27
 ```{{exec}}
 
-Khi đã nắm vững Subnetting và Interface mạng, hãy bấm sang **Bước 2** để tìm hiểu về DNS!
+4. Bấm nút **Check** bên dưới thanh điều khiển để hệ thống tự động xác thực đáp án của bạn!

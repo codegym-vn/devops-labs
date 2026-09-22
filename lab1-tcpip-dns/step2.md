@@ -1,151 +1,132 @@
-# Bước 2: Cơ Chế Phân Giải & Kiểm Thử DNS
+# Bước 2: Tầng Transport - TCP vs UDP, Quản Lý Port & Debugging Socket
 
-Trong kiến trúc Microservices và Kubernetes, **DNS** (Domain Name System) đóng vai trò sống còn trong việc **Service Discovery** (khám phá dịch vụ). Khi một Service A gọi Service B qua địa chỉ `http://payment-service:8080`, hệ thống phụ thuộc hoàn toàn vào DNS (như CoreDNS trong K8s) để tìm ra IP của Pod đích.
+Trong mô hình TCP/IP, **Tầng Vận chuyển (Transport Layer)** chịu trách nhiệm điều phối việc truyền dữ liệu giữa các tiến trình chạy trên các máy chủ khác nhau. Đối với DevOps Engineer, khi gặp các lỗi kinh điển như `Connection refused`, `Connection timed out` hay `Port already in use`, việc hiểu rõ socket và cơ chế hoạt động của TCP/UDP là chìa khóa để xử lý sự cố nhanh chóng.
 
 ---
 
-## 1. Cơ Chế Phân Giải DNS Hoạt Động Như Thế Nào?
+## 1. Nền Tảng: Port, Socket và Giao Thức TCP vs UDP
 
-Khi bạn gõ lệnh `curl https://example.com`, hệ điều hành Linux thực hiện tuần tự:
+### Port và Socket là gì?
+- **IP Address**: Định danh thiết bị trên mạng (đến đúng máy chủ).
+- **Port**: Định danh tiến trình/ứng dụng cụ thể chạy trên máy chủ đó (0 - 65535).
+  - *Well-known Ports (0 - 1023)*: Cần quyền root (`22` SSH, `80` HTTP, `443` HTTPS, `53` DNS).
+  - *Registered Ports (1024 - 49151)*: Thường dành cho ứng dụng (`3000` Node.js, `5432` PostgreSQL, `6379` Redis, `8080` Web Backend).
+  - *Dynamic/Ephemeral Ports (49152 - 65535)*: Cổng tạm thời do OS cấp phát cho client khi tạo kết nối ra ngoài.
+- **Socket**: Sự kết hợp giữa `[IP Address] : [Port]` tạo thành một điểm cuối giao tiếp duy nhất (ví dụ: `192.168.1.10:8080`).
+
+### So sánh TCP vs UDP trong thực tế
+
+| Đặc tính | TCP (Transmission Control Protocol) | UDP (User Datagram Protocol) |
+|---|---|---|
+| **Cơ chế** | Hướng kết nối (Connection-oriented) | Phi kết nối (Connectionless) |
+| **Độ tin cậy** | Có ACK, tự động truyền lại gói tin bị mất, sắp xếp đúng thứ tự | Không đảm bảo gói tin tới đích, không truyền lại |
+| **Bắt tay** | Có (3-Way Handshake) | Không có bắt tay |
+| **Tốc độ** | Chậm hơn do chi phí kiểm soát và bắt tay | Cực nhanh, độ trễ tối thiểu |
+| **Ứng dụng DevOps** | HTTP/HTTPS, gRPC, Database, Git, SSH | DNS query, DHCP, Syslog, Metrics (StatsD), QUIC (HTTP/3) |
+
+---
+
+## 2. Quá Trình Bắt Tay 3 Bước (TCP 3-Way Handshake)
+
+Trước khi gửi bất kỳ byte dữ liệu nào qua TCP, Client và Server phải thực hiện bắt tay:
 
 ```text
-[Ứng dụng: curl]
-       │
-       ▼
-1. Kiểm tra Cache & File Cục Bộ (/etc/hosts)
-       │ (nếu không thấy)
-       ▼
-2. Đọc file cấu hình DNS Client (/etc/resolv.conf)
-       │ (gửi query tới Recursive Resolver, VD: 8.8.8.8 hoặc CoreDNS)
-       ▼
-3. Root Name Server (.) ──> 4. TLD Name Server (.com) ──> 5. Authoritative Server (Cloudflare/Route53)
-       │
-       ▼
-Trả về địa chỉ IP (A / AAAA Record) cho máy client
+  Client                               Server (Đang ở trạng thái LISTEN)
+    │                                     │
+    │ ─── 1. SYN (Synchronize Sequence) ─>│ [Server chuyển sang SYN_RCVD]
+    │                                     │
+    │ <── 2. SYN-ACK (Acknowledge) ───────│ [Client chuyển sang ESTABLISHED]
+    │                                     │
+    │ ─── 3. ACK (Acknowledge) ──────────>│ [Server chuyển sang ESTABLISHED]
+    │                                     │
+[Bắt đầu truyền dữ liệu Application: HTTP GET, TLS Handshake...]
 ```
 
----
-
-## 2. Kiểm Tra Cấu Hình DNS Cục Bộ Trên Linux
-
-### File cấu hình DNS Resolver: `/etc/resolv.conf`
-Xem địa chỉ DNS Server mà hệ thống đang sử dụng:
-
-```bash
-cat /etc/resolv.conf
-```{{exec}}
-
-- `nameserver <IP>`: Địa chỉ máy chủ DNS tiếp nhận các truy vấn từ máy này.
-- `search <domain>`: Domain suffix tự động nối vào sau tên hostname ngắn (rất quan trọng trong Kubernetes, ví dụ `default.svc.cluster.local`).
-
-### File phân giải cục bộ: `/etc/hosts`
-File này luôn được ưu tiên kiểm tra trước khi gửi truy vấn ra ngoài:
-
-```bash
-cat /etc/hosts
-```{{exec}}
-
-### Thực hành: Kỹ thuật ghi đè DNS trong `/etc/hosts`
-DevOps thường dùng cách này để kiểm thử một website trên máy chủ mới trước khi trỏ DNS chính thức:
-
-Thêm một bản ghi giả lập:
-```bash
-echo "127.0.0.1 myapp.internal" >> /etc/hosts
-```{{exec}}
-
-Kiểm tra xem tên miền `myapp.internal` đã phân giải về `127.0.0.1` chưa:
-```bash
-getent hosts myapp.internal
-```{{exec}}
-
-Thử ping thử nghiệm:
-```bash
-ping -c 2 myapp.internal
-```{{exec}}
+### Các trạng thái Socket quan trọng cần nhớ
+- `LISTEN`: Tiến trình server đang chờ client kết nối tới cổng.
+- `ESTABLISHED`: Hai đầu đã bắt tay xong và sẵn sàng trao đổi dữ liệu.
+- `TIME_WAIT`: Socket đã đóng nhưng hệ điều hành giữ lại trong giây lát để đảm bảo các gói tin còn trôi nổi trên mạng được xử lý hết.
+- `CLOSE_WAIT`: Phía bên kia đã đóng kết nối, server đang chờ ứng dụng nội bộ giải phóng tài nguyên.
 
 ---
 
-## 3. Chẩn Đoán DNS Chuyên Sâu Với `dig`
+## 3. Khảo Sát Socket Đang Mở Với `ss` (Socket Statistics)
 
-`dig` (Domain Information Groper) là công cụ mạnh mẽ và chi tiết nhất để kiểm tra DNS records.
+Công cụ `ss` (thuộc bộ `iproute2`) là giải pháp thay thế nhanh và hiệu quả hơn nhiều so với `netstat` đã lỗi thời.
 
-### Truy vấn cơ bản và phân tích gói tin DNS
-Chạy lệnh `dig` đối với domain `google.com`:
-
-```bash
-dig google.com
-```{{exec}}
-
-Hãy phân tích các phần quan trọng trong output:
-1. **HEADER**: Chứa `status: NOERROR` (thành công) hoặc `NXDOMAIN` (tên miền không tồn tại), cùng cờ cờ `qr`, `rd`, `ra`.
-2. **QUESTION SECTION**: Câu hỏi được gửi đi (tìm record loại `A` của `google.com`).
-3. **ANSWER SECTION**: Kết quả trả về gồm tên miền, **TTL** (Time To Live - thời gian cache tính bằng giây), loại record, và IP.
-4. **SERVER**: IP máy chủ DNS đã trả lời truy vấn.
-5. **WHEN**: Thời gian phản hồi (`Query time: ... msec`).
-
-### Lấy kết quả ngắn gọn với `+short`
-Trong các shell script tự động hóa, ta thường dùng cờ `+short` để chỉ lấy địa chỉ IP:
+### Liệt kê tất cả các cổng đang lắng nghe (`LISTEN`)
+Chạy lệnh sau để kiểm tra xem trên máy chủ có những dịch vụ nào đang mở port:
 
 ```bash
-dig google.com +short
+ss -tulpn
 ```{{exec}}
 
-### Truy vấn các loại Record khác nhau
-Một domain có nhiều loại bản ghi phục vụ các mục đích khác nhau:
+Giải thích các tham số:
+- `-t`: Hiển thị socket **TCP**.
+- `-u`: Hiển thị socket **UDP**.
+- `-l`: Chỉ lọc các socket đang **Listening** (lắng nghe).
+- `-p`: Hiển thị tên tiến trình (Process) và PID đang nắm giữ port.
+- `-n`: Hiển thị dạng số (Numeric port, ví dụ `22` thay vì chữ `ssh`).
 
-- **MX (Mail Exchange)** - Máy chủ email:
-```bash
-dig google.com MX +short
-```{{exec}}
-
-- **TXT (Text)** - Thường dùng xác thực sở hữu domain, cấu hình SPF/DKIM chống giả mạo email:
-```bash
-dig google.com TXT +short
-```{{exec}}
-
-- **CNAME (Canonical Name)** - Tên miền bí danh (alias):
-```bash
-dig www.github.com CNAME +short
-```{{exec}}
+Quan sát cột `Local Address:Port`:
+- `0.0.0.0:22` hoặc `*:22`: Đang lắng nghe trên **tất cả** các card mạng của máy chủ.
+- `127.0.0.1:xxx`: Chỉ lắng nghe cục bộ (Localhost), bên ngoài không thể truy cập trực tiếp.
 
 ---
 
-## 4. Chỉ Định Trực Tiếp DNS Server Cần Tra Cứu
+## 4. Kiểm Tra Kết Nối Port Bằng Netcat (`nc`) và `curl`
 
-Đôi khi DNS nội bộ gặp sự cố hoặc kết quả bị cache sai, bạn có thể kiểm tra chéo bằng cách chỉ định DNS Server công cộng thông qua ký tự `@`:
+Khi một container không gọi được sang database hay microservice khác, ta cần kiểm tra xem port có thông suốt không trước khi nghi ngờ lỗi code ứng dụng.
 
-Hỏi Google DNS (`8.8.8.8`):
+### Dùng `nc -zv` để test nhanh kết nối cổng (Port Scanning)
+Tùy chọn `-z` (zero-I/O: chỉ quét bắt tay, không gửi dữ liệu) và `-v` (verbose: hiển thị chi tiết):
+
+Kiểm tra cổng 22 (SSH) trên localhost:
 ```bash
-dig @8.8.8.8 cloudflare.com +short
+nc -zv 127.0.0.1 22
 ```{{exec}}
 
-Hỏi Cloudflare DNS (`1.1.1.1`):
+Nếu port mở và sẵn sàng, bạn sẽ thấy thông báo `Connection to 127.0.0.1 22 port [tcp/*] succeeded!`.
+
+Thử kiểm tra một cổng không có dịch vụ nào chạy (ví dụ 9999):
 ```bash
-dig @1.1.1.1 cloudflare.com +short
+nc -zvw2 127.0.0.1 9999
 ```{{exec}}
+
+Bạn sẽ nhận được ngay phản hồi `Connection refused` (Gói RST/ACK từ kernel báo cổng đang đóng).
+
+### Phân tích quá trình bắt tay TCP với `curl -v`
+Lệnh `curl -v` cho phép bạn quan sát thời điểm bắt tay TCP diễn ra trước khi giao thức HTTP bắt đầu:
+
+```bash
+curl -v -s -o /dev/null https://www.google.com
+```{{exec}}
+
+Chú ý dòng:
+```text
+* Connected to www.google.com (142.250.x.x) port 443
+```
+Đó chính là thời điểm hoàn thành TCP 3-Way Handshake!
 
 ---
 
-## 5. Theo Dõi Toàn Bộ Quy Trình Phân Cấp Với `+trace`
+## 5. Thử Thách & Xác Thực (Verification)
 
-Tham số `+trace` mô phỏng hành trình đi từ gốc (Root DNS) đến máy chủ Authoritative:
+Một ứng dụng web backend cần được triển khai và lắng nghe trên cổng **`8080`**.
 
+1. Hãy khởi chạy một dịch vụ web giả lập chạy ngầm trên cổng `8080`:
 ```bash
-dig kubernetes.io +trace
+python3 -m http.server 8080 > /dev/null 2>&1 &
 ```{{exec}}
 
-Quan sát thứ tự:
-1. Truy vấn danh sách 13 Root Server (`a.root-servers.net` đến `m.root-servers.net`).
-2. Root Server giới thiệu sang TLD Name Server quản lý đuôi `.io`.
-3. TLD Server giới thiệu sang Name Server quản trị của `kubernetes.io`.
+2. Kiểm tra xem port 8080 đã ở trạng thái `LISTEN` hay chưa:
+```bash
+ss -tlpn | grep 8080
+```{{exec}}
 
----
+3. Dùng `nc` kiểm tra kết nối tới port vừa mở:
+```bash
+nc -zv 127.0.0.1 8080
+```{{exec}}
 
-## 6. Quy Trình Debug DNS Dành Cho DevOps Engineer
-
-Khi ứng dụng báo lỗi `Could not resolve host: service-x`:
-1. **Bước 1**: Kiểm tra file `/etc/resolv.conf` xem có nameserver nào được khai báo không.
-2. **Bước 2**: Thử truy vấn bằng IP của DNS server: `dig @<nameserver_ip> service-x`.
-3. **Bước 3**: Kiểm tra kết nối mạng tới DNS server qua cổng 53: `nc -zvw3 <nameserver_ip> 53`.
-
-Hoàn thành xuất sắc! Hãy bấm **Next** để xem phần tổng kết và bài tập đánh giá.
+4. Bấm nút **Check** bên dưới thanh điều khiển để hệ thống tự động xác thực trạng thái socket của bạn!

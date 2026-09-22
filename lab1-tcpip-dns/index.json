@@ -1,21 +1,29 @@
 {
   "title": "Lab 1: TCP/IP và DNS Trong DevOps",
-  "description": "Nắm vững nền tảng kiến thức mô hình mạng TCP/IP, kỹ năng tính toán Subnet/CIDR và thực hành debug DNS chuyên sâu trên môi trường Linux.",
+  "description": "Nắm vững nền tảng kiến thức mô hình mạng TCP/IP, kỹ năng tính toán Subnet/CIDR, quản lý Port/Socket TCP và thực hành debug DNS chuyên sâu trên môi trường Linux.",
   "difficulty": "Beginner",
-  "time": "25-30 minutes",
+  "time": "35-40 minutes",
   "details": {
     "steps": [
       {
-        "title": "Subnetting & Phân tích Mạng với CIDR",
-        "text": "step1.md"
+        "title": "Tầng Network: Subnetting & Định Tuyến với CIDR",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
       },
       {
-        "title": "Cơ Chế Phân Giải & Kiểm Thử DNS",
-        "text": "step2.md"
+        "title": "Tầng Transport: TCP vs UDP, Quản Lý Port & Sockets",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Tầng Application: Cơ Chế Phân Giải & Kiểm Thử DNS",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
       }
     ],
     "intro": {
-      "text": "intro.md"
+      "text": "intro.md",
+      "background": "background.sh"
     },
     "finish": {
       "text": "finish.md"
