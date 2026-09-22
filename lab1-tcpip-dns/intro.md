@@ -32,7 +32,7 @@ Sau khi hoàn thành bài thực hành này, bạn sẽ:
 ## Tính Năng Tương Tác Trên Killercoda
 
 - **Tự động hóa môi trường (Background Initialization)**: Các công cụ mạng (`ipcalc`, `dnsutils`, `netcat`,...) được hệ thống tự động chuẩn bị ngầm.
-- **Thực thi lệnh nhanh**: Bấm vào bất kỳ khối code nào có biểu tượng `{{exec}}` để tự động gửi lệnh vào terminal bên phải.
+- **Thực thi lệnh nhanh**: Bấm trực tiếp vào các khối lệnh code trên hướng dẫn để tự động gửi và chạy lệnh trên terminal bên phải mà không cần sao chép thủ công.
 - **Xác thực tự động (Verify Check)**: Mỗi bước đều có phần **Thử Thách**. Sau khi hoàn thành, hãy bấm nút **Check** ở thanh điều khiển để hệ thống tự động chấm điểm và đánh giá kết quả của bạn.
 
 Bấm **START** hoặc chọn **Bước 1** để bắt đầu hành trình khám phá!
