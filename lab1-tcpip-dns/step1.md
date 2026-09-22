@@ -75,9 +75,10 @@ Chạy lệnh sau để hiển thị ngắn gọn thông tin card mạng và IP 
 ip -brief address show
 ```{{exec}}
 
-Bạn sẽ thấy ít nhất 2 interface:
-- `lo`: Local Loopback (`127.0.0.1`), dùng cho giao tiếp nội bộ giữa các tiến trình trên cùng một máy chủ.
-- `eth0` (hoặc `ensX`): Card mạng vật lý hoặc ảo kết nối ra ngoài kèm theo địa chỉ IP và dải CIDR của máy lab.
+Quan sát kết quả thực tế trên môi trường lab:
+- `lo`: **Local Loopback** (`127.0.0.1/8`), dùng cho giao tiếp nội bộ giữa các tiến trình trên cùng một máy chủ. Trạng thái `UNKNOWN` là bình thường với loopback.
+- `enp1s0` (hoặc `eth0`, `ensX`): Card mạng chính kết nối với hạ tầng mạng bên ngoài, hiển thị địa chỉ IP và dải CIDR thực tế của máy lab (ví dụ: `172.30.1.2/24`).
+- `docker0`: Card mạng cầu nối ảo (Virtual Bridge) được Docker daemon khởi tạo sẵn (`172.17.0.1/16`) để làm gateway kết nối các container.
 
 ### Xem bảng định tuyến (Routing Table)
 Khi một packet muốn rời khỏi máy chủ, Linux sẽ tra cứu bảng routing để biết cần gửi qua card mạng nào và Gateway nào:
@@ -88,10 +89,11 @@ ip route show
 
 Hãy chú ý dòng bắt đầu bằng `default via`:
 ```text
-default via 172.x.x.1 dev eth0
+default via 172.30.1.1 dev enp1s0
 ```
 - **default**: Áp dụng cho mọi gói tin có đích đến không nằm trong mạng nội bộ (`0.0.0.0/0`).
 - **via <IP>**: Địa chỉ của **Default Gateway** (thường là Router hoặc VPC NAT Gateway) tiếp nhận gói tin để chuyển tiếp ra Internet.
+- **dev <interface>**: Tên card mạng mà gói tin sẽ rời máy để đi tới Gateway (ở đây là `enp1s0`).
 
 ---
 
