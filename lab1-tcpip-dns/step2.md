@@ -1,6 +1,6 @@
 # Bước 2: Tầng Transport - TCP vs UDP, Quản Lý Port & Debugging Socket
 
-Trong mô hình TCP/IP, **Tầng Vận chuyển (Transport Layer)** chịu trách nhiệm điều phối việc truyền dữ liệu giữa các tiến trình chạy trên các máy chủ khác nhau. Đối với DevOps Engineer, khi gặp các lỗi kinh điển như `Connection refused`, `Connection timed out` hay `Port already in use`, việc hiểu rõ socket và cơ chế hoạt động của TCP/UDP là chìa khóa để xử lý sự cố nhanh chóng.
+Trong mô hình TCP/IP, **Tầng Vận chuyển (Transport Layer)** chịu trách nhiệm điều phối việc truyền dữ liệu giữa các tiến trình chạy trên các máy chủ khác nhau. Các lỗi kinh điển như `Connection refused`, `Connection timed out` hay `Port already in use` đều liên quan trực tiếp đến tầng này. Hiểu rõ socket và cơ chế TCP/UDP là chìa khóa để xử lý sự cố nhanh chóng.
 
 ---
 
@@ -79,7 +79,7 @@ Quan sát cột `Local Address:Port`:
 Khi một container không gọi được sang database hay microservice khác, ta cần kiểm tra xem port có thông suốt không trước khi nghi ngờ lỗi code ứng dụng.
 
 ### Dùng `nc -zv` để test nhanh kết nối cổng (Port Scanning)
-Tùy chọn `-z` (zero-I/O: chỉ quét bắt tay, không gửi dữ liệu) và `-v` (verbose: hiển thị chi tiết):
+Sử dụng tùy chọn `-z` (zero-I/O: chỉ quét bắt tay, không gửi dữ liệu) kết hợp `-v` (verbose) để kiểm tra nhanh:
 
 Kiểm tra cổng 22 (SSH) trên localhost:
 ```bash
@@ -93,7 +93,7 @@ Thử kiểm tra một cổng không có dịch vụ nào chạy (ví dụ 9999)
 nc -zvw2 127.0.0.1 9999
 ```{{exec}}
 
-Bạn sẽ nhận được ngay phản hồi `Connection refused` (Gói RST/ACK từ kernel báo cổng đang đóng).
+Bạn sẽ nhận được ngay phản hồi `Connection refused` (kernel báo không có dịch vụ nào lắng nghe trên cổng này).
 
 ### Phân tích quá trình bắt tay TCP với `curl -v`
 Lệnh `curl -v` cho phép bạn quan sát thời điểm bắt tay TCP diễn ra trước khi giao thức HTTP bắt đầu:

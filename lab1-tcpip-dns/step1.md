@@ -66,7 +66,7 @@ Quan sát:
 
 ## 3. Khám Phá Network Interfaces & Bảng Định Tuyến (Routing Table)
 
-Trên hệ điều hành Linux hiện đại, bộ công cụ `iproute2` (thay thế cho `ifconfig` và `route` đã cũ) là tiêu chuẩn bắt buộc.
+Trên hệ điều hành Linux hiện đại, bộ công cụ `iproute2` (thay thế cho `ifconfig` và `route` đã bị deprecated) là tiêu chuẩn bắt buộc.
 
 ### Xem danh sách card mạng (Interfaces)
 Chạy lệnh sau để hiển thị ngắn gọn thông tin card mạng và IP đang được gán:
@@ -75,7 +75,7 @@ Chạy lệnh sau để hiển thị ngắn gọn thông tin card mạng và IP 
 ip -brief address show
 ```{{exec}}
 
-Quan sát kết quả thực tế trên môi trường lab:
+Kết quả trên môi trường lab sẽ hiển thị ít nhất 3 interface:
 - `lo`: **Local Loopback** (`127.0.0.1/8`), dùng cho giao tiếp nội bộ giữa các tiến trình trên cùng một máy chủ. Trạng thái `UNKNOWN` là bình thường với loopback.
 - `enp1s0` (hoặc `eth0`, `ensX`): Card mạng chính kết nối với hạ tầng mạng bên ngoài, hiển thị địa chỉ IP và dải CIDR thực tế của máy lab (ví dụ: `172.30.1.2/24`).
 - `docker0`: Card mạng cầu nối ảo (Virtual Bridge) được Docker daemon khởi tạo sẵn (`172.17.0.1/16`) để làm gateway kết nối các container.
@@ -99,7 +99,7 @@ default via 172.30.1.1 dev enp1s0
 
 ## 4. Thử Thách & Xác Thực (Verification)
 
-Một team phát triển yêu cầu bạn cấp một subnet có kích thước nhỏ nhất nhưng phải chứa được tối đa **25 containers** cho một microservice mới:
+Một team phát triển yêu cầu bạn cấp một subnet nhỏ nhất có thể chứa được **ít nhất 25 containers** cho một microservice mới:
 
 1. **Tính toán Subnet Mask:**
    Hãy tìm tiền tố CIDR nhỏ nhất (ví dụ: `25`, `26`, `27`, `28`, `29`,...) đáp ứng đủ yêu cầu trên mà không lãng phí địa chỉ IP.

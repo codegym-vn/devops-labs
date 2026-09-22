@@ -1,6 +1,6 @@
-Chào mừng bạn đến với bài lab **TCP/IP và DNS Trong DevOps**. 
+Chào mừng bạn đến với bài lab **TCP/IP và DNS Trong DevOps**.
 
-Trong kỹ thuật vận hành hệ thống hiện đại (Cloud Computing, Docker, Kubernetes, Microservices), **Networking** chính là "xương sống" kết nối toàn bộ hạ tầng. Dù bạn deploy ứng dụng lên AWS VPC, cấu hình mạng Pod trong Kubernetes với Calico/Cilium, quản lý kết nối TCP giữa các microservices hay thiết lập Service Discovery qua DNS, việc nắm vững cách thức gói tin di chuyển và cách thức hệ thống giao tiếp là kỹ năng bắt buộc của một DevOps Engineer.
+Trong kỹ thuật vận hành hệ thống hiện đại (Cloud Computing, Docker, Kubernetes, Microservices), **Networking** chính là "xương sống" kết nối toàn bộ hạ tầng. Từ việc thiết kế VPC trên AWS, cấu hình mạng Pod trong Kubernetes, đến quản lý kết nối TCP giữa các microservices và thiết lập Service Discovery qua DNS — tất cả đều đòi hỏi bạn phải nắm vững cách gói tin di chuyển trên mạng.
 
 ---
 

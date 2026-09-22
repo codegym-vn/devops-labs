@@ -19,7 +19,7 @@ Bạn đã xuất sắc vượt qua cả 3 tầng cốt lõi của mô hình **T
 | **Application**| **Kiểm tra chéo DNS Server**| `dig @8.8.8.8 <domain>` | Truy vấn trực tiếp một DNS Server cụ thể qua cổng 53 |
 | **Application**| **Theo dõi đường đi DNS** | `dig <domain> +trace` | Đi từ Root Server -> TLD Server -> Authoritative Server |
 | **Application**| **Ghi đè DNS cục bộ** | `/etc/hosts` | Mapping thủ công `<IP> <domain>` ưu tiên hơn DNS ngoài |
-| **Application**| **Cấu hình DNS client** | `/etc/resolv.conf` | Định nghĩa nameserver (stub resolver `127.0.0.53`) |
+| **Application**| **Cấu hình DNS client** | `/etc/resolv.conf` | Định nghĩa nameserver (Local Stub Resolver `127.0.0.53`) |
 
 ---
 

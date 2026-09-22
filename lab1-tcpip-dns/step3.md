@@ -35,8 +35,8 @@ Xem địa chỉ DNS Server mà hệ thống đang sử dụng:
 cat /etc/resolv.conf
 ```{{exec}}
 
-> **Giải thích kỹ thuật: Tại sao thường thấy IP `127.0.0.53`?**  
-> Trên Ubuntu và các bản phân phối Linux hiện đại có `systemd-resolved`, IP `127.0.0.53` là một **Local Stub Resolver**. Nó đóng vai trò làm cache DNS cục bộ trên máy để tăng tốc độ truy vấn, trước khi chuyển tiếp yêu cầu ra DNS Server thực sự của hệ thống mạng.
+> **Tại sao nameserver thường hiển thị IP `127.0.0.53`?**
+> Trên Ubuntu và các bản phân phối Linux hiện đại, `systemd-resolved` cung cấp một **Local Stub Resolver** tại địa chỉ này. Nó làm cache DNS cục bộ để tăng tốc độ truy vấn trước khi chuyển tiếp ra DNS Server thực sự.
 
 - `nameserver <IP>`: Địa chỉ máy chủ DNS tiếp nhận các truy vấn.
 - `search <domain>`: Domain suffix tự động nối vào sau tên hostname ngắn (rất quan trọng trong Kubernetes, ví dụ `default.svc.cluster.local`).
@@ -49,7 +49,7 @@ cat /etc/hosts
 ```{{exec}}
 
 ### Kỹ thuật ghi đè DNS trong `/etc/hosts`
-DevOps thường dùng cách này để kiểm thử một website trên máy chủ mới hoặc giả lập microservice nội bộ trước khi trỏ DNS chính thức:
+Kỹ thuật này thường được DevOps dùng để giả lập dịch vụ nội bộ trước khi trỏ DNS chính thức:
 
 Thêm một bản ghi giả lập:
 ```bash
@@ -84,7 +84,7 @@ Hãy phân tích các phần quan trọng trong output:
 2. **QUESTION SECTION**: Câu hỏi được gửi đi (tìm record loại `A` của `google.com`).
 3. **ANSWER SECTION**: Kết quả trả về gồm tên miền, **TTL** (Time To Live - thời gian cache tính bằng giây), loại record, và IP.
 4. **SERVER**: IP máy chủ DNS đã trả lời truy vấn.
-5. **WHEN**: Thời gian phản hồi (`Query time: ... msec`).
+5. **Query time**: Thời gian phản hồi (tính bằng millisecond), giúp đánh giá hiệu năng DNS.
 
 ### Lấy kết quả ngắn gọn với `+short`
 Trong các shell script tự động hóa CI/CD, ta thường dùng cờ `+short` để chỉ lấy địa chỉ IP:
