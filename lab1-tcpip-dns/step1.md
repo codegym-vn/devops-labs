@@ -2,7 +2,7 @@
 
 Trong môi trường Cloud (AWS VPC, Azure VNet, GCP VPC) và Containerization (Docker, Kubernetes), việc thiết kế dải IP và phân chia Subnet hợp lý giúp tối ưu hóa bảo mật (tách biệt Public/Private Subnet) và ngăn ngừa việc cạn kiệt địa chỉ IP cho Pods/Containers.
 
-> 💡 **Môi trường thực hành:** Hệ thống Killercoda đã tự động cài đặt sẵn các gói công cụ mạng chuyên dụng (`ipcalc`, `iproute2`, `dnsutils`, `netcat`, `curl`) ở chế độ nền. Bạn có thể bắt đầu gõ lệnh ngay mà không cần chờ đợi.
+> **Lưu ý môi trường:** Hệ thống Killercoda đã tự động cài đặt sẵn các gói công cụ mạng chuyên dụng (`ipcalc`, `iproute2`, `dnsutils`, `netcat`, `curl`) ở chế độ nền. Bạn có thể bắt đầu gõ lệnh ngay mà không cần chờ đợi.
 
 ---
 
@@ -104,7 +104,7 @@ Một team phát triển yêu cầu bạn cấp một subnet có thể chứa t�
 1. Hãy tìm tiền tố CIDR nhỏ nhất (ví dụ: `26`, `27`, `28`,...) đáp ứng yêu cầu trên.
 
 <details>
-<summary>💡 Bấm vào đây nếu bạn cần gợi ý công thức tính toán</summary>
+<summary>Xem gợi ý công thức tính toán</summary>
 
 - Công thức số host khả dụng: $2^h - 2 \ge 25$ (với $h$ là số bit dành cho host).
 - Thử $h = 4 \rightarrow 2^4 - 2 = 14$ (không đủ cho 25 containers).
