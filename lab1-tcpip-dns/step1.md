@@ -99,29 +99,29 @@ default via 172.30.1.1 dev enp1s0
 
 ## 4. Thử Thách & Xác Thực (Verification)
 
-Một team phát triển yêu cầu bạn cấp một subnet có thể chứa tối đa **25 containers**.
+Một team phát triển yêu cầu bạn cấp một subnet có kích thước nhỏ nhất nhưng phải chứa được tối đa **25 containers** cho một microservice mới:
 
-1. Hãy tìm tiền tố CIDR nhỏ nhất (ví dụ: `26`, `27`, `28`,...) đáp ứng yêu cầu trên.
+1. **Tính toán Subnet Mask:**
+   Hãy tìm tiền tố CIDR nhỏ nhất (ví dụ: `25`, `26`, `27`, `28`, `29`,...) đáp ứng đủ yêu cầu trên mà không lãng phí địa chỉ IP.
 
 <details>
 <summary>Xem gợi ý công thức tính toán</summary>
 
-- Công thức số host khả dụng: (2^h - 2 >= 25) (với h là số bit dành cho host).
-- Thử h = 4 -> (2^4 - 2 = 14) (không đủ cho 25 containers).
-- Thử h = 5 -> (2^5 - 2 = 30) (đủ cho 25 containers).
-- Tiền tố CIDR = 32 - h = 32 - 5 = 27.
+- Công thức số host khả dụng cho một subnet: `2^h - 2 >= số containers` (với `h` là số bit dành cho phần Host).
+- Hãy tìm số nguyên `h` nhỏ nhất thỏa mãn điều kiện trên, sau đó tính tiền tố CIDR: `Prefix = 32 - h`.
 </details>
 
-2. Sau khi đã tìm ra đáp án, hãy lưu giá trị prefix vào file `/tmp/subnet.txt`:
+2. **Kiểm tra tính toán:**
+   Dùng lệnh `ipcalc` trên terminal với tiền tố bạn vừa tìm được để kiểm tra thông số `Hosts/Net` xem có đủ 25 máy chủ hay không:
+   ```bash
+   ipcalc 10.20.0.0/<tiền_tố_CIDR>
+   ```
 
-```bash
-echo "27" > /tmp/subnet.txt
-```{{exec}}
+3. **Ghi nhận kết quả:**
+   Khi đã chắc chắn về đáp án, hãy **tự tay gõ lệnh** trên terminal để lưu con số tiền tố CIDR của bạn vào file `/tmp/subnet.txt` (thay thế `<CIDR>` bằng con số bạn đã tính được):
+   ```bash
+   echo "<CIDR>" > /tmp/subnet.txt
+   ```
+   *(Ví dụ: nếu bạn tính ra 24, hãy gõ `echo "24" > /tmp/subnet.txt`)*
 
-3. Dùng `ipcalc` kiểm tra lại số máy chủ hợp lệ:
-
-```bash
-ipcalc 10.20.0.0/27
-```{{exec}}
-
-4. Bấm nút **Check** bên dưới thanh điều khiển để hệ thống tự động xác thực đáp án của bạn!
+4. Bấm nút **Check** bên dưới thanh điều khiển để hệ thống tự động chấm điểm và đánh giá kết quả của bạn!
