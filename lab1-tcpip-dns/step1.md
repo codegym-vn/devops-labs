@@ -106,10 +106,10 @@ Một team phát triển yêu cầu bạn cấp một subnet có thể chứa t�
 <details>
 <summary>Xem gợi ý công thức tính toán</summary>
 
-- Công thức số host khả dụng: $2^h - 2 \ge 25$ (với $h$ là số bit dành cho host).
-- Thử $h = 4 \rightarrow 2^4 - 2 = 14$ (không đủ cho 25 containers).
-- Thử $h = 5 \rightarrow 2^5 - 2 = 30$ (đủ cho 25 containers).
-- Tiền tố CIDR = $32 - h = 32 - 5 = 27$.
+- Công thức số host khả dụng: (2^h - 2 >= 25) (với h là số bit dành cho host).
+- Thử h = 4 -> (2^4 - 2 = 14) (không đủ cho 25 containers).
+- Thử h = 5 -> (2^5 - 2 = 30) (đủ cho 25 containers).
+- Tiền tố CIDR = 32 - h = 32 - 5 = 27.
 </details>
 
 2. Sau khi đã tìm ra đáp án, hãy lưu giá trị prefix vào file `/tmp/subnet.txt`:

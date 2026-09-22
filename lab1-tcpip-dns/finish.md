@@ -1,6 +1,6 @@
 # Chúc Mừng Bạn Đã Hoàn Thành Lab 1!
 
-Bạn đã xuất sắc vượt qua cả 3 tầng cốt lõi của mô hình **TCP/IP: Network $\rightarrow$ Transport $\rightarrow$ Application (DNS)** – nền tảng mạng then chốt của mọi hệ thống phân tán, containerization và hạ tầng DevOps.
+Bạn đã xuất sắc vượt qua cả 3 tầng cốt lõi của mô hình **TCP/IP: Network -> Transport -> Application (DNS)** – nền tảng mạng then chốt của mọi hệ thống phân tán, containerization và hạ tầng DevOps.
 
 ---
 
@@ -28,7 +28,7 @@ Bạn đã xuất sắc vượt qua cả 3 tầng cốt lõi của mô hình **T
 - [x] Có thể tính nhẩm và kiểm tra số IP khả dụng cho các dải CIDR phổ biến (`/16`, `/24`, `/27`, `/28`).
 - [x] Hiểu tại sao subnet luôn bị mất 2 địa chỉ IP (hoặc 5 IP trong AWS VPC).
 - [x] Đọc hiểu bảng định tuyến `ip route` và phân biệt được `default via gateway`.
-- [x] Hiểu rõ sự khác biệt giữa TCP vs UDP và quy trình bắt tay 3 bước (SYN $\rightarrow$ SYN-ACK $\rightarrow$ ACK).
+- [x] Hiểu rõ sự khác biệt giữa TCP vs UDP và quy trình bắt tay 3 bước (SYN -> SYN-ACK -> ACK).
 - [x] Thành thạo lệnh `ss -tulpn` để điều tra tiến trình nào đang chiếm dụng cổng mạng.
 - [x] Sử dụng `nc -zv` để phân biệt sự cố nghẽn mạng do cổng bị đóng/tường lửa chặn hay do ứng dụng lỗi.
 - [x] Nắm rõ quy trình 5 bước phân giải một tên miền từ client đến Authoritative Name Server.
