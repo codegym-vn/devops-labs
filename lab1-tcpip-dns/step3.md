@@ -157,6 +157,17 @@ Khi ứng dụng trong Pod/Container báo lỗi `Could not resolve host: service
 
 ## 7. Thử Thách & Xác Thực (Verification)
 
-Hãy đảm bảo bạn đã cấu hình tên miền cục bộ `myapp.internal` trỏ về IP `127.0.0.1` trong file `/etc/hosts`.
+Đội hạ tầng cần bạn cấu hình phân giải DNS cục bộ cho một dịch vụ database nội bộ trước khi hệ thống DNS chính thức được cập nhật.
 
-Bấm nút **Check** bên dưới thanh điều khiển để hệ thống tự động xác thực kết quả của bạn!
+1. **Tự tay thêm** một bản ghi vào file `/etc/hosts` để tên miền `db.production` trỏ về IP `10.0.0.50`:
+   ```bash
+   echo "10.0.0.50 db.production" >> /etc/hosts
+   ```
+
+2. Kiểm tra kết quả phân giải:
+   ```bash
+   getent hosts db.production
+   ```
+
+3. Bấm nút **Check** bên dưới thanh điều khiển để hệ thống tự động xác thực kết quả của bạn!
+
