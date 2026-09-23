@@ -1,0 +1,36 @@
+{
+  "title": "Lab 6: Phân Tích Git Internals, Khôi Phục Dữ Liệu Với Reflog & Cấu Hình Git Hooks",
+  "description": "Mổ xẻ kiến trúc bên trong của Git (Blob, Tree, Commit), làm chủ kỹ năng khôi phục dữ liệu đã mất bằng Git Reflog và tự động hóa kiểm soát chất lượng mã nguồn với Git Hooks.",
+  "difficulty": "Intermediate",
+  "time": "35-40 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Mổ Xẻ Git Internals: Blob, Tree, Commit & Content-Addressable Storage",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Khôi Phục Dữ Liệu Đã Mất Với Git Reflog & Dangling Commits",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Tự Động Hóa Chất Lượng Code Với Git Hooks (Pre-commit & Commit-msg)",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

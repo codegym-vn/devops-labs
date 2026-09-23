@@ -46,7 +46,9 @@ Bạn đã xây dựng thành công một **Hệ Thống Giám Sát Tài Nguyên
 
 ## Bước Tiếp Theo Trong Hành Trình DevOps
 
-Bài lab này đã giúp bạn nắm vững tư duy giám sát từ tầng thấp nhất (OS metrics, thresholding, webhook alerting). Với nền tảng này, bạn đã sẵn sàng tiến lên các công nghệ giám sát và tự động hóa phân tán:
-- **Prometheus & Node Exporter**: Thu thập metrics theo mô hình pull-based chuẩn công nghiệp.
-- **Grafana**: Xây dựng bảng điều khiển trực quan hóa thời gian thực (Dashboarding).
-- **Alertmanager**: Quản lý định tuyến cảnh báo thông minh, gom nhóm (grouping), và dập tắt cảnh báo trùng lặp (silencing).
+Bài lab này đã giúp bạn nắm vững tư duy giám sát từ tầng thấp nhất (OS metrics, thresholding, webhook alerting). Khi hệ thống và mã nguồn ngày càng mở rộng, kỹ năng quản lý phiên bản chuyên sâu và kiểm soát chất lượng mã nguồn trở thành ưu tiên hàng đầu.
+
+Hãy tiếp tục với **Lab 6: Phân Tích Git Internals, Khôi Phục Dữ Liệu Với Reflog & Cấu Hình Git Hooks** để học cách:
+- Mổ xẻ cấu trúc lưu trữ bên trong của Git (Blob, Tree, Commit) bằng Plumbing Commands.
+- Khôi phục dữ liệu đã xóa nhầm (commit, branch) bằng Git Reflog.
+- Tự động hóa kiểm soát bảo mật và quy chuẩn commit với Git Hooks (`pre-commit`, `commit-msg`).
