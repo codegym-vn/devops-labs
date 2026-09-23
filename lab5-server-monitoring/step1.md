@@ -27,7 +27,7 @@ Các trường cần chú ý:
 ### Trích xuất tỷ lệ phần trăm RAM đã dùng
 
 Để tính phần trăm RAM đã sử dụng theo công thức:
-$$\text{RAM\_USAGE (\%)} = \frac{\text{used}}{\text{total}} \times 100$$
+`RAM_USAGE (%) = (used / total) * 100`
 
 Chúng ta sử dụng `awk` để lọc dòng `Mem:` và thực hiện phép chia:
 
@@ -83,11 +83,11 @@ Trong đó:
 - `sy` (system): Thời gian CPU xử lý các tác vụ kernel hệ điều hành.
 - `id` (idle): Thời gian CPU đang rảnh rỗi (không có việc cần xử lý).
 
-Do đó, **CPU đang sử dụng** sẽ bằng: $100 - \text{idle}$.
+Do đó, **CPU đang sử dụng** sẽ bằng: `100 - idle`.
 
 ### Trích xuất % CPU sử dụng bằng `awk`
 
-Tìm vị trí trường `id` trong dòng `Cpu(s)` và lấy $100 - \text{idle}$:
+Tìm vị trí trường `id` trong dòng `Cpu(s)` và lấy `100 - idle`:
 
 ```bash
 top -bn1 | grep "Cpu(s)" | awk '{for(i=1;i<=NF;i++) if($i ~ /id/) {gsub(/[^0-9.]/,"",$(i-1)); printf "%.1f", 100 - $(i-1)}}'
