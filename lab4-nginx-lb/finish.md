@@ -67,7 +67,10 @@ Bạn đã xây dựng thành công một hệ thống **Nginx Reverse Proxy** h
 
 ## Bước Tiếp Theo
 
-Bây giờ bạn đã nắm vững cách Nginx hoạt động như Reverse Proxy, Load Balancer và Connection Pool Manager. Đây là nền tảng để tiến tới các chủ đề nâng cao hơn như:
-- **Docker Networking**: Cấu hình mạng cho container và inter-container communication.
-- **Kubernetes Service & Ingress**: Load Balancing cho cụm container trên K8s.
-- **API Gateway**: Kong, Traefik — Reverse Proxy chuyên biệt cho microservices.
+Bây giờ bạn đã nắm vững cách Nginx hoạt động như Reverse Proxy, Load Balancer và Connection Pool Manager. Khi hệ thống đã hoạt động, nhiệm vụ tiếp theo của người làm DevOps là **giám sát liên tục tài nguyên và đảm bảo tính sẵn sàng của hạ tầng**.
+
+Hãy tiếp tục với **Lab 5: Giám Sát Tài Nguyên Máy Chủ & Cảnh Báo Tự Động Với Bash Script** để học cách:
+- Bóc tách chỉ số CPU, RAM, Disk bằng các tiện ích Linux CLI.
+- Thiết lập logic cảnh báo ngưỡng (Warning & Critical).
+- Gửi cảnh báo tự động qua Webhook và lập lịch tự động với Crontab kết hợp thử nghiệm tải cao (Stress Testing).
+

@@ -1,0 +1,36 @@
+{
+  "title": "Lab 5: Giám Sát Tài Nguyên Máy Chủ & Cảnh Báo Tự Động Với Bash Script",
+  "description": "Xây dựng kịch bản Bash Script tự động hóa giám sát tài nguyên (CPU, RAM, Disk), thiết lập ngưỡng cảnh báo, gửi thông báo qua Webhook và lập lịch định kỳ bằng Crontab kết hợp thử nghiệm quá tải.",
+  "difficulty": "Intermediate",
+  "time": "35-40 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Thu Thập & Bóc Tách Chỉ Số Tài Nguyên (CPU, RAM, Disk)",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Logic Cảnh Báo Ngưỡng & Tích Hợp Webhook Alerting",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Lập Lịch Bằng Crontab & Thử Nghiệm Quá Tải Hệ Thống",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}
