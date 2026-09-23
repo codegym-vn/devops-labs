@@ -8,7 +8,7 @@ fi
 
 # Kiem tra PasswordAuthentication no trong cau hinh
 PASS_CHECK=false
-if grep -rq "^PasswordAuthentication no" /etc/ssh/sshd_config /etc/ssh/sshd_config.d/ 2>/dev/null; then
+if grep -q "^PasswordAuthentication no" /etc/ssh/sshd_config 2>/dev/null; then
     PASS_CHECK=true
 fi
 

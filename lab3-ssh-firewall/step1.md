@@ -83,43 +83,39 @@ grep -E "^#?(Port|PermitRootLogin|PasswordAuthentication|PubkeyAuthentication|Ma
 
 ### Áp dụng cấu hình hardened
 
-Trước tiên, vô hiệu hóa dòng `Port 22` trong file cấu hình gốc để tránh SSH listen trên cả hai port:
+Sửa trực tiếp file `/etc/ssh/sshd_config` bằng các lệnh `sed`. Cách này đảm bảo hoạt động trên mọi phiên bản Ubuntu:
+
+**Đổi port SSH từ 22 sang 2222:**
 
 ```bash
-sed -i 's/^Port 22$/#Port 22/' /etc/ssh/sshd_config
-sed -i 's/^#Port 22$/&  # Da chuyen sang port 2222/' /etc/ssh/sshd_config
+sed -i 's/^#\?Port 22$/Port 2222/' /etc/ssh/sshd_config
 ```{{exec}}
 
-Tạo file cấu hình bổ sung tại `/etc/ssh/sshd_config.d/hardening.conf` (cách tốt nhất thay vì sửa trực tiếp file gốc):
+**Tắt xác thực bằng password, chỉ cho phép key:**
 
 ```bash
-cat << 'EOF' > /etc/ssh/sshd_config.d/hardening.conf
-# === SSH Hardening Configuration ===
+sed -i 's/^#\?PasswordAuthentication yes$/PasswordAuthentication no/' /etc/ssh/sshd_config
+sed -i 's/^#\?PubkeyAuthentication .*/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+```{{exec}}
 
-# Doi port mac dinh de giam noise tu bot scanner
-Port 2222
+**Hạn chế đăng nhập root (chỉ cho phép bằng key):**
 
-# Chi cho phep xac thuc bang key, cam password
-PubkeyAuthentication yes
-PasswordAuthentication no
+```bash
+sed -i 's/^#\?PermitRootLogin .*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
+```{{exec}}
 
-# Cam dang nhap root truc tiep (phai dung user thuong + sudo)
-PermitRootLogin prohibit-password
+**Giới hạn số lần thử sai và session timeout:**
 
-# Gioi han so lan thu sai
-MaxAuthTries 3
+```bash
+sed -i 's/^#\?MaxAuthTries .*/MaxAuthTries 3/' /etc/ssh/sshd_config
+sed -i 's/^#\?ClientAliveInterval .*/ClientAliveInterval 300/' /etc/ssh/sshd_config
+sed -i 's/^#\?ClientAliveCountMax .*/ClientAliveCountMax 2/' /etc/ssh/sshd_config
+```{{exec}}
 
-# Ngat session idle sau 5 phut (300 giay x 2 lan probe)
-ClientAliveInterval 300
-ClientAliveCountMax 2
+Kiểm tra các thay đổi đã được áp dụng đúng:
 
-# Tat xac thuc bang phuong thuc yeu
-ChallengeResponseAuthentication no
-UsePAM yes
-
-# Chi cho phep SSH Protocol 2
-Protocol 2
-EOF
+```bash
+grep -E "^(Port|PasswordAuthentication|PubkeyAuthentication|PermitRootLogin|MaxAuthTries|ClientAlive)" /etc/ssh/sshd_config
 ```{{exec}}
 
 ### Bảng giải thích các chỉ thị hardening
