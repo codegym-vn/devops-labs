@@ -87,8 +87,18 @@ Sửa trực tiếp file `/etc/ssh/sshd_config` bằng các lệnh `sed`. Cách 
 
 **Đổi port SSH từ 22 sang 2222:**
 
+Trên Ubuntu mới, `systemd` quản lý socket SSH và override port trong `sshd_config`. Cần tắt cơ chế này trước:
+
 ```bash
-sed -i 's/^#\?Port 22$/Port 2222/' /etc/ssh/sshd_config
+systemctl stop ssh.socket 2>/dev/null
+systemctl disable ssh.socket 2>/dev/null
+```{{exec}}
+
+Sau đó xóa tất cả dòng Port cũ và thêm `Port 2222`:
+
+```bash
+sed -i '/^\s*#*\s*Port\b/d' /etc/ssh/sshd_config
+echo "Port 2222" >> /etc/ssh/sshd_config
 ```{{exec}}
 
 **Tắt xác thực bằng password, chỉ cho phép key:**
@@ -140,10 +150,10 @@ Luôn kiểm tra cú pháp trước khi restart (tương tự `nginx -t`):
 sshd -t
 ```{{exec}}
 
-Nếu không có lỗi, restart SSH daemon:
+Nếu không có lỗi, restart SSH daemon (dùng `ssh.service`, không phải socket):
 
 ```bash
-systemctl restart ssh
+systemctl restart ssh.service
 ```{{exec}}
 
 Kiểm tra SSH đã chuyển sang port 2222:
