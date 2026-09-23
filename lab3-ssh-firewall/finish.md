@@ -68,7 +68,5 @@ Khi nhận một server Linux mới, hãy thực hiện theo thứ tự:
 
 ## Bước Tiếp Theo
 
-Bây giờ bạn đã nắm vững cách bảo mật truy cập server, tạo đường hầm mã hóa và kiểm soát traffic mạng. Đây là nền tảng để tiến tới các chủ đề nâng cao hơn như:
-- **Docker Networking**: Cấu hình mạng cho container và inter-container communication.
-- **Kubernetes Network Policies**: Kiểm soát traffic giữa các Pod trong cluster.
-- **VPN & WireGuard**: Thiết lập mạng riêng ảo cho team DevOps phân tán.
+Bây giờ bạn đã nắm vững cách bảo mật truy cập server, tạo đường hầm mã hóa và kiểm soát traffic mạng. Hãy chuyển sang **Lab 4: Nginx Reverse Proxy, Load Balancer & Connection Pooling** để học cách điều phối traffic người dùng vào cụm backend và tối ưu hiệu năng kết nối!
+
