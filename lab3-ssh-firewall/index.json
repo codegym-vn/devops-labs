@@ -1,0 +1,36 @@
+{
+  "title": "Lab 3: SSH Hardening, Port Forwarding & Tường Lửa UFW",
+  "description": "Thực hành gia cố bảo mật SSH (key-based auth, đổi port, giới hạn đăng nhập), thiết lập SSH Tunnel để truy cập dịch vụ nội bộ an toàn, và cấu hình tường lửa UFW kiểm soát traffic mạng trên Linux.",
+  "difficulty": "Intermediate",
+  "time": "35-40 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "SSH Hardening: Key-Based Auth & Gia Cố sshd_config",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "SSH Port Forwarding: Đường Hầm Mã Hóa & Tunnel",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Tường Lửa UFW: Kiểm Soát Traffic & Chống Brute-Force",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

@@ -40,7 +40,5 @@ Bạn đã thành thạo kỹ năng phân tích giao thức **HTTP/HTTPS** và c
 
 ## Bước Tiếp Theo
 
-Bây giờ bạn đã nắm vững cách HTTP hoạt động, cách bảo mật bằng HTTPS/TLS, và cách cấu hình SSL cho Nginx. Đây là nền tảng để bạn tiến tới các chủ đề nâng cao hơn như:
-- **Reverse Proxy & Load Balancing**: Điều phối traffic người dùng vào cụm backend microservices.
-- **Let's Encrypt & Certbot**: Tự động hóa cấp phát và gia hạn certificate miễn phí cho production.
-- **Kubernetes Ingress + TLS**: Quản lý certificate và routing cho cụm container.
+Bây giờ bạn đã nắm vững cách HTTP hoạt động, cách bảo mật bằng HTTPS/TLS, và cách cấu hình SSL cho Nginx. Hãy chuyển sang **Lab 3: SSH Hardening, Port Forwarding & Tường Lửa UFW** để học cách gia cố bảo mật truy cập server, tạo đường hầm mã hóa và kiểm soát traffic mạng!
+
