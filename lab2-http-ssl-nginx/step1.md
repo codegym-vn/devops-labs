@@ -1,94 +1,94 @@
-# Buoc 1: Phan Tich Giao Thuc HTTP - Request, Response & Headers
+# Bước 1: Phân Tích Giao Thức HTTP - Request, Response & Headers
 
-Giao thuc **HTTP (HyperText Transfer Protocol)** la nen tang giao tiep cua World Wide Web va cung la giao thuc chinh ma cac API, Webhook, Container Registry su dung trong he thong DevOps. Truoc khi hieu HTTPS, ban can nam vung cach HTTP hoat dong.
+Giao thức **HTTP (HyperText Transfer Protocol)** là nền tảng giao tiếp của World Wide Web và cũng là giao thức chính mà các API, Webhook, Container Registry sử dụng trong hệ thống DevOps. Trước khi hiểu HTTPS, bạn cần nắm vững cách HTTP hoạt động.
 
-> **Luu y moi truong:** He thong Killercoda da tu dong cai dat san `nginx`, `openssl` va `curl` o che do nen. Ban co the bat dau go lenh ngay.
+> **Lưu ý môi trường:** Hệ thống Killercoda đã tự động cài đặt sẵn `nginx`, `openssl` và `curl` ở chế độ nền. Bạn có thể bắt đầu gõ lệnh ngay.
 
 ---
 
-## 1. Cau Truc Mot HTTP Request
+## 1. Cấu Trúc Một HTTP Request
 
-Khi ban go `curl http://example.com`, trinh khach (client) gui mot **HTTP Request** co cau truc:
+Khi bạn gõ `curl http://example.com`, trình khách (client) gửi một **HTTP Request** có cấu trúc:
 
 ```text
 GET / HTTP/1.1                    <-- Request Line: Method + Path + HTTP Version
-Host: example.com                 <-- Header: Ten mien dich
-User-Agent: curl/7.68.0          <-- Header: Phan mem gui request
-Accept: */*                       <-- Header: Loai noi dung chap nhan
-                                  <-- Dong trong: Ket thuc phan Header
-                                  <-- Body (neu co, voi POST/PUT)
+Host: example.com                 <-- Header: Tên miền đích
+User-Agent: curl/7.68.0          <-- Header: Phần mềm gửi request
+Accept: */*                       <-- Header: Loại nội dung chấp nhận
+                                  <-- Dòng trống: Kết thúc phần Header
+                                  <-- Body (nếu có, với POST/PUT)
 ```
 
-### Cac HTTP Method quan trong cho DevOps
+### Các HTTP Method quan trọng cho DevOps
 
-| Method | Muc Dich | Vi Du Thuc Te |
+| Method | Mục Đích | Ví Dụ Thực Tế |
 |---|---|---|
-| **GET** | Lay du lieu | `curl http://api.example.com/health` — Health check |
-| **POST** | Gui du lieu tao moi | Webhook CI/CD gui thong bao build |
-| **PUT** | Cap nhat toan bo tai nguyen | Update cau hinh qua API |
-| **DELETE** | Xoa tai nguyen | Xoa container/pod qua API |
-| **HEAD** | Lay header (khong co body) | Kiem tra nhanh server co song khong |
+| **GET** | Lấy dữ liệu | `curl http://api.example.com/health` — Health check |
+| **POST** | Gửi dữ liệu tạo mới | Webhook CI/CD gửi thông báo build |
+| **PUT** | Cập nhật toàn bộ tài nguyên | Update cấu hình qua API |
+| **DELETE** | Xóa tài nguyên | Xóa container/pod qua API |
+| **HEAD** | Lấy header (không có body) | Kiểm tra nhanh server có sống không |
 
 ---
 
-## 2. Cau Truc HTTP Response va Status Code
+## 2. Cấu Trúc HTTP Response và Status Code
 
-Server tra ve mot **HTTP Response** bao gom:
+Server trả về một **HTTP Response** bao gồm:
 
 ```text
 HTTP/1.1 200 OK                   <-- Status Line: Version + Status Code + Reason
-Content-Type: text/html           <-- Header: Loai noi dung tra ve
-Content-Length: 1256              <-- Header: Kich thuoc body (bytes)
-Connection: keep-alive            <-- Header: Giu ket noi TCP
-                                  <-- Dong trong
-<!doctype html>...                <-- Body: Noi dung trang web/API
+Content-Type: text/html           <-- Header: Loại nội dung trả về
+Content-Length: 1256              <-- Header: Kích thước body (bytes)
+Connection: keep-alive            <-- Header: Giữ kết nối TCP
+                                  <-- Dòng trống
+<!doctype html>...                <-- Body: Nội dung trang web/API
 ```
 
-### Cac Nhom Status Code Quan Trong Cho DevOps
+### Các Nhóm Status Code Quan Trọng Cho DevOps
 
-| Nhom | Y Nghia | Ma Thuong Gap | Ngu Canh DevOps |
+| Nhóm | Ý Nghĩa | Mã Thường Gặp | Ngữ Cảnh DevOps |
 |---|---|---|---|
-| **2xx** | Thanh cong | `200 OK`, `201 Created`, `204 No Content` | API tra ve du lieu thanh cong, resource duoc tao |
-| **3xx** | Chuyen huong | `301 Moved Permanently`, `302 Found`, `304 Not Modified` | HTTP redirect sang HTTPS, CDN cache |
-| **4xx** | Loi phia Client | `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found` | API key sai, endpoint khong ton tai |
-| **5xx** | Loi phia Server | `500 Internal Server Error`, `502 Bad Gateway`, `503 Service Unavailable`, `504 Gateway Timeout` | Backend crash, Nginx khong ket noi duoc backend |
+| **2xx** | Thành công | `200 OK`, `201 Created`, `204 No Content` | API trả về dữ liệu thành công, resource được tạo |
+| **3xx** | Chuyển hướng | `301 Moved Permanently`, `302 Found`, `304 Not Modified` | HTTP redirect sang HTTPS, CDN cache |
+| **4xx** | Lỗi phía Client | `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found` | API key sai, endpoint không tồn tại |
+| **5xx** | Lỗi phía Server | `500 Internal Server Error`, `502 Bad Gateway`, `503 Service Unavailable`, `504 Gateway Timeout` | Backend crash, Nginx không kết nối được backend |
 
-> **Meo debug cho DevOps:** Khi gap loi `502 Bad Gateway`, van de thuong nam o **ket noi giua Nginx va backend** (backend chua chay, port sai, hoac process bi crash). Khi gap `504 Gateway Timeout`, backend dang **xu ly qua lau** vuot qua `proxy_read_timeout`.
+> **Mẹo debug cho DevOps:** Khi gặp lỗi `502 Bad Gateway`, vấn đề thường nằm ở **kết nối giữa Nginx và backend** (backend chưa chạy, port sai, hoặc process bị crash). Khi gặp `504 Gateway Timeout`, backend đang **xử lý quá lâu** vượt quá `proxy_read_timeout`.
 
 ---
 
-## 3. Thuc Hanh: Phan Tich HTTP Voi `curl -v`
+## 3. Thực Hành: Phân Tích HTTP Với `curl -v`
 
-Tham so `-v` (verbose) cua `curl` cho phep ban quan sat **toan bo qua trinh giao tiep HTTP**: tu bat tay TCP, gui request, den nhan response.
+Tham số `-v` (verbose) của `curl` cho phép bạn quan sát **toàn bộ quá trình giao tiếp HTTP**: từ bắt tay TCP, gửi request, đến nhận response.
 
-### Gui request toi mot website thuc te
+### Gửi request tới một website thực tế
 
 ```bash
 curl -v -s -o /dev/null http://example.com
 ```{{exec}}
 
-Hay phan tich output:
-- Dong bat dau bang `>` la du lieu **client gui di** (Request).
-- Dong bat dau bang `<` la du lieu **server tra ve** (Response).
-- Dong bat dau bang `*` la thong tin ket noi (TCP handshake, DNS resolution).
+Hãy phân tích output:
+- Dòng bắt đầu bằng `>` là dữ liệu **client gửi đi** (Request).
+- Dòng bắt đầu bằng `<` là dữ liệu **server trả về** (Response).
+- Dòng bắt đầu bằng `*` là thông tin kết nối (TCP handshake, DNS resolution).
 
-### Chi xem Response Headers (khong tai body)
+### Chỉ xem Response Headers (không tải body)
 
-Lenh `curl -I` (hoac `--head`) gui request bang method `HEAD` de chi lay headers:
+Lệnh `curl -I` (hoặc `--head`) gửi request bằng method `HEAD` để chỉ lấy headers:
 
 ```bash
 curl -I http://example.com
 ```{{exec}}
 
-Quan sat cac header quan trong:
-- `Content-Type`: Dinh dang noi dung tra ve (`text/html`, `application/json`).
-- `Content-Length`: Kich thuoc body tinh bang bytes.
-- `Server`: Phan mem web server dang chay (Nginx, Apache, Cloudflare).
-- `Cache-Control`: Chinh sach cache (quan trong cho CDN va browser caching).
+Quan sát các header quan trọng:
+- `Content-Type`: Định dạng nội dung trả về (`text/html`, `application/json`).
+- `Content-Length`: Kích thước body tính bằng bytes.
+- `Server`: Phần mềm web server đang chạy (Nginx, Apache, Cloudflare).
+- `Cache-Control`: Chính sách cache (quan trọng cho CDN và browser caching).
 
-### Gui POST request voi du lieu JSON
+### Gửi POST request với dữ liệu JSON
 
-Trong CI/CD, cac Webhook thuong gui du lieu bang POST. Hay mo phong voi mot public API:
+Trong CI/CD, các Webhook thường gửi dữ liệu bằng POST. Hãy mô phỏng với một public API:
 
 ```bash
 curl -v -X POST https://httpbin.org/post \
@@ -96,47 +96,47 @@ curl -v -X POST https://httpbin.org/post \
   -d '{"service": "payment", "status": "healthy"}'
 ```{{exec}}
 
-Quan sat:
-- Method chuyen tu `GET` sang `POST`.
-- Header `Content-Type: application/json` bao server du lieu la JSON.
-- Body request chua payload JSON.
+Quan sát:
+- Method chuyển từ `GET` sang `POST`.
+- Header `Content-Type: application/json` báo server dữ liệu là JSON.
+- Body request chứa payload JSON.
 
 ---
 
-## 4. HTTP Headers Quan Trong Trong Ha Tang DevOps
+## 4. HTTP Headers Quan Trọng Trong Hạ Tầng DevOps
 
-| Header | Huong | Muc Dich | Vi Du |
+| Header | Hướng | Mục Đích | Ví Dụ |
 |---|---|---|---|
-| `Host` | Request | Xac dinh ten mien dich (bat buoc tu HTTP/1.1) | `Host: api.example.com` |
-| `Content-Type` | Ca hai | Loai noi dung (MIME type) | `application/json`, `text/html` |
-| `Authorization` | Request | Xac thuc danh tinh client | `Bearer <token>`, `Basic <base64>` |
-| `User-Agent` | Request | Dinh danh phan mem client | `curl/7.68.0`, `Mozilla/5.0` |
-| `X-Real-IP` | Request (Proxy) | IP that cua client (do Reverse Proxy them vao) | `X-Real-IP: 203.0.113.50` |
-| `X-Forwarded-For` | Request (Proxy) | Chuoi IP ma request da di qua | `client, proxy1, proxy2` |
-| `X-Forwarded-Proto` | Request (Proxy) | Giao thuc goc cua client (http hoac https) | `X-Forwarded-Proto: https` |
-| `Cache-Control` | Response | Chinh sach cache cho CDN va browser | `max-age=3600`, `no-cache` |
-| `Set-Cookie` | Response | Thiet lap cookie phia client | Session ID, CSRF token |
+| `Host` | Request | Xác định tên miền đích (bắt buộc từ HTTP/1.1) | `Host: api.example.com` |
+| `Content-Type` | Cả hai | Loại nội dung (MIME type) | `application/json`, `text/html` |
+| `Authorization` | Request | Xác thực danh tính client | `Bearer <token>`, `Basic <base64>` |
+| `User-Agent` | Request | Định danh phần mềm client | `curl/7.68.0`, `Mozilla/5.0` |
+| `X-Real-IP` | Request (Proxy) | IP thật của client (do Reverse Proxy thêm vào) | `X-Real-IP: 203.0.113.50` |
+| `X-Forwarded-For` | Request (Proxy) | Chuỗi IP mà request đã đi qua | `client, proxy1, proxy2` |
+| `X-Forwarded-Proto` | Request (Proxy) | Giao thức gốc của client (http hoặc https) | `X-Forwarded-Proto: https` |
+| `Cache-Control` | Response | Chính sách cache cho CDN và browser | `max-age=3600`, `no-cache` |
+| `Set-Cookie` | Response | Thiết lập cookie phía client | Session ID, CSRF token |
 
 ---
 
-## 5. Thu Thach & Xac Thuc (Verification)
+## 5. Thử Thách & Xác Thực (Verification)
 
-Hay su dung `curl` de lay **HTTP status code** cua trang `http://example.com`:
+Hãy sử dụng `curl` để lấy **HTTP status code** của trang `http://example.com`:
 
-1. Tim lenh `curl` phu hop de chi xuat ra **duy nhat ma so status code** (vi du: `200`, `301`, `404`).
+1. Tìm lệnh `curl` phù hợp để chỉ xuất ra **duy nhất mã số status code** (ví dụ: `200`, `301`, `404`).
 
 <details>
-<summary>Xem goi y</summary>
+<summary>Xem gợi ý</summary>
 
-- Tham so `-o /dev/null` bo qua body response.
-- Tham so `-s` tat thanh tien trinh (silent mode).
-- Tham so `-w` cho phep dinh dang output tuy chinh, vi du `"%{http_code}"` chi xuat status code.
+- Tham số `-o /dev/null` bỏ qua body response.
+- Tham số `-s` tắt thanh tiến trình (silent mode).
+- Tham số `-w` cho phép định dạng output tùy chỉnh, ví dụ `"%{http_code}"` chỉ xuất status code.
 </details>
 
-2. Khi da tim duoc lenh phu hop, hay **tu tay go lenh** tren terminal de luu ket qua vao file (thay the `<STATUS_CODE>` bang gia tri thuc te):
+2. Khi đã tìm được lệnh phù hợp, hãy **tự tay gõ lệnh** trên terminal để lưu kết quả vào file (thay thế `<STATUS_CODE>` bằng giá trị thực tế):
    ```bash
    echo "<STATUS_CODE>" > /tmp/http_status.txt
    ```
-   *(Vi du: neu status code la 200, hay go `echo "200" > /tmp/http_status.txt`)*
+   *(Ví dụ: nếu status code là 200, hãy gõ `echo "200" > /tmp/http_status.txt`)*
 
-3. Bam nut **Check** ben duoi thanh dieu khien de he thong tu dong cham diem!
+3. Bấm nút **Check** bên dưới thanh điều khiển để hệ thống tự động chấm điểm!

@@ -1,46 +1,46 @@
-# Chuc Mung Ban Da Hoan Thanh Lab 2!
+# Chúc Mừng Bạn Đã Hoàn Thành Lab 2!
 
-Ban da thanh thao ky nang phan tich giao thuc **HTTP/HTTPS** va cau hinh **SSL/TLS Certificate** cho Nginx — nhung ky nang thiet yeu de bao mat va van hanh moi he thong web trong moi truong DevOps.
+Bạn đã thành thạo kỹ năng phân tích giao thức **HTTP/HTTPS** và cấu hình **SSL/TLS Certificate** cho Nginx — những kỹ năng thiết yếu để bảo mật và vận hành mọi hệ thống web trong môi trường DevOps.
 
 ---
 
-## Bang Tra Cuu Lenh Nhanh (HTTP/HTTPS & SSL/TLS Cheat Sheet)
+## Bảng Tra Cứu Lệnh Nhanh (HTTP/HTTPS & SSL/TLS Cheat Sheet)
 
-| Muc Dich | Lenh Thuc Hien | Y Nghia |
+| Mục Đích | Lệnh Thực Hiện | Ý Nghĩa |
 |---|---|---|
-| **Phan tich HTTP chi tiet** | `curl -v <URL>` | Xem toan bo request/response bao gom headers va TLS handshake |
-| **Chi xem Response Headers** | `curl -I <URL>` | Gui HEAD request, lay headers ma khong tai body |
-| **Lay HTTP status code** | `curl -o /dev/null -s -w "%{http_code}" <URL>` | Xuat duy nhat ma status code (200, 301, 404, 502...) |
-| **Gui POST voi JSON** | `curl -X POST -H "Content-Type: application/json" -d '{}' <URL>` | Mo phong API call hoac Webhook |
-| **Kiem tra certificate** | `openssl s_client -connect <host>:443` | Ket noi TLS va xem toan bo certificate chain |
-| **Xem subject/issuer/ngay** | `openssl s_client ... \| openssl x509 -noout -subject -issuer -dates` | Trich xuat thong tin certificate quan trong |
-| **Kiem tra ngay het han** | `openssl s_client ... \| openssl x509 -noout -enddate` | Theo doi ngay het han certificate (monitoring) |
-| **Tao Self-Signed Cert** | `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout key -out cert` | Tao certificate tu ky cho dev/test |
-| **Cau hinh Nginx HTTPS** | `listen 443 ssl; ssl_certificate ...; ssl_certificate_key ...;` | Bat HTTPS tren Nginx |
-| **Kiem tra cu phap Nginx** | `nginx -t` | Kiem tra loi cau hinh truoc khi reload/restart |
-| **Reload Nginx** | `nginx -s reload` | Nap lai cau hinh khong ngat ket noi (Zero-Downtime) |
-| **HTTP -> HTTPS Redirect** | `return 301 https://$host$request_uri;` | Chuyen huong vinh vien tu HTTP sang HTTPS |
+| **Phân tích HTTP chi tiết** | `curl -v <URL>` | Xem toàn bộ request/response bao gồm headers và TLS handshake |
+| **Chỉ xem Response Headers** | `curl -I <URL>` | Gửi HEAD request, lấy headers mà không tải body |
+| **Lấy HTTP status code** | `curl -o /dev/null -s -w "%{http_code}" <URL>` | Xuất duy nhất mã status code (200, 301, 404, 502...) |
+| **Gửi POST với JSON** | `curl -X POST -H "Content-Type: application/json" -d '{}' <URL>` | Mô phỏng API call hoặc Webhook |
+| **Kiểm tra certificate** | `openssl s_client -connect <host>:443` | Kết nối TLS và xem toàn bộ certificate chain |
+| **Xem subject/issuer/ngày** | `openssl s_client ... \| openssl x509 -noout -subject -issuer -dates` | Trích xuất thông tin certificate quan trọng |
+| **Kiểm tra ngày hết hạn** | `openssl s_client ... \| openssl x509 -noout -enddate` | Theo dõi ngày hết hạn certificate (monitoring) |
+| **Tạo Self-Signed Cert** | `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout key -out cert` | Tạo certificate tự ký cho dev/test |
+| **Cấu hình Nginx HTTPS** | `listen 443 ssl; ssl_certificate ...; ssl_certificate_key ...;` | Bật HTTPS trên Nginx |
+| **Kiểm tra cú pháp Nginx** | `nginx -t` | Kiểm tra lỗi cấu hình trước khi reload/restart |
+| **Reload Nginx** | `nginx -s reload` | Nạp lại cấu hình không ngắt kết nối (Zero-Downtime) |
+| **HTTP -> HTTPS Redirect** | `return 301 https://$host$request_uri;` | Chuyển hướng vĩnh viễn từ HTTP sang HTTPS |
 
 ---
 
-## Checklist Tu Danh Gia Nang Luc
+## Checklist Tự Đánh Giá Năng Lực
 
-- [x] Hieu cau truc HTTP Request (Method, URL, Headers, Body) va HTTP Response (Status Code, Headers, Body).
-- [x] Phan biet duoc cac nhom HTTP Status Code: 2xx (thanh cong), 3xx (redirect), 4xx (loi client), 5xx (loi server).
-- [x] Su dung `curl -v` de phan tich chi tiet qua trinh giao tiep HTTP va TLS.
-- [x] Hieu 3 muc tieu bao mat cua HTTPS: Ma hoa, Xac thuc, Toan ven.
-- [x] Mo ta duoc quy trinh bat tay TLS: ClientHello -> ServerHello -> Certificate -> Key Exchange -> Encrypted Data.
-- [x] Su dung `openssl s_client` de kiem tra certificate thuc te: subject, issuer, ngay het han, certificate chain.
-- [x] Tao duoc Self-Signed Certificate bang `openssl req`.
-- [x] Cau hinh thanh cong Nginx phuc vu HTTPS tren cong 443 voi SSL/TLS.
-- [x] Thiet lap HTTP-to-HTTPS Redirect (301) tren Nginx.
-- [x] Hieu khai niem SSL Termination va loi ich khi ap dung trong kien truc Reverse Proxy.
+- [x] Hiểu cấu trúc HTTP Request (Method, URL, Headers, Body) và HTTP Response (Status Code, Headers, Body).
+- [x] Phân biệt được các nhóm HTTP Status Code: 2xx (thành công), 3xx (redirect), 4xx (lỗi client), 5xx (lỗi server).
+- [x] Sử dụng `curl -v` để phân tích chi tiết quá trình giao tiếp HTTP và TLS.
+- [x] Hiểu 3 mục tiêu bảo mật của HTTPS: Mã hóa, Xác thực, Toàn vẹn.
+- [x] Mô tả được quy trình bắt tay TLS: ClientHello -> ServerHello -> Certificate -> Key Exchange -> Encrypted Data.
+- [x] Sử dụng `openssl s_client` để kiểm tra certificate thực tế: subject, issuer, ngày hết hạn, certificate chain.
+- [x] Tạo được Self-Signed Certificate bằng `openssl req`.
+- [x] Cấu hình thành công Nginx phục vụ HTTPS trên cổng 443 với SSL/TLS.
+- [x] Thiết lập HTTP-to-HTTPS Redirect (301) trên Nginx.
+- [x] Hiểu khái niệm SSL Termination và lợi ích khi áp dụng trong kiến trúc Reverse Proxy.
 
 ---
 
-## Buoc Tiep Theo
+## Bước Tiếp Theo
 
-Bay gio ban da nam vung cach HTTP hoat dong, cach bao mat bang HTTPS/TLS, va cach cau hinh SSL cho Nginx. Day la nen tang de ban tien toi cac chu de nang cao hon nhu:
-- **Reverse Proxy & Load Balancing**: Dieu phoi traffic nguoi dung vao cum backend microservices.
-- **Let's Encrypt & Certbot**: Tu dong hoa cap phat va gia han certificate mien phi cho production.
-- **Kubernetes Ingress + TLS**: Quan ly certificate va routing cho cum container.
+Bây giờ bạn đã nắm vững cách HTTP hoạt động, cách bảo mật bằng HTTPS/TLS, và cách cấu hình SSL cho Nginx. Đây là nền tảng để bạn tiến tới các chủ đề nâng cao hơn như:
+- **Reverse Proxy & Load Balancing**: Điều phối traffic người dùng vào cụm backend microservices.
+- **Let's Encrypt & Certbot**: Tự động hóa cấp phát và gia hạn certificate miễn phí cho production.
+- **Kubernetes Ingress + TLS**: Quản lý certificate và routing cho cụm container.

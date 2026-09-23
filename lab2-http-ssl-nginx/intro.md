@@ -1,61 +1,61 @@
-Chao mung ban den voi bai lab **HTTP/HTTPS & SSL/TLS Certificates Cho Nginx**.
+Chào mừng bạn đến với bài lab **HTTP/HTTPS & SSL/TLS Certificates Cho Nginx**.
 
-Trong he sinh thai DevOps hien dai, **moi giao tiep giua cac dich vu** (API Gateway, Microservices, CI/CD Webhook, Container Registry) deu di qua giao thuc **HTTP** hoac **HTTPS**. Hieu ro cach mot HTTP request duoc gui di, phan hoi tra ve nhu the nao, va tai sao can ma hoa bang TLS la ky nang thiet yeu de debug, toi uu va bao mat ha tang.
-
----
-
-## Tai Sao DevOps Engineer Can Hieu HTTP/HTTPS?
-
-- **Debug loi 502 Bad Gateway, 504 Gateway Timeout**: Can doc duoc HTTP status code va headers de xac dinh loi o tang nao (Nginx, backend, hay mang).
-- **Cau hinh SSL/TLS cho domain**: Moi ung dung production deu yeu cau HTTPS. Ban can biet cach tao, cai dat va gia han certificate.
-- **SSL Termination tai Reverse Proxy**: Nginx giai ma TLS roi chuyen tiep HTTP thuan toi backend, giup giam tai va tap trung quan ly certificate.
+Trong hệ sinh thái DevOps hiện đại, **mọi giao tiếp giữa các dịch vụ** (API Gateway, Microservices, CI/CD Webhook, Container Registry) đều đi qua giao thức **HTTP** hoặc **HTTPS**. Hiểu rõ cách một HTTP request được gửi đi, phản hồi trả về như thế nào, và tại sao cần mã hóa bằng TLS là kỹ năng thiết yếu để debug, tối ưu và bảo mật hạ tầng.
 
 ---
 
-## So Sanh HTTP vs HTTPS
+## Tại Sao DevOps Engineer Cần Hiểu HTTP/HTTPS?
 
-| Dac Tinh | HTTP | HTTPS |
+- **Debug lỗi 502 Bad Gateway, 504 Gateway Timeout**: Cần đọc được HTTP status code và headers để xác định lỗi ở tầng nào (Nginx, backend, hay mạng).
+- **Cấu hình SSL/TLS cho domain**: Mọi ứng dụng production đều yêu cầu HTTPS. Bạn cần biết cách tạo, cài đặt và gia hạn certificate.
+- **SSL Termination tại Reverse Proxy**: Nginx giải mã TLS rồi chuyển tiếp HTTP thuần tới backend, giúp giảm tải và tập trung quản lý certificate.
+
+---
+
+## So Sánh HTTP vs HTTPS
+
+| Đặc Tính | HTTP | HTTPS |
 |---|---|---|
-| **Cong mac dinh** | 80 | 443 |
-| **Ma hoa du lieu** | Khong — du lieu truyen duoi dang plaintext | Co — ma hoa bang TLS/SSL |
-| **Xac thuc server** | Khong — khong kiem tra danh tinh server | Co — server xuat trinh Certificate |
-| **Toan ven du lieu** | Khong dam bao — du lieu co the bi sua doi giua duong | Dam bao — moi thay doi deu bi phat hien |
-| **Ung dung** | Moi truong noi bo, dev/test | Production, API public, moi he thong co du lieu nhay cam |
+| **Cổng mặc định** | 80 | 443 |
+| **Mã hóa dữ liệu** | Không — dữ liệu truyền dưới dạng plaintext | Có — mã hóa bằng TLS/SSL |
+| **Xác thực server** | Không — không kiểm tra danh tính server | Có — server xuất trình Certificate |
+| **Toàn vẹn dữ liệu** | Không đảm bảo — dữ liệu có thể bị sửa đổi giữa đường | Đảm bảo — mọi thay đổi đều bị phát hiện |
+| **Ứng dụng** | Môi trường nội bộ, dev/test | Production, API public, mọi hệ thống có dữ liệu nhạy cảm |
 
 ---
 
-## Kien Truc Tong Quan Bai Lab
+## Kiến Trúc Tổng Quan Bài Lab
 
 ```text
-                    Buoc 1: HTTP                  Buoc 3: HTTPS (TLS)
+                    Bước 1: HTTP                  Bước 3: HTTPS (TLS)
     Client  ───── Port 80 (plaintext) ─────>  [ Nginx ]
   (curl/browser)                                  │
                 ───── Port 443 (encrypted) ──>  [ Nginx + SSL Certificate ]
                                                   │
-                    Buoc 2: Kiem tra              (SSL Termination)
-                    Certificate thuc te            │
-                    bang openssl s_client          ▼
+                    Bước 2: Kiểm tra              (SSL Termination)
+                    Certificate thực tế            │
+                    bằng openssl s_client          ▼
                                               [ Backend ]
 ```
 
 ---
 
-## Muc Tieu Bai Hoc
+## Mục Tiêu Bài Học
 
-Sau khi hoan thanh bai thuc hanh nay, ban se:
-1. **Phan tich duoc luong HTTP Request/Response** chi tiet bang `curl -v`: method, status code, headers.
-2. **Hieu co che bat tay TLS (TLS Handshake)** va tai sao HTTPS bao ve du lieu tren duong truyen.
-3. **Kiem tra Certificate thuc te** cua website bang `openssl s_client`: Subject, Issuer, ngay het han, certificate chain.
-4. **Tao Self-Signed Certificate** bang `openssl` cho moi truong dev/test.
-5. **Cau hinh Nginx phuc vu HTTPS** tren cong 443 voi SSL/TLS.
-6. **Thiet lap HTTP-to-HTTPS Redirect** tu dong chuyen huong traffic tu cong 80 sang 443.
+Sau khi hoàn thành bài thực hành này, bạn sẽ:
+1. **Phân tích được luồng HTTP Request/Response** chi tiết bằng `curl -v`: method, status code, headers.
+2. **Hiểu cơ chế bắt tay TLS (TLS Handshake)** và tại sao HTTPS bảo vệ dữ liệu trên đường truyền.
+3. **Kiểm tra Certificate thực tế** của website bằng `openssl s_client`: Subject, Issuer, ngày hết hạn, certificate chain.
+4. **Tạo Self-Signed Certificate** bằng `openssl` cho môi trường dev/test.
+5. **Cấu hình Nginx phục vụ HTTPS** trên cổng 443 với SSL/TLS.
+6. **Thiết lập HTTP-to-HTTPS Redirect** tự động chuyển hướng traffic từ cổng 80 sang 443.
 
 ---
 
-## Tinh Nang Tuong Tac Tren Killercoda
+## Tính Năng Tương Tác Trên Killercoda
 
-- **Tu dong hoa moi truong (Background Initialization)**: Cac cong cu (`nginx`, `openssl`, `curl`) duoc he thong tu dong cai dat ngam.
-- **Thuc thi lenh nhanh**: Bam truc tiep vao cac khoi lenh code tren huong dan de tu dong gui va chay lenh tren terminal.
-- **Xac thuc tu dong (Verify Check)**: Moi buoc deu co phan **Thu Thach**. Sau khi hoan thanh, hay bam nut **Check** de he thong tu dong cham diem.
+- **Tự động hóa môi trường (Background Initialization)**: Các công cụ (`nginx`, `openssl`, `curl`) được hệ thống tự động cài đặt ngầm.
+- **Thực thi lệnh nhanh**: Bấm trực tiếp vào các khối lệnh code trên hướng dẫn để tự động gửi và chạy lệnh trên terminal.
+- **Xác thực tự động (Verify Check)**: Mỗi bước đều có phần **Thử Thách**. Sau khi hoàn thành, hãy bấm nút **Check** để hệ thống tự động chấm điểm.
 
-Bam **START** hoac chon **Buoc 1** de bat dau!
+Bấm **START** hoặc chọn **Bước 1** để bắt đầu!
