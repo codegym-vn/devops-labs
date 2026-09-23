@@ -1,0 +1,36 @@
+{
+  "title": "Lab 2: HTTP/HTTPS & SSL/TLS Certificates Cho Nginx",
+  "description": "Phân tích chi tiết luồng giao tiếp HTTP/HTTPS, hiểu cơ chế bắt tay TLS, tạo Self-Signed Certificate và cấu hình Nginx phục vụ HTTPS trên môi trường Linux.",
+  "difficulty": "Intermediate",
+  "time": "35-40 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Phân Tích Giao Thức HTTP: Request, Response & Headers",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "HTTPS & Bắt Tay TLS: Kiểm Tra Certificate Thực Tế",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Cấu Hình Nginx HTTPS Với Self-Signed Certificate",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

@@ -38,4 +38,5 @@ Bạn đã xuất sắc vượt qua cả 3 tầng cốt lõi của mô hình **T
 
 ## Bước Tiếp Theo: Lab 2
 
-Bây giờ bạn đã có nền tảng vững chắc về địa chỉ IP, cổng kết nối TCP và tên miền DNS, hãy chuyển sang **Lab 2: Nginx Reverse Proxy & Load Balancing** để học cách điều phối traffic người dùng vào các dịch vụ backend microservices!
+Bây giờ bạn đã có nền tảng vững chắc về địa chỉ IP, cổng kết nối TCP và tên miền DNS, hãy chuyển sang **Lab 2: HTTP/HTTPS & SSL/TLS Certificates Cho Nginx** để học cách phân tích luồng HTTP, hiểu cơ chế mã hóa TLS và cấu hình HTTPS cho web server!
+
