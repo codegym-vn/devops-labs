@@ -190,44 +190,49 @@ upstream backend_pool {
 
 ---
 
-## 4. Thực Hành: Chuyển Về Round Robin Cho Bước 3
+## 4. Thử Thách & Xác Thực (Verification)
 
-Để chuẩn bị cho Bước 3 (Connection Pooling), hãy chuyển lại về Round Robin cơ bản:
+Giả sử trong kịch bản thực tế:
+- Máy chủ **Backend 8003** vừa được nâng cấp cấu hình phần cứng mạnh gấp 3 lần so với 2 máy chủ còn lại (8001 và 8002).
+- Nhiệm vụ của bạn là cấu hình Nginx để phân phối tải theo trọng số (**Weighted Round Robin**) sao cho backend 8003 nhận khoảng 60% tổng lượng truy cập.
 
-```bash
-cat << 'EOF' > /etc/nginx/conf.d/proxy.conf
+### Yêu cầu thử thách:
+1. Chỉnh sửa file `/etc/nginx/conf.d/proxy.conf` trong khối `upstream backend_pool`:
+   - `server 127.0.0.1:8001` (trọng số mặc định 1)
+   - `server 127.0.0.1:8002` (trọng số mặc định 1)
+   - `server 127.0.0.1:8003 weight=3;`
+2. Kiểm tra cú pháp (`nginx -t`) và reload Nginx (`nginx -s reload`).
+3. Tự kiểm tra phân phối lưu lượng bằng cách gửi 10 request trên terminal:
+   ```bash
+   for i in $(seq 1 10); do curl -s http://localhost; done | sort | uniq -c
+   ```
+   Backend 8003 phải nhận khoảng 6/10 request (vượt trội so với 8001 và 8002).
+
+*(Lưu ý: Bạn phải tự nhập lệnh, không có nút chạy tự động cho phần thử thách)*
+
+<details>
+<summary>Xem gợi ý</summary>
+
+Cập nhật khối `upstream backend_pool` trong `/etc/nginx/conf.d/proxy.conf`:
+
+```nginx
 upstream backend_pool {
-    server 127.0.0.1:8001;
-    server 127.0.0.1:8002;
-    server 127.0.0.1:8003;
+    server 127.0.0.1:8001 weight=1;
+    server 127.0.0.1:8002 weight=1;
+    server 127.0.0.1:8003 weight=3;
 }
+```
 
-server {
-    listen 80;
-    server_name localhost;
-
-    location / {
-        proxy_pass http://backend_pool;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-EOF
-```{{exec}}
-
+Kiểm tra cú pháp và reload:
 ```bash
-nginx -s reload
-```{{exec}}
+nginx -t && nginx -s reload
+```
 
----
+Kiểm tra phân phối request:
+```bash
+for i in $(seq 1 10); do curl -s http://localhost; done | sort | uniq -c
+```
 
-## 5. Thử Thách & Xác Thực (Verification)
+</details>
 
-Hãy đảm bảo Load Balancing đang hoạt động:
-
-1. Upstream block đã được cấu hình với ít nhất 2 backend.
-2. Gửi nhiều request, response phải đến từ ít nhất 2 backend khác nhau.
-
-Bấm nút **Check** bên dưới thanh điều khiển để hệ thống tự động xác thực!
+Sau khi hoàn thành và kiểm tra thành công, hãy bấm nút **Check** bên dưới thanh điều khiển để hệ thống tự động xác thực!

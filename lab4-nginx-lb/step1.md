@@ -153,9 +153,28 @@ Khi backend xử lý chậm hoặc không phản hồi, Nginx cần biết chờ
 
 ## 6. Thử Thách & Xác Thực (Verification)
 
-Hãy đảm bảo Nginx Reverse Proxy đang hoạt động:
+Sau khi đã nắm rõ cách hoạt động của Reverse Proxy và cấu hình headers, hãy tự tay thực hiện thử thách sau:
 
-1. Truy cập `http://localhost` (port 80) phải trả về nội dung từ backend 8001.
-2. Cấu hình phải có `proxy_set_header X-Real-IP` để bảo toàn IP client.
+### Yêu cầu thử thách:
+1. Chỉnh sửa file `/etc/nginx/conf.d/proxy.conf` để chuyển hướng toàn bộ traffic tới **Backend 8002** (thay vì backend 8001 như hướng dẫn mẫu).
+2. Đảm bảo vẫn giữ đầy đủ các chỉ thị `proxy_set_header` (`Host`, `X-Real-IP`, `X-Forwarded-For`, `X-Forwarded-Proto`).
+3. Kiểm tra cú pháp (`nginx -t`) và reload dịch vụ Nginx.
+4. Tự kiểm tra lại bằng lệnh `curl http://localhost` trên terminal — kết quả nhận được phải là `Response from Backend 8002`.
 
-Bấm nút **Check** bên dưới thanh điều khiển để hệ thống tự động xác thực!
+*(Lưu ý: Bạn phải tự nhập lệnh, không có nút chạy tự động cho phần thử thách)*
+
+<details>
+<summary>Xem gợi ý</summary>
+
+Bạn có thể chỉnh sửa file bằng `nano /etc/nginx/conf.d/proxy.conf` hoặc dùng lệnh `sed`:
+
+```bash
+sed -i 's/8001/8002/' /etc/nginx/conf.d/proxy.conf
+nginx -t && nginx -s reload
+curl http://localhost
+```
+
+</details>
+
+Sau khi hoàn thành và kiểm tra thành công, hãy bấm nút **Check** bên dưới thanh điều khiển để hệ thống tự động xác thực!
+

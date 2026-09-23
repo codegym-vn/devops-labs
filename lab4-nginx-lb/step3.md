@@ -29,10 +29,95 @@ ss -tn state established | head -20
 
 ---
 
-## 2. Bật Connection Pooling Với `keepalive`
+## 2. Nguyên Lý & Các Chỉ Thị Bắt Buộc Của Connection Pooling
 
-Chỉ thị `keepalive` trong upstream block cho phép Nginx **giữ sẵn một pool kết nối mở** tới backend, tái sử dụng cho các request tiếp theo:
+Chỉ thị `keepalive` trong upstream block cho phép Nginx **giữ sẵn một pool kết nối mở** tới backend, tái sử dụng cho các request tiếp theo thay vì đóng mở liên tục.
 
+Để Connection Pooling hoạt động chính xác giữa Nginx và backend, bạn **bắt buộc phải phối hợp cả 3 chỉ thị sau**:
+
+### 1. `keepalive <N>` (trong khối `upstream`)
+Khai báo số lượng kết nối rảnh (idle connections) tối đa được lưu trữ trong connection pool cho mỗi worker process:
+```nginx
+upstream backend_pool {
+    server 127.0.0.1:8001;
+    server 127.0.0.1:8002;
+    server 127.0.0.1:8003;
+
+    keepalive 32;   # Duy tri toi da 32 idle connections trong pool
+}
+```
+
+> **Lưu ý quan trọng:** `keepalive 32` không phải là tổng số kết nối tối đa Nginx có thể mở tới backend, mà là số kết nối nhàn rỗi (idle) được giữ lại sau khi xử lý xong request. Nếu pool đầy, kết nối cũ nhất sẽ bị đóng.
+
+### 2. `proxy_http_version 1.1;` (trong khối `location`)
+Mặc định Nginx proxy sử dụng **HTTP/1.0** khi nói chuyện với backend. Giao thức HTTP/1.0 không hỗ trợ keepalive (mặc định đóng kết nối sau mỗi response). Vì vậy bắt buộc phải chuyển sang **HTTP/1.1**.
+
+### 3. `proxy_set_header Connection "";` (trong khối `location`)
+Theo mặc định, nếu client gửi header `Connection: close`, Nginx sẽ chuyển tiếp header này tới backend khiến backend đóng kết nối ngay lập tức. Việc xóa rỗng header này (`Connection ""`) giúp backend hiểu rằng kết nối cần được giữ mở.
+
+| Chỉ Thị | Vị Trí | Ý Nghĩa Bắt Buộc |
+|---|---|---|
+| `keepalive 32` | `upstream` | Kích hoạt pool lưu trữ idle connections |
+| `proxy_http_version 1.1` | `location` | Chuyển giao thức proxy sang HTTP/1.1 hỗ trợ persistent connection |
+| `proxy_set_header Connection ""` | `location` | Xóa cờ đóng kết nối từ client, giữ kết nối tái sử dụng |
+
+---
+
+## 3. Các Tham Số Tuning Bổ Sung Trong Production
+
+### Tham số tối ưu Keepalive (khối `upstream`):
+
+| Tham Số | Mặc Định | Khuyến Nghị | Ý Nghĩa |
+|---|---|---|---|
+| `keepalive_requests` | 1000 | 1000–10000 | Số request tối đa gửi qua 1 kết nối trước khi đóng và tạo mới |
+| `keepalive_timeout` | 60s | 60–120s | Thời gian tối đa một kết nối idle được lưu trong pool |
+
+### Tham số tối ưu Timeout (khối `location`):
+
+| Tham Số | Mặc Định | Khuyến Nghị | Ý Nghĩa |
+|---|---|---|---|
+| `proxy_connect_timeout` | 60s | 5–10s | Thời gian chờ kết nối TCP tới backend server |
+| `proxy_read_timeout` | 60s | 30–60s | Thời gian chờ backend xử lý và trả dữ liệu |
+| `proxy_send_timeout` | 60s | 30–60s | Thời gian chờ gửi dữ liệu (request body) lên backend |
+
+---
+
+## 4. Thử Thách & Cấu Hình Thực Hành (Hands-on DIY)
+
+Hãy tự tay áp dụng các chỉ thị Connection Pooling và Tuning vào file cấu hình `/etc/nginx/conf.d/proxy.conf`:
+
+### Yêu cầu thử thách:
+1. Trong khối `upstream backend_pool`:
+   - Thêm `keepalive 32;`
+   - Thêm `keepalive_timeout 60s;`
+2. Trong khối `location /`:
+   - Kích hoạt `proxy_http_version 1.1;`
+   - Xóa header kết nối: `proxy_set_header Connection "";`
+   - Thêm timeout kết nối: `proxy_connect_timeout 5s;`
+   - Thêm timeout đọc dữ liệu: `proxy_read_timeout 30s;`
+   - Vẫn bảo toàn đầy đủ headers: `Host`, `X-Real-IP`, `X-Forwarded-For`, `X-Forwarded-Proto`.
+3. Kiểm tra cú pháp bằng lệnh `nginx -t` và reload lại dịch vụ: `nginx -s reload`.
+4. Tự kiểm tra kết quả bằng cách gửi 20 request liên tiếp:
+   ```bash
+   for i in $(seq 1 20); do curl -s http://localhost > /dev/null; done
+   ```
+   Sau đó quan sát danh sách socket kết nối tới backend:
+   ```bash
+   ss -tn | grep -E "800[1-3]"
+   ```
+   Bạn sẽ thấy các kết nối ở trạng thái `ESTAB` (established) vẫn tồn tại trong pool thay vì chuyển sang `TIME_WAIT`!
+
+*(Lưu ý: Bạn phải tự nhập lệnh, không có nút chạy tự động cho phần thử thách)*
+
+<details>
+<summary>Xem gợi ý file cấu hình hoàn chỉnh</summary>
+
+Mở file cấu hình bằng trình soạn thảo:
+```bash
+nano /etc/nginx/conf.d/proxy.conf
+```
+
+Hoặc ghi đè nội dung cấu hình chuẩn:
 ```bash
 cat << 'EOF' > /etc/nginx/conf.d/proxy.conf
 upstream backend_pool {
@@ -40,94 +125,7 @@ upstream backend_pool {
     server 127.0.0.1:8002;
     server 127.0.0.1:8003;
 
-    # Duy tri toi da 32 idle connections trong pool
     keepalive 32;
-}
-
-server {
-    listen 80;
-    server_name localhost;
-
-    location / {
-        proxy_pass http://backend_pool;
-
-        # BAT BUOC khi dung keepalive upstream
-        proxy_http_version 1.1;          # HTTP/1.1 ho tro persistent connection
-        proxy_set_header Connection "";  # Xoa header "Connection: close"
-
-        # Bao toan thong tin client
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-EOF
-```{{exec}}
-
-```bash
-nginx -s reload
-```{{exec}}
-
-### Giải thích cấu hình bắt buộc
-
-| Chỉ Thị | Tại Sao Bắt Buộc |
-|---|---|
-| `keepalive 32` | Số lượng idle connections tối đa trong pool. Khi cần kết nối mới, Nginx lấy từ pool thay vì tạo TCP mới |
-| `proxy_http_version 1.1` | HTTP/1.0 mặc định đóng kết nối sau mỗi response. HTTP/1.1 hỗ trợ persistent connection |
-| `proxy_set_header Connection ""` | Xóa header `Connection: close` mà client gửi, ngăn nó lan tới backend và đóng kết nối |
-
-> **Lưu ý quan trọng:** `keepalive 32` không phải là **tổng số kết nối tối đa** mà là số **idle connections** (kết nối rảnh) được giữ trong pool. Nginx vẫn có thể mở thêm kết nối nếu cần. Nếu pool đầy, kết nối cũ nhất sẽ bị đóng.
-
----
-
-## 3. Kiểm Tra Connection Pooling Hoạt Động
-
-Gửi nhiều request và kiểm tra kết nối:
-
-```bash
-for i in $(seq 1 20); do curl -s http://localhost > /dev/null; done
-```{{exec}}
-
-Kiểm tra kết nối TCP tới backend:
-
-```bash
-ss -tn | grep -E "800[1-3]" | head -10
-```{{exec}}
-
-Với keepalive, bạn sẽ thấy các kết nối ở trạng thái `ESTAB` (established) **vẫn tồn tại** sau khi request hoàn thành — đây là pool connections đang chờ tái sử dụng.
-
----
-
-## 4. Các Tham Số Tuning Quan Trọng
-
-### Bảng tham số keepalive
-
-| Tham Số | Vị Trí | Mặc Định | Khuyến Nghị | Ý Nghĩa |
-|---|---|---|---|---|
-| `keepalive` | upstream | (tắt) | 32–64 | Số idle connections trong pool |
-| `keepalive_requests` | upstream | 1000 | 1000–10000 | Số request tối đa trên 1 connection trước khi đóng và tạo mới |
-| `keepalive_timeout` | upstream | 60s | 60–120s | Thời gian giữ idle connection trước khi đóng |
-
-### Bảng tham số proxy timeout
-
-| Tham Số | Vị Trí | Mặc Định | Khuyến Nghị | Ý Nghĩa |
-|---|---|---|---|---|
-| `proxy_connect_timeout` | server/location | 60s | 5–10s | Timeout kết nối TCP tới backend |
-| `proxy_read_timeout` | server/location | 60s | 30–60s | Timeout chờ response từ backend |
-| `proxy_send_timeout` | server/location | 60s | 30–60s | Timeout gửi request body tới backend |
-
-### Thêm tham số tuning vào cấu hình
-
-```bash
-cat << 'EOF' > /etc/nginx/conf.d/proxy.conf
-upstream backend_pool {
-    server 127.0.0.1:8001;
-    server 127.0.0.1:8002;
-    server 127.0.0.1:8003;
-
-    keepalive 32;
-    keepalive_requests 1000;
     keepalive_timeout 60s;
 }
 
@@ -138,14 +136,13 @@ server {
     location / {
         proxy_pass http://backend_pool;
 
-        # Keepalive bat buoc
+        # Connection Pooling bat buoc
         proxy_http_version 1.1;
         proxy_set_header Connection "";
 
         # Timeout tuning
         proxy_connect_timeout 5s;
         proxy_read_timeout 30s;
-        proxy_send_timeout 30s;
 
         # Bao toan thong tin client
         proxy_set_header Host $host;
@@ -155,48 +152,43 @@ server {
     }
 }
 EOF
-```{{exec}}
+```
 
+Sau đó kiểm tra và reload:
 ```bash
 nginx -t && nginx -s reload
-```{{exec}}
+```
 
-Kiểm tra Nginx vẫn hoạt động:
-
-```bash
-curl http://localhost
-```{{exec}}
+</details>
 
 ---
 
-## 5. Tổng Kết Cấu Hình Hoàn Chỉnh
+## 5. Tổng Kết Kiến Trúc Hoàn Chỉnh
 
-Sau 3 bước, bạn đã xây dựng cấu hình Nginx hoàn chỉnh:
+Sau cả 3 bước thực hành, bạn đã xây dựng thành công kiến trúc Reverse Proxy & Load Balancer chuẩn production:
 
 ```text
-┌───────────────────────────────────────────────────────┐
-│                    Nginx (Port 80)                     │
-├───────────────────────────────────────────────────────┤
-│  ✓ Reverse Proxy    : proxy_pass → upstream           │
-│  ✓ Client Headers   : X-Real-IP, X-Forwarded-For     │
-│  ✓ Load Balancing   : Round Robin / Weighted / LC     │
-│  ✓ Connection Pool  : keepalive 32, HTTP/1.1          │
-│  ✓ Timeout Tuning   : connect 5s, read 30s            │
-├───────────────────────────────────────────────────────┤
-│                    upstream pool                       │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐     │
-│  │ Backend 8001│ │ Backend 8002│ │ Backend 8003│     │
-│  └─────────────┘ └─────────────┘ └─────────────┘     │
-└───────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│                        Nginx (Port 80)                        │
+├───────────────────────────────────────────────────────────────┤
+│  ✓ Reverse Proxy    : proxy_pass http://backend_pool          │
+│  ✓ Client Headers   : X-Real-IP, X-Forwarded-For, Host, Proto │
+│  ✓ Load Balancing   : Round Robin / Weighted / Least Conn     │
+│  ✓ Connection Pool  : keepalive 32, HTTP/1.1, Connection ""   │
+│  ✓ Timeout Tuning   : connect 5s, read 30s                    │
+├───────────────────────────────────────────────────────────────┤
+│                     upstream backend_pool                     │
+│  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐  │
+│  │  Backend 8001   │ │  Backend 8002   │ │  Backend 8003   │  │
+│  │ (Python Server) │ │ (Python Server) │ │ (Python Server) │  │
+│  └─────────────────┘ └─────────────────┘ └─────────────────┘  │
+└───────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 6. Thử Thách & Xác Thực (Verification)
+## 6. Xác Thực Hệ Thống (Verification)
 
-Hãy đảm bảo Connection Pooling đã được cấu hình đúng:
+Hãy đảm bảo Nginx đã được nạp cấu hình mới nhất và các backend phản hồi bình thường.
 
-1. Upstream block có chỉ thị `keepalive`.
-2. Location block có `proxy_http_version 1.1`.
-
-Bấm nút **Check** bên dưới thanh điều khiển để hệ thống tự động xác thực!
+Bấm nút **Check** bên dưới thanh điều khiển để hệ thống tự động xác thực toàn bộ cấu hình Connection Pooling!
