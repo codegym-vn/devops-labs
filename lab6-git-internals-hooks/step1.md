@@ -15,7 +15,7 @@ cd /root/devops-project
 Liệt kê cấu trúc các thư mục và tập tin bên trong `.git/`:
 
 ```bash
-tree -L 2 .git/
+ls -la .git/
 ```{{exec}}
 
 Các thành phần cốt lõi:

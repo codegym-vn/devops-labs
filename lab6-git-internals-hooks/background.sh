@@ -1,8 +1,10 @@
 #!/bin/bash
 
-# Cap nhat va cai dat git, tree
-apt-get update -y > /dev/null 2>&1
-apt-get install -y git tree > /dev/null 2>&1
+# Dam bao git da co san (Killercoda Ubuntu da cai san git)
+if ! command -v git &> /dev/null; then
+    apt-get update -y > /dev/null 2>&1
+    apt-get install -y git > /dev/null 2>&1
+fi
 
 # Cau hinh Git mac dinh
 git config --global user.name "DevOps Engineer"
@@ -51,5 +53,5 @@ git commit -m "feat(payment): implement payment processing module" > /dev/null 2
 git checkout main > /dev/null 2>&1
 git branch -D feature-payment > /dev/null 2>&1
 
-# Danh dau moi truong da san sang
+# Danh dau moi truong da san sang ngay lap tuc
 touch /tmp/.lab_ready
