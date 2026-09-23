@@ -1,0 +1,36 @@
+{
+  "title": "Lab 7: Chiến Lược Nhánh, Giải Quyết Xung Đột Phức Tạp & Xử Lý Pull Request",
+  "description": "Thực hành quản lý nhánh, giải quyết xung đột hợp nhất đa file với 3-Way Merge và zdiff3, làm chủ kỹ thuật Rebase vs Merge, và xử lý quy trình Pull Request & Squash Merge trên dòng lệnh.",
+  "difficulty": "Intermediate",
+  "time": "35-40 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Chiến Lược Nhánh & Khởi Tạo Quy Trình Pull Request Trên CLI",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Giải Quyết Xung Đột Hợp Nhất Phức Tạp (3-Way Merge & zdiff3)",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Rebase vs Merge & Quy Trình Duyệt / Squash PR Trên Dòng Lệnh",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

@@ -48,14 +48,14 @@ Bạn đã hoàn thành xuất sắc bài thực hành chuyên sâu về **Git I
 
 ---
 
-## Tổng Kết Khóa Thực Hành DevOps & Networking Labs
+## Bước Tiếp Theo Trong Hành Trình DevOps
 
-Chúc mừng bạn đã hoàn thành trọn vẹn cả 6 bài thực hành trong hệ thống:
-1. **Lab 1**: TCP/IP, Subnetting, Routing & DNS Troubleshooting
-2. **Lab 2**: HTTP/HTTPS Protocols, TLS Handshake & Nginx SSL Configuration
-3. **Lab 3**: SSH Hardening, Tunneling Port Forwarding & UFW Firewall
-4. **Lab 4**: Nginx Reverse Proxy, Load Balancing Algorithms & Connection Pooling
-5. **Lab 5**: Server Resource Monitoring & Automated Alerting with Bash Script
-6. **Lab 6**: Git Internals, Disaster Recovery with Reflog & Git Hooks Automation
+Bạn đã làm chủ cấu trúc bên trong của Git và kỹ năng cứu dữ liệu cá nhân. Trong môi trường doanh nghiệp và dự án thực tế, bạn sẽ phải làm việc nhóm với hàng chục kỹ sư khác, nơi việc xung đột mã nguồn xảy ra thường xuyên.
+
+Hãy tiếp tục với **Lab 7: Chiến Lược Nhánh, Giải Quyết Xung Đột Phức Tạp & Xử Lý Pull Request** để học cách:
+- Áp dụng chiến lược phân nhánh Trunk-Based Development và quản lý Remote Tracking Branches.
+- Làm chủ kỹ thuật 3-Way Merge và cấu hình `zdiff3` để giải quyết xung đột đa file phức tạp.
+- Phân biệt Merge vs Rebase và thực hiện quy trình Pull Request & Squash Merge chuẩn công nghiệp.
+
 
 Bạn hiện đã sở hữu nền tảng kiến thức và kỹ năng thực chiến vững chắc về mạng máy tính, bảo mật hạ tầng, vận hành web server và tự động hóa công cụ trong môi trường DevOps!
