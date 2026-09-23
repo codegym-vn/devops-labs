@@ -83,6 +83,13 @@ grep -E "^#?(Port|PermitRootLogin|PasswordAuthentication|PubkeyAuthentication|Ma
 
 ### Áp dụng cấu hình hardened
 
+Trước tiên, vô hiệu hóa dòng `Port 22` trong file cấu hình gốc để tránh SSH listen trên cả hai port:
+
+```bash
+sed -i 's/^Port 22$/#Port 22/' /etc/ssh/sshd_config
+sed -i 's/^#Port 22$/&  # Da chuyen sang port 2222/' /etc/ssh/sshd_config
+```{{exec}}
+
 Tạo file cấu hình bổ sung tại `/etc/ssh/sshd_config.d/hardening.conf` (cách tốt nhất thay vì sửa trực tiếp file gốc):
 
 ```bash
