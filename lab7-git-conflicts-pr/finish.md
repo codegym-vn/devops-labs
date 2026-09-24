@@ -52,9 +52,16 @@ Bạn đã làm chủ toàn diện các kỹ năng cộng tác nâng cao trong G
 
 ---
 
-## Tổng Kết Toàn Bộ Khóa Học DevOps & Networking Labs
+## Bước Tiếp Theo
 
-Chúc mừng bạn đã hoàn thành xuất sắc toàn bộ **7 bài thực hành chuyên sâu** trong bộ tài liệu:
+Tiếp tục hành trình làm chủ hạ tầng ứng dụng và cơ sở dữ liệu với bài thực hành tiếp theo:
+- **Lab 8**: [Triển khai kết nối PostgreSQL, Redis và chạy Flyway Migration](/lab8-postgres-redis-flyway)
+
+---
+
+## Tổng Kết Chuỗi Bài Thực Hành DevOps & Networking Labs
+
+Bạn đã hoàn thành 7 chặng đường quan trọng và đang tiến tới các bài thực hành về cơ sở dữ liệu và lưu trữ đệm:
 1. **Lab 1**: TCP/IP, Subnetting, Routing & DNS Troubleshooting
 2. **Lab 2**: HTTP/HTTPS Protocols, TLS Handshake & Nginx SSL Configuration
 3. **Lab 3**: SSH Hardening, Tunneling Port Forwarding & UFW Firewall
@@ -62,5 +69,7 @@ Chúc mừng bạn đã hoàn thành xuất sắc toàn bộ **7 bài thực hà
 5. **Lab 5**: Server Resource Monitoring & Automated Alerting with Bash Script
 6. **Lab 6**: Git Internals, Disaster Recovery with Reflog & Git Hooks Automation
 7. **Lab 7**: Advanced Git Branching, Complex Conflict Resolution & PR Workflows
+8. **Lab 8**: Triển khai kết nối PostgreSQL, Redis và chạy Flyway Migration
 
 Bộ kỹ năng này tạo nên nền tảng vững chắc cho bất kỳ kỹ sư DevOps, SRE, hay Cloud Engineer nào trên con đường phát triển sự nghiệp chuyên nghiệp!
+

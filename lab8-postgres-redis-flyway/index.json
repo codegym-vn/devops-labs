@@ -1,0 +1,36 @@
+{
+  "title": "Lab 8: Triển Khai Kết Nối PostgreSQL, Redis & Chạy Flyway Migration",
+  "description": "Cấu hình kết nối an toàn tới PostgreSQL và Redis qua biến môi trường và Connection Pooling, tự động hóa quản lý phiên bản database với Flyway, và kiểm tra tính toàn vẹn dữ liệu kết hợp Cache-Aside Pattern.",
+  "difficulty": "Intermediate",
+  "time": "35-40 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Triển Khai Kết Nối An Toàn Qua Biến Môi Trường & Connection Pooling",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Quản Lý Phiên Bản Database Với Flyway & Kiểm Tra Tính Toàn Vẹn CSDL",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Tích Hợp Ứng Dụng Với Connection Pool & Mô Hình Caching (Cache-Aside)",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}
