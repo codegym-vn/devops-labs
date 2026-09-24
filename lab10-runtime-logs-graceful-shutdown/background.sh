@@ -127,9 +127,10 @@ finally:
     sys.exit(0)
 EOF
 
+# Danh dau he thong san sang ngay lap tuc
+touch /tmp/.lab_ready
+
 # Tai truoc alpine image nhe trong background
 docker pull alpine:3.19 > /dev/null 2>&1 &
 docker pull python:3.11-alpine > /dev/null 2>&1 &
 
-# Danh dau he thong san sang
-touch /tmp/.lab_ready

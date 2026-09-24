@@ -24,9 +24,9 @@ cat << 'EOF' > /root/sample-site/index.html
 </html>
 EOF
 
+# Danh dau moi truong da san sang ngay lap tuc
+touch /tmp/.lab_ready
+
 # Tai truoc cac image co ban trong background
 docker pull alpine:3.19 > /dev/null 2>&1 &
 docker pull nginx:alpine > /dev/null 2>&1 &
-
-# Danh dau moi truong da san sang
-touch /tmp/.lab_ready

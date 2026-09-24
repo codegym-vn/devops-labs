@@ -4,10 +4,13 @@ echo -n "Dang chuan bi moi truong thuc hanh Lab 10 (Docker Runtime, Logging & Si
 
 spin='-\|/'
 i=0
-while [ ! -f /tmp/.lab_ready ]; do
+count=0
+# Cho toi da 15 giay de tranh truong hop quay vo han
+while [ ! -f /tmp/.lab_ready ] && [ $count -lt 150 ]; do
   i=$(( (i+1) % 4 ))
   printf "\b${spin:$i:1}"
   sleep 0.1
+  count=$((count+1))
 done
 
 printf "\b \n"
