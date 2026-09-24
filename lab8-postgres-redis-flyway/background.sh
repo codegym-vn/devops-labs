@@ -17,15 +17,42 @@ docker run -d --name redis \
 # Tao CLI wrapper cho psql
 cat << 'EOF' > /usr/local/bin/psql
 #!/bin/bash
-if [ $# -eq 0 ]; then
-  docker exec -it postgres psql -U postgres -d ecommerce_db
-elif [ -t 0 ]; then
-  docker exec -it postgres psql "$@"
+export PGUSER="${PGUSER:-postgres}"
+export PGDATABASE="${PGDATABASE:-ecommerce_db}"
+
+HAS_U=false
+HAS_D=false
+
+for arg in "$@"; do
+  if [ "$arg" = "-U" ] || [[ "$arg" == --username* ]]; then
+    HAS_U=true
+  fi
+  if [ "$arg" = "-d" ] || [[ "$arg" == --dbname* ]]; then
+    HAS_D=true
+  fi
+done
+
+CMD_ARGS=()
+if [ "$HAS_U" = false ]; then
+  CMD_ARGS+=("-U" "$PGUSER")
+fi
+if [ "$HAS_D" = false ]; then
+  CMD_ARGS+=("-d" "$PGDATABASE")
+fi
+CMD_ARGS+=("$@")
+
+if [ -t 0 ]; then
+  docker exec -it postgres psql "${CMD_ARGS[@]}"
 else
-  docker exec -i postgres psql "$@"
+  docker exec -i postgres psql "${CMD_ARGS[@]}"
 fi
 EOF
 chmod +x /usr/local/bin/psql
+cp -f /usr/local/bin/psql /usr/bin/psql 2>/dev/null || true
+
+# Cau hinh mac dinh bien moi truong cho bash session
+echo "export PGUSER=postgres" >> /root/.bashrc
+echo "export PGDATABASE=ecommerce_db" >> /root/.bashrc
 
 # Tao CLI wrapper cho redis-cli
 cat << 'EOF' > /usr/local/bin/redis-cli
@@ -37,6 +64,7 @@ else
 fi
 EOF
 chmod +x /usr/local/bin/redis-cli
+cp -f /usr/local/bin/redis-cli /usr/bin/redis-cli 2>/dev/null || true
 
 # Tao CLI wrapper cho flyway
 cat << 'EOF' > /usr/local/bin/flyway
@@ -47,6 +75,8 @@ docker run --rm --net=host \
   flyway/flyway:9 "$@"
 EOF
 chmod +x /usr/local/bin/flyway
+cp -f /usr/local/bin/flyway /usr/bin/flyway 2>/dev/null || true
+
 
 # Chuan bi thu muc ung dung va migrations
 mkdir -p /root/app /root/migrations
