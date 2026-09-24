@@ -48,11 +48,16 @@ Bạn đã xây dựng và tích hợp thành công kiến trúc hạ tầng d�
 - [x] Kiểm tra được tính toàn vẹn của kết nối và dữ liệu sau migration (Foreign Key constraints và Checksum validation).
 - [x] Triển khai thành thạo mô hình Cache-Aside Pattern để tăng tốc độ phản hồi của ứng dụng gấp 30 lần.
 
+## Bước Tiếp Theo
+
+Tiếp tục hoàn thiện kỹ năng quản trị Docker chuyên nghiệp trong môi trường Production với bài thực hành tiếp theo:
+- **Lab 9**: [Cấu Hình Tài Nguyên Runtime, Quản Lý Log Container & Graceful Shutdown](/lab9-runtime-logs-graceful-shutdown)
+
 ---
 
-## Tổng Kết Toàn Bộ Khóa Thực Hành DevOps & Networking Labs
+## Tổng Kết Chuỗi Bài Thực Hành DevOps & Networking Labs
 
-Chúc mừng bạn đã hoàn thành trọn vẹn cả **8 bài thực hành chuyên sâu** trong bộ tài liệu:
+Bạn đã hoàn thành 8 chặng đường quan trọng và sẵn sàng bước vào bài thực hành nâng cao về Docker Runtime:
 1. **Lab 1**: TCP/IP, Subnetting, Routing & DNS Troubleshooting
 2. **Lab 2**: HTTP/HTTPS Protocols, TLS Handshake & Nginx SSL Configuration
 3. **Lab 3**: SSH Hardening, Tunneling Port Forwarding & UFW Firewall
@@ -61,5 +66,7 @@ Chúc mừng bạn đã hoàn thành trọn vẹn cả **8 bài thực hành chu
 6. **Lab 6**: Git Internals, Disaster Recovery with Reflog & Git Hooks Automation
 7. **Lab 7**: Advanced Git Branching, Complex Conflict Resolution & PR Workflows
 8. **Lab 8**: PostgreSQL, Redis & Automated Database Migration with Flyway
+9. **Lab 9**: Runtime Resource Configuration, Log Management & Graceful Shutdown Testing
 
-Chuỗi bài lab này trang bị đầy đủ kiến thức từ mạng máy tính, an toàn máy chủ, điều phối lưu lượng web, tự động hóa script, quản lý mã nguồn Git nâng cao, cho đến hạ tầng cơ sở dữ liệu và caching chuẩn DevOps hiện đại!
+Chuỗi bài lab này trang bị đầy đủ kiến thức từ mạng máy tính, an toàn máy chủ, điều phối lưu lượng web, tự động hóa script, quản lý mã nguồn Git nâng cao, hạ tầng cơ sở dữ liệu và caching, cho đến quản trị Docker Runtime chuẩn DevOps hiện đại!
+

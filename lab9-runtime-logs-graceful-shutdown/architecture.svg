@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 630" width="100%" height="100%">
+  <defs>
+    <style>
+      .canvas-bg { fill: #0f172a; rx: 12px; }
+      .header-title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 700; fill: #f8fafc; }
+      .badge-text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 700; fill: #ffffff; }
+      .node-title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 700; }
+      .node-desc { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11.5px; fill: #cbd5e1; }
+      .code-text { font-family: 'SF Mono', Consolas, Monaco, monospace; font-size: 11px; fill: #cbd5e1; }
+      .flow-label { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 600; }
+      .edge { stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+
+    <!-- Markers for Arrows -->
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#10b981"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#ef4444"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f59e0b"/>
+    </marker>
+    <marker id="arr-cyan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#06b6d4"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="630" class="canvas-bg" stroke="#1e293b" stroke-width="2"/>
+
+  <!-- Top Title Banner -->
+  <g transform="translate(30, 18)">
+    <rect width="900" height="38" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+    <text x="20" y="24" class="header-title">SƠ ĐỒ DÒNG CHẢY RUNTIME: GIỚI HẠN TÀI NGUYÊN, LOGGING &amp; GRACEFUL SHUTDOWN</text>
+    <rect x="780" y="8" width="105" height="22" rx="4" fill="#0284c7"/>
+    <text x="790" y="23" class="badge-text">FLOWCHART</text>
+  </g>
+
+  <!-- ================= ROW 1: RUNTIME EXECUTION, CGROUPS & LOG ROTATION ================= -->
+
+  <!-- Box 1: Khởi Chạy Runtime (Width: 270) -->
+  <g transform="translate(30, 72)">
+    <rect width="270" height="175" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+    <rect width="270" height="28" rx="8" fill="#0284c7"/>
+    <text x="14" y="19" class="badge-text">1. KHỞI CHẠY RUNTIME</text>
+    <text x="14" y="52" class="node-title" fill="#7dd3fc">docker run -d --name app</text>
+    <text x="14" y="74" class="code-text">• --memory=128m (RAM cứng)</text>
+    <text x="14" y="94" class="code-text">• --memory-swap=128m (Chặn swap)</text>
+    <text x="14" y="114" class="code-text">• --cpus=0.5 (Quota 50% CPU)</text>
+    <text x="14" y="134" class="code-text">• -p 8080:8080 (Port Mapping)</text>
+    <text x="14" y="154" class="code-text" fill="#38bdf8">• --restart unless-stopped</text>
+  </g>
+
+  <!-- Arrow: Box 1 -> Box 2 -->
+  <path d="M 300 160 L 335 160" class="edge" stroke="#38bdf8" marker-end="url(#arr-blue)"/>
+  <text x="303" y="150" class="flow-label" fill="#7dd3fc">cgroups</text>
+
+  <!-- Box 2: Linux cgroups & OOM Killer (Width: 290) -->
+  <g transform="translate(340, 72)">
+    <rect width="290" height="175" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
+    <rect width="290" height="28" rx="8" fill="#b45309"/>
+    <text x="14" y="19" class="badge-text">KIỂM SOÁT TÀI NGUYÊN (CGROUPS)</text>
+    <text x="14" y="52" class="node-title" fill="#fbbf24">Trạng Thái Thực Thi (PID 1)</text>
+    <text x="14" y="74" class="node-desc">• RAM &lt;= 128MB: Ứng dụng ổn định</text>
+    <text x="14" y="94" class="node-desc">• Giám sát: docker stats --no-stream</text>
+
+    <!-- Sub-box OOM Warning -->
+    <rect x="10" y="108" width="270" height="55" rx="6" fill="#450a0a" stroke="#ef4444" stroke-width="1.2"/>
+    <text x="18" y="128" class="node-title" font-size="11px" fill="#fca5a5">NẾU TRÀN RAM &gt; 128MB (OOM KILLER)</text>
+    <text x="18" y="148" class="node-desc" fill="#fecaca">• Kernel gửi SIGKILL | Exit Code: 137</text>
+  </g>
+
+  <!-- Arrow: Box 2 -> Box 3 -->
+  <path d="M 630 160 L 665 160" class="edge" stroke="#06b6d4" marker-end="url(#arr-cyan)"/>
+  <text x="633" y="150" class="flow-label" fill="#22d3ee">stdout</text>
+
+  <!-- Box 3: Logging & Rotation (Width: 260) -->
+  <g transform="translate(670, 72)">
+    <rect width="260" height="175" rx="8" fill="#1e293b" stroke="#06b6d4" stroke-width="2"/>
+    <rect width="260" height="28" rx="8" fill="#0891b2"/>
+    <text x="14" y="19" class="badge-text">2. QUẢN LÝ LOG CONTAINER</text>
+    <text x="14" y="52" class="node-title" fill="#22d3ee">json-file &amp; Log Rotation</text>
+    <text x="14" y="74" class="code-text">• --log-opt max-size=2m</text>
+    <text x="14" y="94" class="code-text">• --log-opt max-file=3</text>
+    <text x="14" y="118" class="node-desc" fill="#4ade80">• Tối đa 6MB: Chống đầy ổ đĩa</text>
+    <text x="14" y="138" class="code-text">• Log JSON: {"level":"INFO",...}</text>
+    <text x="14" y="158" class="code-text">• docker logs app | jq .</text>
+  </g>
+
+  <!-- Downward Flow Transition Divider -->
+  <line x1="30" y1="262" x2="930" y2="262" stroke="#334155" stroke-dasharray="6 6"/>
+  <rect x="365" y="252" width="230" height="22" rx="4" fill="#1e293b" stroke="#475569"/>
+  <text x="380" y="267" class="badge-text" fill="#94a3b8">QUY TRÌNH TẮT CONTAINER AN TOÀN</text>
+
+  <!-- ================= ROW 2: GRACEFUL SHUTDOWN PIPELINE ================= -->
+
+  <!-- Box 4: Lệnh Dừng & Xử Lý PID 1 (Width: 440) -->
+  <g transform="translate(30, 288)">
+    <rect width="440" height="195" rx="8" fill="#1e293b" stroke="#eab308" stroke-width="2"/>
+    <rect width="440" height="28" rx="8" fill="#a16207"/>
+    <text x="14" y="19" class="badge-text">3. LỆNH DỪNG &amp; XỬ LÝ TÍN HIỆU PID 1</text>
+    <text x="14" y="52" class="node-title" fill="#fde047">docker stop -t 10 (Gửi SIGTERM 15)</text>
+    <text x="14" y="74" class="code-text">• Cú pháp Exec: CMD ["python3", "server.py"]</text>
+    <text x="14" y="94" class="node-desc">• Tiến trình ứng dụng là PID 1 trực tiếp</text>
+    <text x="14" y="114" class="code-text" fill="#4ade80">• Bắt tín hiệu: signal.signal(SIGTERM, handler)</text>
+    <line x1="14" y1="126" x2="425" y2="126" stroke="#334155"/>
+    <text x="14" y="146" class="node-desc" fill="#fca5a5">• Cạm bẫy Shell Form: CMD python server.py</text>
+    <text x="14" y="166" class="node-desc" fill="#ef4444">  --&gt; /bin/sh nuốt SIGTERM khiến app bị ép chết sau 10s</text>
+    <text x="14" y="184" class="node-desc" fill="#fde047">• Grace period: Cho phép app tối đa 10s để dọn dẹp</text>
+  </g>
+
+  <!-- Arrow: Box 4 -> Box 5 -->
+  <path d="M 470 385 L 495 385" class="edge" stroke="#10b981" marker-end="url(#arr-green)"/>
+
+  <!-- Box 5: Connection Draining & Clean Teardown (Width: 430) -->
+  <g transform="translate(500, 288)">
+    <rect width="430" height="195" rx="8" fill="#1e293b" stroke="#10b981" stroke-width="2"/>
+    <rect width="430" height="28" rx="8" fill="#047857"/>
+    <text x="14" y="19" class="badge-text">QUY TRÌNH RÚT LUI AN TOÀN (GRACEFUL DRAIN)</text>
+
+    <!-- Sub-step 1 -->
+    <circle cx="24" cy="48" r="8" fill="#0284c7"/>
+    <text x="21" y="52" class="badge-text" font-size="10px">1</text>
+    <text x="38" y="52" class="node-title" fill="#7dd3fc">Từ chối traffic mới: Health check trả HTTP 503</text>
+
+    <!-- Sub-step 2 -->
+    <circle cx="24" cy="80" r="8" fill="#b45309"/>
+    <text x="21" y="84" class="badge-text" font-size="10px">2</text>
+    <text x="38" y="84" class="node-title" fill="#fbbf24">Connection Draining: Đợi request dở hoàn tất</text>
+    <text x="38" y="102" class="node-desc" fill="#4ade80">• Trả về HTTP 200 OK trọn vẹn cho khách hàng</text>
+
+    <!-- Sub-step 3 -->
+    <circle cx="24" cy="128" r="8" fill="#059669"/>
+    <text x="21" y="132" class="badge-text" font-size="10px">3</text>
+    <text x="38" y="132" class="node-title" fill="#34d399">Giải phóng tài nguyên &amp; Thoát sạch sẽ</text>
+    <text x="38" y="150" class="node-desc">• Đóng kết nối Database / Cache Pool</text>
+    <text x="38" y="168" class="node-desc">• Đóng Socket mạng, flush toàn bộ log</text>
+    <text x="38" y="186" class="node-desc" fill="#4ade80">• sys.exit(0): Thoát êm đềm trước khi timeout 10s</text>
+  </g>
+
+  <!-- ================= ROW 3: OUTCOME COMPARISON ================= -->
+
+  <!-- Left: SRE Standard Success -->
+  <g transform="translate(30, 498)">
+    <rect width="440" height="110" rx="8" fill="#1e293b" stroke="#10b981" stroke-width="1.5"/>
+    <text x="16" y="24" class="node-title" fill="#34d399">KẾT QUẢ GRACEFUL SHUTDOWN (CHUẨN SRE)</text>
+    <text x="16" y="48" class="node-desc">• 100% giao dịch khách hàng được xử lý trọn vẹn (200 OK)</text>
+    <text x="16" y="68" class="node-desc">• Không phát sinh lỗi deadlock, hỏng file hoặc mất mát dữ liệu</text>
+    <text x="16" y="90" class="node-desc" fill="#4ade80">• Exit Code: 0 (Hoàn tất sạch sẽ trong 4s, không chờ 10s)</text>
+  </g>
+
+  <!-- Right: Sudden Failure / SIGKILL -->
+  <g transform="translate(500, 498)">
+    <rect width="430" height="110" rx="8" fill="#1e293b" stroke="#ef4444" stroke-width="1.5"/>
+    <text x="16" y="24" class="node-title" fill="#f87171">HẬU QUẢ TẮT ĐỘT NGỘT (SIGKILL / TIMEOUT)</text>
+    <text x="16" y="48" class="node-desc">• Khách hàng nhận lỗi HTTP 502 Bad Gateway / Connection Reset</text>
+    <text x="16" y="68" class="node-desc">• Giao dịch thanh toán bị đứt gãy, session lưu trữ bị cô lập</text>
+    <text x="16" y="90" class="node-desc" fill="#fca5a5">• Exit Code: 137 (Bị Linux kernel ép chết sau 10 giây)</text>
+  </g>
+</svg>

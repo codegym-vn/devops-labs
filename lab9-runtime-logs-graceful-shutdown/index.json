@@ -1,0 +1,41 @@
+{
+  "title": "Lab 9: Cấu Hình Tài Nguyên Runtime, Quản Lý Log & Graceful Shutdown",
+  "description": "Thực hành quản trị vòng đời container, cấu hình runtime parameters, giới hạn tài nguyên CPU/RAM, mô phỏng OOM Killer, xoay vòng log và kiểm thử tắt an toàn (Graceful Shutdown).",
+  "difficulty": "Intermediate",
+  "time": "35-40 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Vòng Đời Container & Cấu Hình Tham Số Runtime",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Giới Hạn Tài Nguyên (CPU/RAM, OOM) & Quản Lý Log Rotation",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Tín Hiệu OS Signals, Vấn Đề PID 1 & Kiểm Thử Graceful Shutdown",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "code": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "environment": {
+    "showdashboard": false,
+    "dashboards": [],
+    "uilayout": "terminal-split",
+    "uimessage1": "\u001b[32mKho thuc hanh DevOps & Networking - Lab 9\u001b[0m\r\n"
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "title": "Khóa Thực Hành DevOps & Networking",
-  "description": "Chuỗi bài thực hành chuyên sâu chuẩn Production: TCP/IP & DNS, HTTP/HTTPS & SSL/TLS, SSH Hardening & UFW, Nginx Load Balancing & Connection Pooling, Server Monitoring & Webhook Alerting, Git Internals & Reflog, Branching Strategy & PR Workflows, PostgreSQL & Redis Cache-Aside & Flyway Migration.",
+  "description": "Chuỗi bài thực hành chuyên sâu chuẩn Production: TCP/IP & DNS, HTTP/HTTPS & SSL/TLS, SSH Hardening & UFW, Nginx Load Balancing & Connection Pooling, Server Monitoring & Webhook Alerting, Git Internals & Reflog, Branching Strategy & PR Workflows, PostgreSQL & Redis Cache-Aside & Flyway Migration, Docker Runtime Resources, Log Rotation & Graceful Shutdown.",
   "items": [
     {
       "path": "lab1-tcpip-dns",
@@ -33,6 +33,10 @@
     {
       "path": "lab8-postgres-redis-flyway",
       "title": "Lab 8: Triển Khai Kết Nối PostgreSQL, Redis & Chạy Flyway Migration"
+    },
+    {
+      "path": "lab9-runtime-logs-graceful-shutdown",
+      "title": "Lab 9: Cấu Hình Tài Nguyên Runtime, Quản Lý Log & Graceful Shutdown"
     }
   ]
 }
