@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="100%" height="100%">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0f19" />
+      <stop offset="100%" stop-color="#111827" />
+    </linearGradient>
+    <linearGradient id="naiveGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#991b1b" stop-opacity="0.05" />
+    </linearGradient>
+    <linearGradient id="prodGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#065f46" stop-opacity="0.05" />
+    </linearGradient>
+    <linearGradient id="boxGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.4" />
+    </filter>
+
+    <!-- Markers -->
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f87171" />
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#34d399" />
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="960" height="560" rx="12" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="2" />
+
+  <!-- Title Area -->
+  <g transform="translate(40, 32)">
+    <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="700" fill="#f8fafc">KIẾN TRÚC DOCKERFILE: SINGLE-STAGE VS MULTI-STAGE &amp; NON-ROOT HARDENING</text>
+    <text x="0" y="22" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" fill="#94a3b8">So sánh luồng biên dịch, cơ chế cache layer, tối ưu dung lượng và siết chặt bảo mật container</text>
+  </g>
+
+  <!-- ==================== TOP TRACK: NAIVE SINGLE-STAGE ==================== -->
+  <g transform="translate(40, 80)">
+    <!-- Container Box -->
+    <rect width="880" height="190" rx="10" fill="url(#naiveGrad)" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4 4" />
+    
+    <!-- Track Header -->
+    <rect x="16" y="14" width="220" height="26" rx="4" fill="#ef4444" fill-opacity="0.2" stroke="#ef4444" stroke-width="1" />
+    <text x="26" y="32" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" fill="#fca5a5">NHÁNH 1: NAIVE SINGLE-STAGE</text>
+    <text x="250" y="32" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" fill="#ef4444">Chậm khi build, kích thước cồng kềnh (> 300MB), tiềm ẩn rủi ro quyền Root (UID 0)</text>
+
+    <!-- Step 1: Base & Copy -->
+    <g transform="translate(24, 58)">
+      <rect width="240" height="110" rx="8" fill="url(#boxGrad)" stroke="#334155" stroke-width="1.5" filter="url(#dropShadow)" />
+      <rect x="0" y="0" width="240" height="28" rx="8" fill="#1e293b" />
+      <text x="14" y="19" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" fill="#cbd5e1">1. Build Context Chưa Tối Ưu</text>
+      <text x="14" y="50" font-family="ui-monospace, monospace" font-size="11" fill="#fca5a5">FROM golang:1.22-alpine</text>
+      <text x="14" y="70" font-family="ui-monospace, monospace" font-size="11" fill="#f87171">COPY . . (Loi: Cache Buster!)</text>
+      <text x="14" y="94" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" fill="#94a3b8">Mỗi lần sửa code đều tải lại module</text>
+    </g>
+
+    <!-- Connector 1 -> 2 -->
+    <path d="M 264 113 L 306 113" stroke="#f87171" stroke-width="2" marker-end="url(#arrow-red)" />
+
+    <!-- Step 2: Build & Runtime in Same Image -->
+    <g transform="translate(312, 58)">
+      <rect width="250" height="110" rx="8" fill="url(#boxGrad)" stroke="#334155" stroke-width="1.5" filter="url(#dropShadow)" />
+      <rect x="0" y="0" width="250" height="28" rx="8" fill="#1e293b" />
+      <text x="14" y="19" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" fill="#cbd5e1">2. Image Đơn Tầng Nguyên Khối</text>
+      <text x="14" y="50" font-family="ui-monospace, monospace" font-size="11" fill="#cbd5e1">RUN go build -o server</text>
+      <text x="14" y="70" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" fill="#94a3b8">Chứa toàn bộ Go compiler &amp; mã nguồn</text>
+      <text x="14" y="94" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" fill="#f87171">Bề mặt tấn công rộng (Attack Surface)</text>
+    </g>
+
+    <!-- Connector 2 -> 3 -->
+    <path d="M 562 113 L 604 113" stroke="#f87171" stroke-width="2" marker-end="url(#arrow-red)" />
+
+    <!-- Step 3: Vulnerable Container -->
+    <g transform="translate(610, 58)">
+      <rect width="244" height="110" rx="8" fill="url(#boxGrad)" stroke="#ef4444" stroke-width="1.5" filter="url(#dropShadow)" />
+      <rect x="0" y="0" width="244" height="28" rx="8" fill="#ef4444" fill-opacity="0.25" />
+      <text x="14" y="19" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" fill="#fca5a5">3. Runtime Kém An Toàn</text>
+      <text x="14" y="50" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" fill="#f8fafc">Dung lượng: <tspan fill="#f87171" font-weight="700">~350 MB</tspan></text>
+      <text x="14" y="70" font-family="ui-monospace, monospace" font-size="11" fill="#f87171">USER: root (UID 0)</text>
+      <text x="14" y="94" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" fill="#fca5a5">Rủi ro leo thang container breakout</text>
+    </g>
+  </g>
+
+  <!-- ==================== BOTTOM TRACK: PRODUCTION MULTI-STAGE ==================== -->
+  <g transform="translate(40, 290)">
+    <!-- Container Box -->
+    <rect width="880" height="240" rx="10" fill="url(#prodGrad)" stroke="#10b981" stroke-width="1.5" />
+    
+    <!-- Track Header -->
+    <rect x="16" y="14" width="270" height="26" rx="4" fill="#10b981" fill-opacity="0.2" stroke="#10b981" stroke-width="1" />
+    <text x="26" y="32" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" fill="#6ee7b7">NHÁNH 2: PRODUCTION MULTI-STAGE</text>
+    <text x="300" y="32" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" fill="#34d399">Tối ưu cache, siêu nhẹ (~15MB), bảo mật Non-Root chuẩn Least Privilege</text>
+
+    <!-- Stage 1: Builder Box -->
+    <g transform="translate(24, 52)">
+      <rect width="360" height="170" rx="8" fill="url(#boxGrad)" stroke="#0284c7" stroke-width="1.5" filter="url(#dropShadow)" />
+      <rect x="0" y="0" width="360" height="28" rx="8" fill="#0369a1" />
+      <text x="14" y="19" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" fill="#f0f9ff">STAGE 1: BUILDER (golang:1.22-alpine)</text>
+      
+      <!-- Cache optimization breakdown -->
+      <g transform="translate(14, 38)">
+        <rect x="0" y="0" width="332" height="24" rx="4" fill="#0f172a" stroke="#334155" />
+        <text x="8" y="16" font-family="ui-monospace, monospace" font-size="11" fill="#38bdf8">1. COPY go.mod go.sum ./</text>
+        <text x="240" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" fill="#34d399">[Cached]</text>
+      </g>
+      <g transform="translate(14, 68)">
+        <rect x="0" y="0" width="332" height="24" rx="4" fill="#0f172a" stroke="#334155" />
+        <text x="8" y="16" font-family="ui-monospace, monospace" font-size="11" fill="#38bdf8">2. RUN go mod download</text>
+        <text x="240" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" fill="#34d399">[Cached]</text>
+      </g>
+      <g transform="translate(14, 98)">
+        <rect x="0" y="0" width="332" height="24" rx="4" fill="#0f172a" stroke="#334155" />
+        <text x="8" y="16" font-family="ui-monospace, monospace" font-size="11" fill="#cbd5e1">3. COPY main.go ./</text>
+        <text x="230" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" fill="#fbbf24">[Chỉ build lại]</text>
+      </g>
+      <g transform="translate(14, 128)">
+        <rect x="0" y="0" width="332" height="24" rx="4" fill="#0f172a" stroke="#334155" />
+        <text x="8" y="16" font-family="ui-monospace, monospace" font-size="10" fill="#34d399">4. CGO_ENABLED=0 go build -ldflags="-s -w"</text>
+      </g>
+    </g>
+
+    <!-- Transition Arrow: COPY --from=builder -->
+    <g transform="translate(384, 137)">
+      <path d="M 0 0 L 80 0" stroke="#34d399" stroke-width="2.5" marker-end="url(#arrow-green)" />
+      <rect x="8" y="-22" width="70" height="18" rx="3" fill="#065f46" />
+      <text x="12" y="-9" font-family="ui-monospace, monospace" font-size="9" fill="#a7f3d0">COPY bin</text>
+    </g>
+
+    <!-- Stage 2: Minimal Runtime & Non-Root Hardening -->
+    <g transform="translate(470, 52)">
+      <rect width="384" height="170" rx="8" fill="url(#boxGrad)" stroke="#10b981" stroke-width="1.5" filter="url(#dropShadow)" />
+      <rect x="0" y="0" width="384" height="28" rx="8" fill="#047857" />
+      <text x="14" y="19" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" fill="#ecfdf5">STAGE 2: RUNTIME HARDENING (alpine:3.19)</text>
+
+      <g transform="translate(14, 38)">
+        <!-- Hardening steps -->
+        <text x="0" y="14" font-family="ui-monospace, monospace" font-size="11" fill="#6ee7b7">COPY --from=builder /app/server /app/server</text>
+        
+        <rect x="0" y="24" width="356" height="38" rx="4" fill="#064e3b" fill-opacity="0.4" stroke="#059669" stroke-width="1" />
+        <text x="8" y="40" font-family="ui-monospace, monospace" font-size="10" fill="#a7f3d0">RUN addgroup -g 10001 -S appgroup &amp;&amp; \</text>
+        <text x="8" y="54" font-family="ui-monospace, monospace" font-size="10" fill="#a7f3d0">    adduser -u 10001 -S appuser -G appgroup</text>
+
+        <rect x="0" y="68" width="356" height="22" rx="4" fill="#047857" fill-opacity="0.3" stroke="#10b981" stroke-width="1" />
+        <text x="8" y="83" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#34d399">USER 10001:10001 (Non-Root Enforcement)</text>
+
+        <!-- Stats -->
+        <g transform="translate(0, 96)">
+          <rect x="0" y="0" width="170" height="22" rx="3" fill="#1e293b" />
+          <text x="8" y="15" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" fill="#94a3b8">Kích thước: <tspan fill="#34d399" font-weight="700">~15 MB (-95%)</tspan></text>
+
+          <rect x="180" y="0" width="176" height="22" rx="3" fill="#1e293b" />
+          <text x="188" y="15" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" fill="#94a3b8">Bảo mật: <tspan fill="#38bdf8" font-weight="700">Least Privilege</tspan></text>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

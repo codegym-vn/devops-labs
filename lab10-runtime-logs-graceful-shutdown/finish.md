@@ -49,9 +49,16 @@ Bạn đã làm chủ toàn diện các kỹ năng vận hành và quản trị 
 
 ---
 
+## Bước Tiếp Theo
+
+Sau khi đã làm chủ việc vận hành Docker Runtime, hãy bước tiếp sang cấp độ thiết kế và đóng gói ứng dụng chuẩn Production: tối ưu layer cache để tăng tốc pipeline CI/CD, áp dụng kỹ thuật Multi-stage build để giảm hơn 95% dung lượng image và siết chặt an ninh bằng phân quyền Non-Root user:
+- **Lab 11**: [Thiết Kế Dockerfile Multi-stage, Tối Ưu Cache & Phân Quyền Non-Root](/lab11-dockerfile-multistage-security)
+
+---
+
 ## Tổng Kết Chuỗi Bài Thực Hành DevOps & Networking Labs
 
-Bạn đã hoàn thành trọn vẹn **10 bài thực hành nền tảng và nâng cao**:
+Bạn đã hoàn thành trọn vẹn **11 bài thực hành nền tảng và nâng cao**:
 1. **Lab 1**: TCP/IP, Subnetting, Routing & DNS Troubleshooting
 2. **Lab 2**: HTTP/HTTPS Protocols, TLS Handshake & Nginx SSL Configuration
 3. **Lab 3**: SSH Hardening, Tunneling Port Forwarding & UFW Firewall
@@ -62,4 +69,6 @@ Bạn đã hoàn thành trọn vẹn **10 bài thực hành nền tảng và nâ
 8. **Lab 8**: PostgreSQL, Redis Cache-Aside & Flyway Database Migration
 9. **Lab 9**: Docker CLI Fundamentals, Image Layers & Interactive Containers
 10. **Lab 10**: Runtime Resource Configuration, Log Management & Graceful Shutdown Testing
+11. **Lab 11**: Production Multi-stage Dockerfile, Cache Optimization & Non-Root Security Hardening
+
 

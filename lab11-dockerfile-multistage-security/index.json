@@ -1,0 +1,42 @@
+{
+  "title": "Lab 11: Thiết Kế Dockerfile Multi-stage, Tối Ưu Cache & Phân Quyền Non-Root",
+  "description": "Thực hành tối ưu Dockerfile chuẩn Production: phân tầng layer caching thông minh, kỹ thuật Multi-stage build thu nhỏ image và siết chặt bảo mật bằng phân quyền người dùng non-root.",
+  "difficulty": "Intermediate",
+  "time": "35-40 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Cơ Chế Layer Caching & Tối Ưu Hóa Thứ Tự Chỉ Thị Trong Dockerfile",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Kỹ Thuật Multi-stage Build & Thu Nhỏ Kích Thước Image",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Siết Chặt Bảo Mật Container Bằng Phân Quyền Non-Root User",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "environment": {
+    "showdashboard": false,
+    "dashboards": [],
+    "uilayout": "terminal-split",
+    "uimessage1": "\u001b[32mKho thuc hanh DevOps & Networking - Lab 11\u001b[0m\r\n"
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

@@ -20,6 +20,7 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | **Lab 8** | `lab8-postgres-redis-flyway/` | PostgreSQL 15, Redis 7, Flyway 9 | Kết nối an toàn qua biến môi trường (.env), Connection Pooling, Flyway Migration, Cache-Aside | 35-40 phút |
 | **Lab 9** | `lab9-docker-cli-fundamentals/` | Docker CLI, Image Layers, `overlay2`, CoW | Tải và phân tích Image Layers, SHA256 digest, `run -it`, `exec -it`, `cp`, `diff`, `commit` | 35-40 phút |
 | **Lab 10** | `lab10-runtime-logs-graceful-shutdown/` | Docker Runtime, cgroups, OOM Killer, Signals | Vòng đời container, tham số runtime, giới hạn CPU/RAM, Log Rotation, kiểm thử Graceful Shutdown | 35-40 phút |
+| **Lab 11** | `lab11-dockerfile-multistage-security/` | Dockerfile, Multi-stage, BuildKit, Non-Root | Tối ưu layer cache, chống cache busting, Multi-stage build giảm 95% dung lượng, phân quyền non-root (UID 10001) | 35-40 phút |
 
 ---
 
@@ -86,6 +87,13 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Thực nghiệm kích hoạt Linux OOM Killer (mã thoát 137, `OOMKilled: true`) khi tiến trình bị rò rỉ bộ nhớ.
 - Cấu hình tự động xoay vòng log (**Log Rotation**: `--log-opt max-size=2m --log-opt max-file=3`) chống nguy cơ đầy 100% dung lượng đĩa máy chủ.
 - Xử lý bài toán PID 1 (Exec form vs Shell form), bắt tín hiệu `SIGTERM (15)` và kiểm thử quy trình **Graceful Shutdown** rút cạn kết nối an toàn (`ExitCode: 0`).
+
+### Lab 11: Thiết Kế Dockerfile Multi-stage, Tối Ưu Cache & Phân Quyền Non-Root (`lab11-dockerfile-multistage-security/`)
+- Phân tích cơ chế băm nội dung của Docker BuildKit, hiện tượng Cache Busting và thiết lập file `.dockerignore`.
+- Tối ưu hóa thứ tự các chỉ thị: nạp file mô tả dependencies trước, source code sau để đạt 100% tỷ lệ Cache Hit.
+- Áp dụng kỹ thuật Multi-stage build tách bạch môi trường Builder và Runtime, giảm dung lượng image từ hơn 300MB xuống chỉ còn xấp xỉ 15MB.
+- Sử dụng các cờ biên dịch tối ưu kích thước file nhị phân tĩnh (`CGO_ENABLED=0`, `-ldflags="-s -w"`).
+- Triển khai nguyên tắc đặc quyền tối thiểu (Least Privilege), tạo user/group non-root và chạy tiến trình dưới quyền `USER 10001:10001` đạt chuẩn an toàn Kubernetes và CIS Docker Benchmark.
 
 ---
 
