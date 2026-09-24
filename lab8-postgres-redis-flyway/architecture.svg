@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 520" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0f172a; rx: 12px; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 700; fill: #f8fafc; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; fill: #94a3b8; }
+      .badge-text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 700; fill: #ffffff; }
+      .node-title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 700; }
+      .node-desc { font-family: 'SF Mono', Consolas, Monaco, monospace; font-size: 11px; fill: #cbd5e1; }
+      .flow-text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 600; fill: #94a3b8; }
+      .arrow { stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+
+    <!-- Marker Arrowheads -->
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#ef4444"/>
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f59e0b"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="860" height="520" class="bg" stroke="#1e293b" stroke-width="2"/>
+
+  <!-- Top App Service Box -->
+  <g transform="translate(30, 25)">
+    <rect width="800" height="150" rx="10" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+    <rect x="0" y="0" width="800" height="34" rx="10" fill="#1d4ed8"/>
+    <text x="20" y="22" class="title">APPLICATION SERVICE &amp; CONNECTION LAYER</text>
+    <text x="680" y="22" class="badge-text" fill="#bfdbfe">Python / Node.js</text>
+
+    <!-- App Details Left: Config -->
+    <rect x="20" y="48" width="370" height="88" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+    <text x="32" y="68" class="node-title" fill="#60a5fa">Environment Variables (.env)</text>
+    <text x="32" y="88" class="node-desc">DATABASE_URL : postgresql://user:pass@5432/app</text>
+    <text x="32" y="106" class="node-desc">REDIS_URL    : redis://localhost:6379/0</text>
+    <text x="32" y="124" class="node-desc">DB_POOL      : min_conn=2, max_conn=10</text>
+
+    <!-- App Details Right: Pooling -->
+    <rect x="410" y="48" width="370" height="88" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+    <text x="422" y="68" class="node-title" fill="#38bdf8">Connection Pooling Manager</text>
+    <text x="422" y="88" class="node-desc">• Triệt tiêu chi phí TCP 3-way handshake</text>
+    <text x="422" y="106" class="node-desc">• Duy trì pool socket mở sẵn liên tục</text>
+    <text x="422" y="124" class="node-desc">• Ngăn ngừa sự cố Connection Exhaustion</text>
+  </g>
+
+  <!-- Connector Line 1: App to Redis -->
+  <path d="M 230 175 L 230 255" class="arrow" stroke="#ef4444" marker-end="url(#arrow-red)"/>
+  <rect x="120" y="200" width="165" height="30" rx="4" fill="#0f172a" stroke="#ef4444" stroke-width="1"/>
+  <text x="130" y="215" class="flow-text" fill="#fca5a5">1. Check Cache First</text>
+  <text x="130" y="226" class="node-desc" fill="#f87171">&lt; 1ms In-Memory Hit</text>
+
+  <!-- Connector Line 2: App to Postgres -->
+  <path d="M 630 175 L 630 255" class="arrow" stroke="#38bdf8" marker-end="url(#arrow-blue)"/>
+  <rect x="645" y="200" width="180" height="30" rx="4" fill="#0f172a" stroke="#38bdf8" stroke-width="1"/>
+  <text x="655" y="215" class="flow-text" fill="#7dd3fc">2. Cache Miss Query</text>
+  <text x="655" y="226" class="node-desc" fill="#38bdf8">Via Connection Pool</text>
+
+  <!-- Redis Node -->
+  <g transform="translate(30, 265)">
+    <rect width="370" height="215" rx="8" fill="#1e293b" stroke="#ef4444" stroke-width="2"/>
+    <rect x="0" y="0" width="370" height="32" rx="8" fill="#b91c1c"/>
+    <text x="16" y="21" class="title">REDIS 7 (IN-MEMORY CACHE)</text>
+    <text x="290" y="21" class="badge-text">PORT 6379</text>
+
+    <text x="20" y="60" class="node-title" fill="#f87171">Mô Hình Cache-Aside Pattern</text>
+    <text x="20" y="85" class="node-desc">• Cấu trúc: Key-Value In-Memory tốc độ cao</text>
+    <text x="20" y="110" class="node-desc">• Cơ chế TTL (Time-To-Live): Tự hết hạn sau 60s</text>
+    <text x="20" y="135" class="node-desc">• Giảm tải 80-95% truy vấn đọc cho Database</text>
+    <text x="20" y="160" class="node-desc">• Cache Invalidation khi có thao tác Update/Delete</text>
+    <text x="20" y="190" class="node-desc" fill="#4ade80">Xác thực: redis-cli ping / get / set</text>
+  </g>
+
+  <!-- PostgreSQL Node -->
+  <g transform="translate(460, 265)">
+    <rect width="370" height="110" rx="8" fill="#1e293b" stroke="#06b6d4" stroke-width="2"/>
+    <rect x="0" y="0" width="370" height="32" rx="8" fill="#0e7490"/>
+    <text x="16" y="21" class="title">POSTGRESQL 15 (RDBMS)</text>
+    <text x="290" y="21" class="badge-text">PORT 5432</text>
+
+    <text x="20" y="58" class="node-desc">• Lưu trữ bền vững, ACID Transactions</text>
+    <text x="20" y="78" class="node-desc">• Schema: Bảng users (V1) &amp; orders (V2)</text>
+    <text x="20" y="98" class="node-desc">• Ràng buộc: Foreign Key integrity &amp; Indexes</text>
+  </g>
+
+  <!-- Flyway Node -->
+  <g transform="translate(460, 400)">
+    <rect width="370" height="80" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect x="0" y="0" width="370" height="26" rx="8" fill="#b45309"/>
+    <text x="16" y="18" class="title" font-size="12px">FLYWAY MIGRATION ENGINE</text>
+    <text x="285" y="18" class="badge-text">CLI TOOL</text>
+
+    <text x="20" y="46" class="node-desc">• flyway_schema_history: Lưu phiên bản &amp; SHA Checksum</text>
+    <text x="20" y="66" class="node-desc">• Lệnh cốt lõi: migrate, info, validate, baseline</text>
+  </g>
+
+  <!-- Connector Line 3: Flyway to Postgres -->
+  <path d="M 645 400 L 645 378" class="arrow" stroke="#f59e0b" marker-end="url(#arrow-amber)"/>
+  <rect x="660" y="380" width="165" height="18" rx="3" fill="#0f172a" stroke="#f59e0b" stroke-width="0.8"/>
+  <text x="665" y="393" class="node-desc" fill="#fbbf24">3. Automated Schema Migration</text>
+</svg>

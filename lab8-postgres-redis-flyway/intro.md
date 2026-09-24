@@ -12,34 +12,17 @@ Trong kiến trúc hệ thống hiện đại, dữ liệu ứng dụng thườn
 
 ## Kiến Trúc Hệ Thống & Dòng Chảy Dữ Liệu
 
-```text
-┌────────────────────────────────────────────────────────────────────────┐
-│                        Application Service                             │
-│  ├── Configuration      : Environment Variables (.env)                 │
-│  │   ├── DATABASE_URL   : postgresql://user:pass@host:5432/db          │
-│  │   ├── REDIS_URL      : redis://host:6379/0                          │
-│  │   └── DB_POOL        : min=2, max=10, timeout=30                    │
-│  └── Connection Pool    : Tái sử dụng TCP sockets tới Database         │
-└───────────────┬───────────────────────────────────────┬────────────────┘
-                │ 1. Check Cache                        │ 2. Query on Cache Miss
-                │ (Read In-Memory)                      │ (via Connection Pool)
-                ▼                                       ▼
-┌───────────────────────────────┐       ┌───────────────────────────────┐
-│          Redis 7              │       │         PostgreSQL 15         │
-│  ├── Port      : 6379         │       │  ├── Port      : 5432         │
-│  ├── Structure : Key-Value    │       │  ├── Database  : ecommerce_db │
-│  └── Mechanism : TTL / Cache  │       │  └── Integrity : ACID, FK, PK │
-└───────────────────────────────┘       └───────────────▲───────────────┘
-                                                        │
-                                                        │ Migration as Code
-                                        ┌───────────────┴───────────────┐
-                                        │          Flyway CLI           │
-                                        │  ├── V1__create_users.sql     │
-                                        │  ├── V2__create_orders.sql    │
-                                        │  ├── Checksum Validation      │
-                                        │  └── flyway_schema_history    │
-                                        └───────────────────────────────┘
-```
+![Kiến trúc hệ thống PostgreSQL, Redis và Flyway](./architecture.svg)
+
+### Mô Tả Luồng Tương Tác & Thành Phần Hệ Thống
+
+| Thành Phần | Cổng & Giao Thức | Vai Trò & Cơ Chế Hoạt Động |
+|---|---|---|
+| **Application Layer** | TCP / Sockets | Cấu hình qua biến môi trường (`.env`), tối ưu hóa kết nối qua **Connection Pooling** để tái sử dụng socket và tránh cạn kiệt tài nguyên. |
+| **Redis 7 (Cache)** | Port 6379 | Triển khai mô hình **Cache-Aside**, lưu trữ In-Memory với TTL 60s giúp phản hồi dữ liệu tức thì (&lt; 1ms) và giảm tải cho CSDL. |
+| **PostgreSQL 15 (DB)** | Port 5432 | Lưu trữ dữ liệu quan hệ bền vững (ACID), duy trì tính toàn vẹn thông qua ràng buộc khóa chính (PK) và khóa ngoại (FK). |
+| **Flyway CLI** | JDBC (Port 5432) | Tự động hóa cập nhật lược đồ CSDL (Migration as Code), đối soát tính toàn vẹn cấu trúc thông qua mã băm Checksum trong `flyway_schema_history`. |
+
 
 ---
 
