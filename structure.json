@@ -1,0 +1,38 @@
+{
+  "title": "Khóa Thực Hành DevOps & Networking",
+  "description": "Chuỗi bài thực hành chuyên sâu chuẩn Production: TCP/IP & DNS, HTTP/HTTPS & SSL/TLS, SSH Hardening & UFW, Nginx Load Balancing & Connection Pooling, Server Monitoring & Webhook Alerting, Git Internals & Reflog, Branching Strategy & PR Workflows, PostgreSQL & Redis Cache-Aside & Flyway Migration.",
+  "items": [
+    {
+      "path": "lab1-tcpip-dns",
+      "title": "Lab 1: TCP/IP và DNS Trong DevOps"
+    },
+    {
+      "path": "lab2-http-ssl-nginx",
+      "title": "Lab 2: HTTP/HTTPS & SSL/TLS Certificates Cho Nginx"
+    },
+    {
+      "path": "lab3-ssh-firewall",
+      "title": "Lab 3: SSH Hardening, Port Forwarding & Tường Lửa UFW"
+    },
+    {
+      "path": "lab4-nginx-lb",
+      "title": "Lab 4: Nginx Reverse Proxy, Load Balancer & Connection Pooling"
+    },
+    {
+      "path": "lab5-server-monitoring",
+      "title": "Lab 5: Giám Sát Tài Nguyên Máy Chủ & Cảnh Báo Tự Động Với Bash Script"
+    },
+    {
+      "path": "lab6-git-internals-hooks",
+      "title": "Lab 6: Phân Tích Git Internals, Khôi Phục Dữ Liệu Với Reflog & Cấu Hình Git Hooks"
+    },
+    {
+      "path": "lab7-git-conflicts-pr",
+      "title": "Lab 7: Chiến Lược Nhánh, Giải Quyết Xung Đột Phức Tạp & Xử Lý Pull Request"
+    },
+    {
+      "path": "lab8-postgres-redis-flyway",
+      "title": "Lab 8: Triển Khai Kết Nối PostgreSQL, Redis & Chạy Flyway Migration"
+    }
+  ]
+}
