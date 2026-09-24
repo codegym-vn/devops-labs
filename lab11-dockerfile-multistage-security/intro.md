@@ -6,9 +6,40 @@ Trong môi trường triển khai thực tế (CI/CD Pipelines, Kubernetes Clust
 
 ---
 
-## 1. Sơ Đồ So Sánh Kiến Trúc Dockerfile
+## 1. Sơ Đồ So Sánh: Dockerfile Sơ Khai vs Chuẩn Production
 
-![Kiến Trúc Dockerfile Multi-stage](/lab11-dockerfile-multistage-security/architecture.svg)
+### Nhánh 1: Naive Single-stage (Anti-Pattern)
+
+```
++---------------------------+       +---------------------------+       +---------------------------+
+| 1. Build Context          |       | 2. Image Don Tang         |       | 3. Runtime Kem An Toan    |
+|    Chua Toi Uu            | ----> |    Nguyen Khoi            | ----> |                           |
+|                           |       |                           |       |  Dung luong: ~350 MB      |
+| FROM golang:1.22-alpine   |       | RUN go build -o server   |       |  USER: root (UID 0)       |
+| COPY . .  (Cache Buster!) |       | Chua toan bo Go compiler |       |  Rui ro leo thang quyen   |
+| Moi lan sua code deu tai  |       | va ma nguon goc          |       |  Container Breakout       |
+| lai dependencies          |       | Be mat tan cong rong     |       |                           |
++---------------------------+       +---------------------------+       +---------------------------+
+```
+
+### Nhánh 2: Production Multi-stage + Non-Root
+
+```
++-------------------------------------------+          +-------------------------------------------+
+| STAGE 1: BUILDER (golang:1.22-alpine)     |          | STAGE 2: RUNTIME (alpine:3.19)            |
+|                                           |          |                                           |
+| 1. COPY go.mod go.sum ./      [Cached]    |          | COPY --from=builder /app/server /app/      |
+| 2. RUN go mod download        [Cached]    |  COPY    |                                           |
+| 3. COPY main.go ./       [Chi build lai]  | -------> | RUN addgroup -g 10001 -S appgroup && \    |
+| 4. CGO_ENABLED=0 go build -ldflags="-s -w"|   bin    |     adduser -u 10001 -S appuser           |
+|                                           |          |                                           |
+| Ket qua: 1 file nhi phan tinh (~8MB)     |          | USER 10001:10001  (Non-Root Enforcement)  |
++-------------------------------------------+          |                                           |
+                                                       | Kich thuoc: ~15 MB (giam 95%)             |
+                                                       | Bao mat: Least Privilege                  |
+                                                       | CMD ["/app/server"] (Exec form)           |
+                                                       +-------------------------------------------+
+```
 
 ---
 
