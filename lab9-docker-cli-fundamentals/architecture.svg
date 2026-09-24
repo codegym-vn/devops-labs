@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" width="100%" height="100%">
+  <defs>
+    <style>
+      .canvas-bg { fill: #0f172a; rx: 12px; }
+      .header-title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 700; fill: #f8fafc; }
+      .badge-text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 700; fill: #ffffff; }
+      .node-title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 700; }
+      .node-desc { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11.5px; fill: #cbd5e1; }
+      .code-text { font-family: 'SF Mono', Consolas, Monaco, monospace; font-size: 11px; fill: #cbd5e1; }
+      .flow-label { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 600; }
+      .edge { stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+
+    <!-- Markers for Arrows -->
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#10b981"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f59e0b"/>
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#a855f7"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="960" height="620" class="canvas-bg" stroke="#1e293b" stroke-width="2"/>
+
+  <!-- Top Title Banner -->
+  <g transform="translate(30, 18)">
+    <rect width="900" height="38" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+    <text x="20" y="24" class="header-title">SƠ ĐỒ DÒNG CHẢY DOCKER CLI: IMAGE LAYERS, CONTAINER TƯƠNG TÁC &amp; DOCKER COMMIT</text>
+    <rect x="785" y="8" width="100" height="22" rx="4" fill="#0284c7"/>
+    <text x="796" y="23" class="badge-text">FUNDAMENTAL</text>
+  </g>
+
+  <!-- ================= ROW 1: IMAGE REGISTRY TO CONTAINER RUNTIME ================= -->
+
+  <!-- Box 1: Docker Hub / Remote Registry (Width: 260) -->
+  <g transform="translate(30, 72)">
+    <rect width="260" height="195" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+    <rect width="260" height="28" rx="8" fill="#0284c7"/>
+    <text x="14" y="19" class="badge-text">1. DOCKER HUB / REGISTRY</text>
+    <text x="14" y="52" class="node-title" fill="#7dd3fc">docker pull image:tag</text>
+    <text x="14" y="74" class="node-desc">• Tải image đóng gói từ Registry</text>
+    <text x="14" y="94" class="node-desc">• Định danh qua Image Digest SHA256</text>
+    <text x="14" y="114" class="node-desc">• Quản lý thẻ: docker tag</text>
+    <line x1="14" y1="126" x2="246" y2="126" stroke="#334155"/>
+    <text x="14" y="146" class="code-text">• docker pull nginx:alpine</text>
+    <text x="14" y="166" class="code-text">• docker images (Xem dung lượng)</text>
+    <text x="14" y="186" class="code-text">• docker rmi (Dọn dẹp image thừa)</text>
+  </g>
+
+  <!-- Arrow: Registry -> Local Image Layers -->
+  <path d="M 290 170 L 335 170" class="edge" stroke="#38bdf8" marker-end="url(#arr-blue)"/>
+  <text x="295" y="160" class="flow-label" fill="#7dd3fc">Kéo Image</text>
+
+  <!-- Box 2: Image Layer Stack (Immutable Read-Only) (Width: 290) -->
+  <g transform="translate(340, 72)">
+    <rect width="290" height="195" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
+    <rect width="290" height="28" rx="8" fill="#b45309"/>
+    <text x="14" y="19" class="badge-text">CẤU TRÚC IMAGE LAYERS (READ-ONLY)</text>
+    <text x="14" y="52" class="node-title" fill="#fbbf24">Kiến Trúc Bất Biến (Immutable)</text>
+
+    <!-- Layer 3: Application -->
+    <rect x="12" y="66" width="266" height="32" rx="4" fill="#0f172a" stroke="#f59e0b" stroke-width="1"/>
+    <text x="22" y="86" class="node-desc" fill="#fde047">Layer 3: App Code &amp; Config (nginx.conf)</text>
+
+    <!-- Layer 2: Dependencies -->
+    <rect x="12" y="104" width="266" height="32" rx="4" fill="#0f172a" stroke="#d97706" stroke-width="1"/>
+    <text x="22" y="124" class="node-desc" fill="#fcd34d">Layer 2: Dependencies / Web Server</text>
+
+    <!-- Layer 1: Base OS -->
+    <rect x="12" y="142" width="266" height="32" rx="4" fill="#0f172a" stroke="#92400e" stroke-width="1"/>
+    <text x="22" y="162" class="node-desc" fill="#fef08a">Layer 1: Base Alpine Linux Kernel</text>
+
+    <text x="14" y="192" class="code-text" fill="#94a3b8">• Lệnh soi layer: docker history image</text>
+  </g>
+
+  <!-- Arrow: Image Layers -> Container Runtime -->
+  <path d="M 630 170 L 665 170" class="edge" stroke="#10b981" marker-end="url(#arr-green)"/>
+  <text x="635" y="160" class="flow-label" fill="#4ade80">docker run</text>
+
+  <!-- Box 3: Container Writable Layer (Copy-on-Write) (Width: 265) -->
+  <g transform="translate(670, 72)">
+    <rect width="260" height="195" rx="8" fill="#1e293b" stroke="#10b981" stroke-width="2"/>
+    <rect width="260" height="28" rx="8" fill="#047857"/>
+    <text x="14" y="19" class="badge-text">CONTAINER RUNTIME (R/W)</text>
+    <text x="14" y="52" class="node-title" fill="#34d399">Tầng Ghi Tạm Thời (Writable)</text>
+    <text x="14" y="74" class="node-desc">• Cơ chế: Copy-on-Write (CoW)</text>
+    <text x="14" y="94" class="node-desc">• Storage Driver: overlay2</text>
+    <text x="14" y="114" class="node-desc">• Ghi nhận mọi thay đổi dữ liệu</text>
+    <line x1="14" y1="126" x2="246" y2="126" stroke="#334155"/>
+    <text x="14" y="146" class="node-desc" fill="#a7f3d0">• Dữ liệu mất khi xóa container</text>
+    <text x="14" y="166" class="node-desc">• Trừ khi được commit hoặc mount</text>
+    <text x="14" y="186" class="code-text" fill="#34d399">• docker diff: Xem file đã sửa</text>
+  </g>
+
+  <!-- Middle Transition Divider -->
+  <line x1="30" y1="282" x2="930" y2="282" stroke="#334155" stroke-dasharray="6 6"/>
+  <rect x="365" y="272" width="230" height="22" rx="4" fill="#1e293b" stroke="#475569"/>
+  <text x="375" y="287" class="badge-text" fill="#94a3b8">THAO TÁC CLI &amp; ĐÓNG GÓI COMMIT</text>
+
+  <!-- ================= ROW 2: INTERACTIVE OPERATIONS & DOCKER COMMIT ================= -->
+
+  <!-- Box 4: Thao Tác Tương Tác Trong Container (Width: 440) -->
+  <g transform="translate(30, 308)">
+    <rect width="440" height="195" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+    <rect width="440" height="28" rx="8" fill="#0284c7"/>
+    <text x="14" y="19" class="badge-text">2. THAO TÁC CONTAINER TƯƠNG TÁC (CLI)</text>
+    <text x="14" y="52" class="node-title" fill="#7dd3fc">Các Lệnh Điều Khiển Nâng Cao</text>
+    <text x="14" y="74" class="code-text">• docker run -it alpine sh</text>
+    <text x="14" y="92" class="node-desc">  Mở phiên làm việc trực tiếp (TTY + Stdin tương tác)</text>
+    <text x="14" y="112" class="code-text">• docker exec -it &lt;name&gt; sh</text>
+    <text x="14" y="130" class="node-desc">  Thâm nhập container đang chạy nền không gây gián đoạn</text>
+    <text x="14" y="150" class="code-text">• docker cp host_file container:/path</text>
+    <text x="14" y="168" class="node-desc">  Sao chép file 2 chiều linh hoạt giữa máy chủ và container</text>
+    <text x="14" y="188" class="code-text">• docker diff &lt;name&gt; (Báo cáo: A=Add, C=Change, D=Delete)</text>
+  </g>
+
+  <!-- Arrow: Interactive Changes -> Docker Commit -->
+  <path d="M 470 405 L 495 405" class="edge" stroke="#a855f7" marker-end="url(#arr-purple)"/>
+
+  <!-- Box 5: Đóng Gói Image Bằng Docker Commit (Width: 430) -->
+  <g transform="translate(500, 308)">
+    <rect width="430" height="195" rx="8" fill="#1e293b" stroke="#a855f7" stroke-width="2"/>
+    <rect width="430" height="28" rx="8" fill="#7e22ce"/>
+    <text x="14" y="19" class="badge-text">3. ĐÓNG GÓI IMAGE VỚI DOCKER COMMIT</text>
+    <text x="14" y="52" class="node-title" fill="#c084fc">Chuyển Writable Layer Thành Image Mới</text>
+    <text x="14" y="74" class="code-text">• Cú pháp: docker commit -m "msg" -a "author" app my-app:v1</text>
+    <text x="14" y="94" class="node-desc">• Đóng băng toàn bộ file thay đổi thành 1 Layer mới bất biến</text>
+    <text x="14" y="114" class="node-desc">• Tự động sinh Image ID mới và lưu trữ vào Docker local</text>
+    <line x1="14" y1="126" x2="415" y2="126" stroke="#334155"/>
+    <text x="14" y="146" class="node-desc" fill="#e9d5ff">• Ứng dụng: Cứu hộ nhanh cấu hình nóng trong production</text>
+    <text x="14" y="166" class="node-desc">• Khởi tạo container mới từ image vừa commit độc lập hoàn toàn</text>
+    <text x="14" y="186" class="code-text" fill="#a855f7">• docker run -d -p 8081:80 my-app:v1</text>
+  </g>
+
+  <!-- ================= ROW 3: SUMMARY & CORE VALUES ================= -->
+
+  <!-- Left Summary Card -->
+  <g transform="translate(30, 518)">
+    <rect width="440" height="85" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="16" y="24" class="node-title" fill="#7dd3fc">LỢI THẾ CỦA KIẾN TRÚC LAYER (DOCKER)</text>
+    <text x="16" y="46" class="node-desc">• Tái sử dụng Layer giữa nhiều container giúp tiết kiệm 90% dung lượng đĩa</text>
+    <text x="16" y="66" class="node-desc">• Tốc độ tải image siêu tốc nhờ cơ chế Layer Caching của Docker daemon</text>
+  </g>
+
+  <!-- Right Summary Card -->
+  <g transform="translate(500, 518)">
+    <rect width="430" height="85" rx="8" fill="#1e293b" stroke="#10b981" stroke-width="1.5"/>
+    <text x="16" y="24" class="node-title" fill="#34d399">NGUYÊN TẮC BẤT BIẾN (IMMUTABILITY)</text>
+    <text x="16" y="46" class="node-desc">• Image gốc không bao giờ bị ghi đè hay sửa đổi trực tiếp</text>
+    <text x="16" y="66" class="node-desc">• Mọi thay đổi đều được cô lập trong Writable Layer hoặc đóng gói version mới</text>
+  </g>
+</svg>

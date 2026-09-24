@@ -51,13 +51,13 @@ Bạn đã xây dựng và tích hợp thành công kiến trúc hạ tầng d�
 ## Bước Tiếp Theo
 
 Tiếp tục hoàn thiện kỹ năng quản trị Docker chuyên nghiệp trong môi trường Production với bài thực hành tiếp theo:
-- **Lab 9**: [Cấu Hình Tài Nguyên Runtime, Quản Lý Log Container & Graceful Shutdown](/lab9-runtime-logs-graceful-shutdown)
+- **Lab 9**: [Nhập Môn Docker CLI, Cấu Trúc Image Layers & Tương Tác Container](/lab9-docker-cli-fundamentals)
 
 ---
 
 ## Tổng Kết Chuỗi Bài Thực Hành DevOps & Networking Labs
 
-Bạn đã hoàn thành 8 chặng đường quan trọng và sẵn sàng bước vào bài thực hành nâng cao về Docker Runtime:
+Bạn đã hoàn thành 8 chặng đường quan trọng và sẵn sàng bước vào bài thực hành nâng cao về Docker:
 1. **Lab 1**: TCP/IP, Subnetting, Routing & DNS Troubleshooting
 2. **Lab 2**: HTTP/HTTPS Protocols, TLS Handshake & Nginx SSL Configuration
 3. **Lab 3**: SSH Hardening, Tunneling Port Forwarding & UFW Firewall
@@ -66,7 +66,8 @@ Bạn đã hoàn thành 8 chặng đường quan trọng và sẵn sàng bước
 6. **Lab 6**: Git Internals, Disaster Recovery with Reflog & Git Hooks Automation
 7. **Lab 7**: Advanced Git Branching, Complex Conflict Resolution & PR Workflows
 8. **Lab 8**: PostgreSQL, Redis & Automated Database Migration with Flyway
-9. **Lab 9**: Runtime Resource Configuration, Log Management & Graceful Shutdown Testing
+9. **Lab 9**: Docker CLI Fundamentals, Image Layers & Interactive Containers
+10. **Lab 10**: Runtime Resource Configuration, Log Management & Graceful Shutdown Testing
 
 Chuỗi bài lab này trang bị đầy đủ kiến thức từ mạng máy tính, an toàn máy chủ, điều phối lưu lượng web, tự động hóa script, quản lý mã nguồn Git nâng cao, hạ tầng cơ sở dữ liệu và caching, cho đến quản trị Docker Runtime chuẩn DevOps hiện đại!
 

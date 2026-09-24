@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo -n "Dang chuan bi moi truong thuc hanh Lab 9 (Docker Runtime, Logging & Signals)... "
+echo -n "Dang chuan bi moi truong thuc hanh Lab 10 (Docker Runtime, Logging & Signals)... "
 
 spin='-\|/'
 i=0

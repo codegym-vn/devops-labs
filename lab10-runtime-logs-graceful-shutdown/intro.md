@@ -1,4 +1,4 @@
-# Lab 9: Cấu Hình Tài Nguyên Runtime, Quản Lý Log Container & Kiểm Thử Graceful Shutdown
+# Lab 10: Cấu Hình Tài Nguyên Runtime, Quản Lý Log Container & Kiểm Thử Graceful Shutdown
 
 Chào mừng bạn đến với bài thực hành chuyên sâu về **Quản trị Runtime, Giám sát Log và Tắt Ứng Dụng An Toàn trong Docker**!
 

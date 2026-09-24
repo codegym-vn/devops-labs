@@ -1,22 +1,22 @@
 {
-  "title": "Lab 9: Cấu Hình Tài Nguyên Runtime, Quản Lý Log & Graceful Shutdown",
-  "description": "Thực hành quản trị vòng đời container, cấu hình runtime parameters, giới hạn tài nguyên CPU/RAM, mô phỏng OOM Killer, xoay vòng log và kiểm thử tắt an toàn (Graceful Shutdown).",
-  "difficulty": "Intermediate",
+  "title": "Lab 9: Nhập Môn Docker CLI, Quản Trị Image Layers & Thao Tác Container",
+  "description": "Thực hành quản lý Docker Images, phân tích cấu trúc Layer, thao tác tương tác trong container (run -it, exec, cp, diff) và đóng gói image với docker commit.",
+  "difficulty": "Beginner",
   "time": "35-40 minutes",
   "details": {
     "steps": [
       {
-        "title": "Vòng Đời Container & Cấu Hình Tham Số Runtime",
+        "title": "Quản Trị Docker Images & Phân Tích Cấu Trúc Layers",
         "text": "step1.md",
         "verify": "step1-verify.sh"
       },
       {
-        "title": "Giới Hạn Tài Nguyên (CPU/RAM, OOM) & Quản Lý Log Rotation",
+        "title": "Thao Tác Container Tương Tác & Sao Chép Dữ Liệu CLI",
         "text": "step2.md",
         "verify": "step2-verify.sh"
       },
       {
-        "title": "Tín Hiệu OS Signals, Vấn Đề PID 1 & Kiểm Thử Graceful Shutdown",
+        "title": "Cơ Chế Copy-on-Write & Đóng Gói Image Với Docker Commit",
         "text": "step3.md",
         "verify": "step3-verify.sh"
       }

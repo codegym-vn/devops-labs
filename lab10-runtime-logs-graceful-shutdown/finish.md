@@ -1,4 +1,4 @@
-# Chúc Mừng Bạn Đã Hoàn Thành Lab 9!
+# Chúc Mừng Bạn Đã Hoàn Thành Lab 10!
 
 Bạn đã làm chủ toàn diện các kỹ năng vận hành và quản trị nâng cao của **Docker Runtime**: từ quản lý vòng đời container, kiểm soát giới hạn tài nguyên CPU/RAM, cơ chế bảo vệ máy chủ bằng Log Rotation, cho đến kỹ thuật xử lý tín hiệu hệ điều hành và kiểm thử **Graceful Shutdown** chuẩn Production.
 
@@ -51,7 +51,7 @@ Bạn đã làm chủ toàn diện các kỹ năng vận hành và quản trị 
 
 ## Tổng Kết Chuỗi Bài Thực Hành DevOps & Networking Labs
 
-Bạn đã hoàn thành trọn vẹn **9 bài thực hành nền tảng và nâng cao**:
+Bạn đã hoàn thành trọn vẹn **10 bài thực hành nền tảng và nâng cao**:
 1. **Lab 1**: TCP/IP, Subnetting, Routing & DNS Troubleshooting
 2. **Lab 2**: HTTP/HTTPS Protocols, TLS Handshake & Nginx SSL Configuration
 3. **Lab 3**: SSH Hardening, Tunneling Port Forwarding & UFW Firewall
@@ -60,4 +60,6 @@ Bạn đã hoàn thành trọn vẹn **9 bài thực hành nền tảng và nân
 6. **Lab 6**: Git Internals, Disaster Recovery with Reflog & Git Hooks Automation
 7. **Lab 7**: Advanced Git Branching, Complex Conflict Resolution & PR Workflows
 8. **Lab 8**: PostgreSQL, Redis Cache-Aside & Flyway Database Migration
-9. **Lab 9**: Runtime Resource Configuration, Log Management & Graceful Shutdown Testing
+9. **Lab 9**: Docker CLI Fundamentals, Image Layers & Interactive Containers
+10. **Lab 10**: Runtime Resource Configuration, Log Management & Graceful Shutdown Testing
+

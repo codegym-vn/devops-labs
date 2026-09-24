@@ -18,7 +18,8 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | **Lab 6** | `lab6-git-internals-hooks/` | Git CLI, Git Internals, Shell Hooks | 3 trạng thái Git, cấu trúc Git Objects (Blob, Tree, Commit), Git Hooks, khôi phục bằng Reflog | 35-40 phút |
 | **Lab 7** | `lab7-git-conflicts-pr/` | Git Bare Repo, Trunk-Based, Rebase | Quản lý nhánh tập trung, giải quyết xung đột 3-Way Merge (`zdiff3`), Rebase và Squash PR | 35-40 phút |
 | **Lab 8** | `lab8-postgres-redis-flyway/` | PostgreSQL 15, Redis 7, Flyway 9 | Kết nối an toàn qua biến môi trường (.env), Connection Pooling, Flyway Migration, Cache-Aside | 35-40 phút |
-| **Lab 9** | `lab9-runtime-logs-graceful-shutdown/` | Docker Runtime, cgroups, OOM Killer, Signals | Vòng đời container, tham số runtime, giới hạn CPU/RAM, Log Rotation, kiểm thử Graceful Shutdown | 35-40 phút |
+| **Lab 9** | `lab9-docker-cli-fundamentals/` | Docker CLI, Image Layers, `overlay2`, CoW | Tải và phân tích Image Layers, SHA256 digest, `run -it`, `exec -it`, `cp`, `diff`, `commit` | 35-40 phút |
+| **Lab 10** | `lab10-runtime-logs-graceful-shutdown/` | Docker Runtime, cgroups, OOM Killer, Signals | Vòng đời container, tham số runtime, giới hạn CPU/RAM, Log Rotation, kiểm thử Graceful Shutdown | 35-40 phút |
 
 ---
 
@@ -72,7 +73,14 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Quản lý phiên bản CSDL tự động với Flyway (Migration scripts V1, V2) và kiểm tra tính toàn vẹn (Checksum, Foreign Key).
 - Triển khai mô hình bộ nhớ đệm Cache-Aside với Redis và đo lường độ trễ truy vấn thực tế.
 
-### Lab 9: Cấu Hình Tài Nguyên Runtime, Quản Lý Log Container & Graceful Shutdown (`lab9-runtime-logs-graceful-shutdown/`)
+### Lab 9: Nhập Môn Docker CLI, Cấu Trúc Image Layers & Tương Tác Container (`lab9-docker-cli-fundamentals/`)
+- Khám phá cơ chế phân tầng (Image Layers) bất biến và mã băm SHA256 digest của Docker Image.
+- Sử dụng thành thạo `docker pull`, `docker history`, `docker inspect` và quản lý phiên bản với `docker tag`.
+- Phân biệt và làm chủ `docker run -it` (môi trường mới) và `docker exec -it` (thâm nhập container đang chạy nền).
+- Sao chép dữ liệu hai chiều giữa Host và Container với `docker cp`, truy vết thay đổi file với `docker diff`.
+- Thấu hiểu cơ chế Copy-on-Write (CoW) của storage driver `overlay2` và đóng gói snapshot bằng `docker commit`.
+
+### Lab 10: Cấu Hình Tài Nguyên Runtime, Quản Lý Log Container & Graceful Shutdown (`lab10-runtime-logs-graceful-shutdown/`)
 - Quản trị vòng đời container (`create`, `start`, `stop`, `pause`, `rm`) và nạp biến môi trường an toàn từ `--env-file`.
 - Thiết lập giới hạn phần cứng với cgroups Linux (`--cpus 0.5`, `--memory 256m`, `--memory-swap 256m`) và chính sách phục hồi `--restart unless-stopped`.
 - Thực nghiệm kích hoạt Linux OOM Killer (mã thoát 137, `OOMKilled: true`) khi tiến trình bị rò rỉ bộ nhớ.
@@ -80,7 +88,6 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Xử lý bài toán PID 1 (Exec form vs Shell form), bắt tín hiệu `SIGTERM (15)` và kiểm thử quy trình **Graceful Shutdown** rút cạn kết nối an toàn (`ExitCode: 0`).
 
 ---
-
 
 ## 3. Cấu Trúc File Chuẩn Của Mỗi Bài Lab
 
