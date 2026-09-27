@@ -1,5 +1,67 @@
 # Bước 1: Gắn Cost Allocation Tags lên tài nguyên Cloud
 
+## Thiết lập môi trường (chạy một lần)
+
+```bash
+# Cài AWS CLI v2
+curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
+unzip -q /tmp/awscliv2.zip -d /tmp/ && /tmp/aws/install && rm -rf /tmp/aws /tmp/awscliv2.zip
+
+# Cài LocalStack
+pip3 install -q localstack
+
+# Khởi động LocalStack
+localstack start -d
+
+echo "Đang chờ LocalStack..."
+until curl -sf http://localhost:4566/_localstack/health | grep -q '"ec2": "available"'; do
+  sleep 3; printf "."
+done
+echo " ✅ LocalStack sẵn sàng!"
+
+alias aws='aws --endpoint-url=http://localhost:4566'
+export AWS_DEFAULT_REGION=ap-southeast-1
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
+
+# Tạo 5 EC2 instances mô phỏng (dùng cho gắn tag)
+VPC_ID=$(aws ec2 create-vpc --cidr-block 10.0.0.0/16 \
+  --query 'Vpc.VpcId' --output text)
+SUBNET_ID=$(aws ec2 create-subnet --vpc-id $VPC_ID \
+  --cidr-block 10.0.1.0/24 --query 'Subnet.SubnetId' --output text)
+SG_ID=$(aws ec2 create-security-group \
+  --group-name lab-sg --description "Lab SG" \
+  --vpc-id $VPC_ID --query 'GroupId' --output text)
+
+TYPES=("t3.large" "t3.medium" "t3.large" "t3.xlarge" "t3.medium")
+INST_IDS=()
+for i in 0 1 2 3 4; do
+  ID=$(aws ec2 run-instances --image-id ami-0c55b159cbfafe1f0 \
+    --instance-type ${TYPES[$i]} --subnet-id $SUBNET_ID \
+    --security-group-ids $SG_ID \
+    --query 'Instances[0].InstanceId' --output text)
+  INST_IDS+=($ID)
+done
+
+cat > /tmp/lab-env.sh << EOF
+export VPC_ID=$VPC_ID
+export SUBNET_ID=$SUBNET_ID
+export SG_ID=$SG_ID
+export INST_0=${INST_IDS[0]}
+export INST_1=${INST_IDS[1]}
+export INST_2=${INST_IDS[2]}
+export INST_3=${INST_IDS[3]}
+export INST_4=${INST_IDS[4]}
+EOF
+
+source /tmp/lab-env.sh
+echo "✅ 5 EC2 instances sẵn sàng để gắn tag"
+```
+
+> 📋 Dataset CUR và script phân tích đã có sẵn trong `/opt/lab-data/`
+
+---
+
 ## Lý thuyết
 
 **Cost Allocation Tags** là metadata gắn lên tài nguyên Cloud giúp phân bổ chi phí theo nhiều chiều:

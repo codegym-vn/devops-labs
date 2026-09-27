@@ -1,5 +1,63 @@
 # Bước 1: Tạo Launch Template và Auto Scaling Group
 
+## Thiết lập môi trường (chạy một lần)
+
+```bash
+# Cài AWS CLI v2
+curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
+unzip -q /tmp/awscliv2.zip -d /tmp/ && /tmp/aws/install && rm -rf /tmp/aws /tmp/awscliv2.zip
+
+# Cài LocalStack
+pip3 install -q localstack
+
+# Khởi động LocalStack
+localstack start -d
+
+echo "Đang chờ LocalStack..."
+until curl -sf http://localhost:4566/_localstack/health | grep -q '"elasticloadbalancing": "available"'; do
+  sleep 3; printf "."
+done
+echo " ✅ LocalStack sẵn sàng!"
+
+alias aws='aws --endpoint-url=http://localhost:4566'
+export AWS_DEFAULT_REGION=ap-southeast-1
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
+
+# Tạo VPC nền tảng
+source /tmp/lab-env.sh 2>/dev/null || true
+if [ -z "$VPC_ID" ]; then
+  VPC_ID=$(aws ec2 create-vpc --cidr-block 10.0.0.0/16 \
+    --query 'Vpc.VpcId' --output text)
+  SUBNET_1=$(aws ec2 create-subnet --vpc-id $VPC_ID \
+    --cidr-block 10.0.1.0/24 --availability-zone ap-southeast-1a \
+    --query 'Subnet.SubnetId' --output text)
+  SUBNET_2=$(aws ec2 create-subnet --vpc-id $VPC_ID \
+    --cidr-block 10.0.2.0/24 --availability-zone ap-southeast-1b \
+    --query 'Subnet.SubnetId' --output text)
+  IGW_ID=$(aws ec2 create-internet-gateway \
+    --query 'InternetGateway.InternetGatewayId' --output text)
+  aws ec2 attach-internet-gateway --internet-gateway-id $IGW_ID --vpc-id $VPC_ID
+  SG_ID=$(aws ec2 create-security-group \
+    --group-name alb-sg --description "ALB + ASG SG" \
+    --vpc-id $VPC_ID --query 'GroupId' --output text)
+  aws ec2 authorize-security-group-ingress \
+    --group-id $SG_ID --protocol tcp --port 80 --cidr 0.0.0.0/0
+  cat > /tmp/lab-env.sh << EOF
+export VPC_ID=$VPC_ID
+export SUBNET_1=$SUBNET_1
+export SUBNET_2=$SUBNET_2
+export IGW_ID=$IGW_ID
+export SG_ID=$SG_ID
+export ASG_NAME=web-asg
+EOF
+  echo "✅ VPC, Subnet, IGW, SG đã tạo xong"
+fi
+source /tmp/lab-env.sh
+```
+
+---
+
 ## Lý thuyết
 
 **Launch Template** là blueprint định nghĩa cấu hình của mỗi EC2 instance được tạo ra — AMI, instance type, security group, user-data script. Khi Auto Scaling cần thêm instance, nó dùng Launch Template làm khuôn mẫu.

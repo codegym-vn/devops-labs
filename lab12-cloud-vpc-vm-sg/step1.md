@@ -1,5 +1,36 @@
 # Bước 1: Tạo VPC và hạ tầng mạng cơ bản
 
+## Thiết lập môi trường (chạy một lần)
+
+Trước khi bắt đầu, cài AWS CLI và LocalStack:
+
+```bash
+# Cài AWS CLI v2
+curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
+unzip -q /tmp/awscliv2.zip -d /tmp/ && /tmp/aws/install && rm -rf /tmp/aws /tmp/awscliv2.zip
+
+# Cài LocalStack
+pip3 install -q localstack
+
+# Khởi động LocalStack (chạy nền)
+localstack start -d
+
+# Chờ LocalStack sẵn sàng (~30-60 giây)
+echo "Đang chờ LocalStack..."
+until curl -sf http://localhost:4566/_localstack/health | grep -q '"ec2": "available"'; do
+  sleep 3; printf "."
+done
+echo " ✅ LocalStack sẵn sàng!"
+
+# Tạo alias: aws → gọi LocalStack thay vì AWS thật
+alias aws='aws --endpoint-url=http://localhost:4566'
+export AWS_DEFAULT_REGION=ap-southeast-1
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
+```
+
+---
+
 ## Lý thuyết
 
 **VPC (Virtual Private Cloud)** là mạng ảo riêng của bạn trên Cloud — tương tự như một datacenter riêng trong môi trường ảo hóa.
