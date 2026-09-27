@@ -1,34 +1,31 @@
-# Lab: FinOps — Budget Alerts, Cost Allocation Tags và Phân tích Tài nguyên Idle
+# Lab 14: FinOps — Tags · Budgets · Cost Optimization
 
 ## Bối cảnh
 
-Sau 2 tháng đưa hệ thống lên Cloud, team nhận được hóa đơn tháng này cao gấp đôi dự tính. CEO yêu cầu **báo cáo phân tích chi phí và đề xuất tối ưu 30%** trong vòng 1 tuần. Bạn là kỹ sư FinOps phụ trách xử lý.
+Hóa đơn Cloud tháng này cao gấp đôi dự tính. CEO yêu cầu báo cáo phân tích và đề xuất tối ưu 30% trong 1 tuần.
 
-## Ba trụ cột của FinOps
+## Ba trụ cột FinOps
 
 ```
-        INFORM              OPTIMIZE            OPERATE
-    ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-    │ Cost Visibility│    │ Cost Reduction│    │ Cost Control│
-    │             │     │             │     │             │
-    │ • Tagging   │────►│ • Right-size│────►│ • Budgets   │
-    │ • CUR Report│     │ • Schedule  │     │ • Alerts    │
-    │ • Dashboard │     │ • Reserved  │     │ • Governance│
-    └─────────────┘     └─────────────┘     └─────────────┘
+  INFORM          OPTIMIZE        OPERATE
+  • Tagging   →   • Right-size → • Budgets
+  • CUR Report    • Schedule      • Alerts
+  • Dashboard     • Reserved      • Governance
 ```
 
-## Mục tiêu học tập
+## Mục tiêu
 
-- ✅ Gắn **Cost Allocation Tags** lên toàn bộ tài nguyên theo chuẩn
-- ✅ Thiết lập **AWS Budgets** với cảnh báo email tự động
-- ✅ Phân tích **Cost & Usage Report** theo service và theo tag
-- ✅ Dùng script phát hiện **tài nguyên idle** và đề xuất right-sizing
-- ✅ Lập **báo cáo tối ưu chi phí** cụ thể với con số tiết kiệm
+- Gắn Cost Allocation Tags đúng chuẩn lên mọi tài nguyên
+- Thiết lập AWS Budgets với alert 80% và 100%
+- Phân tích Cost & Usage Report theo service và tag
+- Phát hiện tài nguyên idle và lập báo cáo right-sizing
 
-## Tài nguyên có sẵn trong lab
+## Dataset có sẵn
 
 ```bash
-source /tmp/lab-env.sh
-echo "5 EC2 instances: $INSTANCE_IDS"
 ls /opt/lab-data/
+# cost-usage-report.csv     ← 30 ngày chi phí, ~400 dòng
+# resource-utilization.json ← utilization metrics 5 instances
+# analyze-cost.py           ← script phân tích CUR
+# find-idle-resources.py    ← script phát hiện idle
 ```

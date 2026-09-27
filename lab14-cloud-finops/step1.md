@@ -1,32 +1,31 @@
-# Bước 1: Gắn Cost Allocation Tags lên tài nguyên Cloud
+# Bước 1: Gắn Cost Allocation Tags
 
-## Thiết lập môi trường (chạy một lần)
+## Thiết lập môi trường
 
 ```bash
 # Cài AWS CLI v2
 curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
 unzip -q /tmp/awscliv2.zip -d /tmp/ && /tmp/aws/install && rm -rf /tmp/aws /tmp/awscliv2.zip
 
-# Chạy LocalStack qua Docker (community, miễn phí — không cần license)
+# Khởi động LocalStack
 docker run -d --rm --name localstack \
   -p 4566:4566 \
   -e SERVICES=ec2,elbv2,autoscaling,cloudwatch,budgets \
   localstack/localstack:3.8
 
-echo "Đang chờ LocalStack..."
-until curl -sf http://localhost:4566/_localstack/health | grep -q '"ec2": "available"'; do
+echo "Chờ LocalStack..."
+until curl -sf http://localhost:4566/_localstack/health | grep -q '"ec2"'; do
   sleep 3; printf "."
 done
-echo " ✅ LocalStack sẵn sàng!"
+echo " ✅ Sẵn sàng!"
 
 alias aws='aws --endpoint-url=http://localhost:4566'
 export AWS_DEFAULT_REGION=ap-southeast-1
 export AWS_ACCESS_KEY_ID=test
 export AWS_SECRET_ACCESS_KEY=test
 
-# Tạo 5 EC2 instances mô phỏng (dùng cho gắn tag)
-VPC_ID=$(aws ec2 create-vpc --cidr-block 10.0.0.0/16 \
-  --query 'Vpc.VpcId' --output text)
+# Tạo 5 EC2 instances để thực hành gắn tag
+VPC_ID=$(aws ec2 create-vpc --cidr-block 10.0.0.0/16 --query 'Vpc.VpcId' --output text)
 SUBNET_ID=$(aws ec2 create-subnet --vpc-id $VPC_ID \
   --cidr-block 10.0.1.0/24 --query 'Subnet.SubnetId' --output text)
 SG_ID=$(aws ec2 create-security-group \
@@ -34,13 +33,17 @@ SG_ID=$(aws ec2 create-security-group \
   --vpc-id $VPC_ID --query 'GroupId' --output text)
 
 TYPES=("t3.large" "t3.medium" "t3.large" "t3.xlarge" "t3.medium")
+NAMES=("api-server-prod" "web-server-prod" "worker-prod" "reporting-server" "old-test-server")
 INST_IDS=()
 for i in 0 1 2 3 4; do
-  ID=$(aws ec2 run-instances --image-id ami-0c55b159cbfafe1f0 \
-    --instance-type ${TYPES[$i]} --subnet-id $SUBNET_ID \
+  ID=$(aws ec2 run-instances \
+    --image-id ami-0c55b159cbfafe1f0 \
+    --instance-type ${TYPES[$i]} \
+    --subnet-id $SUBNET_ID \
     --security-group-ids $SG_ID \
     --query 'Instances[0].InstanceId' --output text)
   INST_IDS+=($ID)
+  echo "Instance ${NAMES[$i]}: $ID"
 done
 
 cat > /tmp/lab-env.sh << EOF
@@ -53,133 +56,103 @@ export INST_2=${INST_IDS[2]}
 export INST_3=${INST_IDS[3]}
 export INST_4=${INST_IDS[4]}
 EOF
-
 source /tmp/lab-env.sh
-echo "✅ 5 EC2 instances sẵn sàng để gắn tag"
+echo "✅ 5 instances sẵn sàng"
 ```
 
-> 📋 Dataset CUR và script phân tích đã có sẵn trong `/opt/lab-data/`
+> Dataset `/opt/lab-data/` đã được tạo sẵn bởi background script.
 
 ---
 
 ## Lý thuyết
 
-**Cost Allocation Tags** là metadata gắn lên tài nguyên Cloud giúp phân bổ chi phí theo nhiều chiều:
+**Cost Allocation Tags**: metadata gắn lên tài nguyên giúp phân bổ chi phí theo nhiều chiều.
 
 | Tag | Mục đích |
 |-----|---------|
-| `Project` | Chi phí theo dự án/sản phẩm |
-| `Environment` | production vs staging vs dev |
+| `Name` | Tên tài nguyên |
+| `Project` | Phân bổ chi phí theo dự án |
+| `Environment` | production / staging / dev |
 | `Owner` | Team chịu trách nhiệm |
-| `CostCenter` | Phòng ban thanh toán |
-
-> ⚠️ Tags phải được gắn **trước** khi tài nguyên tạo ra chi phí. Tags sau này không áp dụng ngược cho chi phí đã phát sinh.
+| `CostCenter` | Mã trung tâm chi phí |
 
 ---
 
-## Thử thách thực hành
+## Thực hành
+
+### 1.1 — Gắn tags cho 5 instances
 
 ```bash
 source /tmp/lab-env.sh
-```
 
-### 1.1 — Xem tài nguyên chưa có tag
-
-```bash
-echo "=== EC2 instances chưa có tag Project ==="
-aws ec2 describe-instances \
-  --query "Reservations[*].Instances[*].{ID:InstanceId,Type:InstanceType,Tags:Tags}" \
-  --output table
-```
-
-### 1.2 — Gắn Tags lên từng instance theo vai trò
-
-```bash
-# API server production
+# Instance 0: api-server-prod
 aws ec2 create-tags --resources $INST_0 --tags \
   Key=Name,Value=api-server-prod \
   Key=Project,Value=e-commerce \
   Key=Environment,Value=production \
   Key=Owner,Value=team-backend \
-  Key=CostCenter,Value=engineering
+  Key=CostCenter,Value=CC-001
 
-# Web server production
+# Instance 1: web-server-prod
 aws ec2 create-tags --resources $INST_1 --tags \
   Key=Name,Value=web-server-prod \
   Key=Project,Value=e-commerce \
   Key=Environment,Value=production \
   Key=Owner,Value=team-frontend \
-  Key=CostCenter,Value=engineering
+  Key=CostCenter,Value=CC-001
 
-# Worker production
+# Instance 2: worker-prod
 aws ec2 create-tags --resources $INST_2 --tags \
   Key=Name,Value=worker-prod \
   Key=Project,Value=data-platform \
   Key=Environment,Value=production \
   Key=Owner,Value=team-data \
-  Key=CostCenter,Value=data
+  Key=CostCenter,Value=CC-002
 
-# Reporting server (underutilized)
+# Instance 3: reporting-server
 aws ec2 create-tags --resources $INST_3 --tags \
   Key=Name,Value=reporting-server \
   Key=Project,Value=internal-tools \
-  Key=Environment,Value=production \
+  Key=Environment,Value=staging \
   Key=Owner,Value=team-devops \
-  Key=CostCenter,Value=operations
+  Key=CostCenter,Value=CC-003
 
-# Old test server (should be terminated)
+# Instance 4: old-test-server (thiếu tag — mục đích kiểm tra compliance)
 aws ec2 create-tags --resources $INST_4 --tags \
-  Key=Name,Value=old-test-server \
+  Key=Name,Value=old-test-server
+```
+
+### 1.2 — Kiểm tra tag compliance
+
+```bash
+echo "=== Instances THIẾU tag Project ==="
+for ID in $INST_0 $INST_1 $INST_2 $INST_3 $INST_4; do
+  HAS_TAG=$(aws ec2 describe-tags \
+    --filters "Name=resource-id,Values=$ID" "Name=key,Values=Project" \
+    --query 'length(Tags)' --output text)
+  NAME=$(aws ec2 describe-tags \
+    --filters "Name=resource-id,Values=$ID" "Name=key,Values=Name" \
+    --query 'Tags[0].Value' --output text)
+  [ "$HAS_TAG" = "0" ] && echo "  ❌ $ID ($NAME) — thiếu tag Project" || echo "  ✅ $ID ($NAME)"
+done
+```
+
+### 1.3 — Gắn tag bổ sung cho instance thiếu
+
+```bash
+aws ec2 create-tags --resources $INST_4 --tags \
   Key=Project,Value=internal-tools \
   Key=Environment,Value=development \
   Key=Owner,Value=team-devops \
-  Key=CostCenter,Value=operations
+  Key=CostCenter,Value=CC-003
 
-echo "✅ Đã gắn Tags cho 5 instances"
-```
-
-### 1.3 — Gắn Tags lên VPC và Subnet
-
-```bash
-aws ec2 create-tags --resources $VPC_ID --tags \
-  Key=Name,Value=main-vpc \
-  Key=Project,Value=e-commerce \
-  Key=Environment,Value=production
-
-aws ec2 create-tags --resources $SUBNET_ID --tags \
-  Key=Name,Value=public-subnet \
-  Key=Project,Value=e-commerce
-
-echo "✅ Đã gắn Tags cho VPC và Subnet"
-```
-
-### 1.4 — Kiểm tra Tags đã gắn đúng
-
-```bash
-echo "=== Xem Tags của tất cả instances ==="
-aws ec2 describe-instances \
-  --query 'Reservations[*].Instances[*].{ID:InstanceId,Name:Tags[?Key==`Name`]|[0].Value,Project:Tags[?Key==`Project`]|[0].Value,Env:Tags[?Key==`Environment`]|[0].Value}' \
-  --output table
-```
-
-### 1.5 — Tìm tài nguyên chưa gắn tag (Tag Compliance Check)
-
-```bash
-echo "=== Kiểm tra compliance: tài nguyên thiếu tag Project ==="
-aws ec2 describe-instances \
-  --query "Reservations[*].Instances[?!Tags[?Key=='Project']].{ID:InstanceId,Type:InstanceType}" \
-  --output table
-
-UNTAGGED=$(aws ec2 describe-instances \
-  --query "length(Reservations[*].Instances[?!Tags[?Key=='Project']][]) | [0]" \
-  --output text)
-echo "Số instance thiếu tag Project: $UNTAGGED (mục tiêu: 0)"
+echo "✅ old-test-server đã đủ tag"
 ```
 
 ---
 
-## Câu hỏi kiểm tra hiểu biết
+## Câu hỏi
 
-1. Tại sao cần gắn tag `CostCenter` thay vì chỉ dùng `Project`?
-2. Nếu một resource không có tag `Environment`, chi phí của nó sẽ xuất hiện như thế nào trong Cost Explorer?
-3. Làm thế nào để **tự động gắn tag** cho mọi resource mới tạo? (gợi ý: AWS Config Rules, Tag Policies)
+1. Tại sao `Environment` tag lại quan trọng khi phân tích chi phí?
+2. Chiến lược nào đảm bảo **tag consistency** khi team scale lên 50 engineers?
+3. Nếu dùng Terraform, làm sao tự động gắn tag cho mọi resource?

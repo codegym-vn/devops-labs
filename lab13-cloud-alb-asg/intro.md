@@ -1,47 +1,38 @@
-# Lab: Thực hành triển khai Application Load Balancer và thiết lập Auto Scaling Group
+# Lab 13: Application Load Balancer · Auto Scaling Group
 
 ## Bối cảnh
 
-Web server đơn từ Lab 12 không đủ để đáp ứng traffic cao điểm. Bạn được yêu cầu nâng cấp kiến trúc lên **High Availability** — nhiều instance chạy song song phía sau một Load Balancer, tự động scale khi tải tăng.
+Web server đơn từ Lab 12 không đáp ứng được traffic cao điểm. Nhiệm vụ: nâng cấp lên **High Availability** — nhiều instance chạy song song phía sau một Load Balancer, tự động scale khi tải tăng.
 
-## Kiến trúc cần xây dựng
+## Kiến trúc
 
 ```
-           Internet
-               │
-      ┌────────▼────────┐
-      │  Application    │
-      │  Load Balancer  │  ← Phân phối traffic theo thuật toán
-      └────────┬────────┘
-               │
-     ┌─────────┼─────────┐
-     ▼         ▼         ▼
- [app-1]    [app-2]   [app-3]   ← EC2 Instances trong Auto Scaling Group
- port 8081  port 8082  port 8083
- AZ-1a      AZ-1b      AZ-1a   ← Trải đều trên nhiều Availability Zone
+        Internet
+            │
+     ┌──────▼──────┐
+     │     ALB     │  ← Phân tải theo thuật toán
+     └──────┬──────┘
+            │
+  ┌─────────┼─────────┐
+  ▼         ▼         ▼
+[app-1]  [app-2]  [app-3]   ← EC2 trong Auto Scaling Group
+ AZ-1a    AZ-1b    AZ-1a    ← Trải đều trên nhiều AZ
 
-     ↕ CloudWatch Alarm
-     Scale-out khi CPU > 70%
-     Scale-in  khi CPU < 30%
+CloudWatch: scale-out CPU > 70% / scale-in CPU < 30%
 ```
 
-## Mục tiêu học tập
+## Mục tiêu
 
-- ✅ Tạo **Launch Template** định nghĩa blueprint cho EC2 instance
-- ✅ Thiết lập **Auto Scaling Group** với chính sách min/max/desired
-- ✅ Cấu hình **Application Load Balancer** và **Target Group** với Health Check
-- ✅ Quan sát cơ chế **round-robin** phân phối request
-- ✅ Giả lập **scale-out**: thêm instance khi tải tăng
-- ✅ Cấu hình **CloudWatch Alarm** kích hoạt scaling policy
+- Tạo Launch Template và Auto Scaling Group (min/max/desired)
+- Cấu hình ALB + Target Group với Health Check
+- Quan sát phân phối round-robin
+- Giả lập scale-out và đo throughput trước/sau
 
 ## Công cụ
 
 | Công cụ | Vai trò |
 |---------|---------|
-| **AWS CLI + LocalStack** | Tạo Launch Template, ASG, ALB, Target Group, CloudWatch |
-| **Docker** | Chạy backend containers đóng vai EC2 instances thật |
-| **Nginx (host)** | Đóng vai ALB — thực sự proxy và phân tải HTTP |
-| **wrk** | Benchmark HTTP để đo throughput và kiểm thử |
-
-> 💡 VPC, Subnet và Security Group đã được tạo sẵn bởi `background.sh`.
-> Chạy `source /tmp/lab-env.sh` để nạp biến môi trường.
+| AWS CLI + LocalStack | Tạo ASG, ALB, CloudWatch |
+| Docker | Chạy backend containers (đóng vai EC2) |
+| Nginx | Proxy + phân tải HTTP thật |
+| wrk | Benchmark throughput |
