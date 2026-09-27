@@ -1,13 +1,20 @@
-# Bước 4: Scale-out và dọn dẹp
+# Bước 4: Auto Scaling — Scale-out và dọn dẹp
 
 ## Lý thuyết
 
-Khi CloudWatch phát hiện CPU > 70% trong 2 chu kỳ liên tiếp:
-1. Alarm kích hoạt Scaling Policy
-2. ASG tăng `desired-capacity` → gọi `run-instances`
-3. Instance mới khởi động, pass health check → ALB tự thêm vào rotation
+**Auto Scaling** tự động điều chỉnh số instances theo tải thực tế:
 
-Trên AWS thật, quá trình này mất 2–5 phút.
+```
+Trigger: CPU > 70% trong 2 phút liên tiếp
+  → Scale-out: desired 2 → 3
+  → LB tự thêm instance mới vào rotation
+
+Trigger: CPU < 30% trong 5 phút
+  → Scale-in: desired 3 → 2
+  → LB drain connections → xóa instance
+```
+
+Trong lab: script bash giám sát connections và trigger scale thủ công (tương đương CloudWatch Alarm).
 
 ---
 
@@ -20,26 +27,32 @@ source /tmp/lab-env.sh
 ### 4.1 — Benchmark baseline (2 backends)
 
 ```bash
-wrk -t4 -c100 -d20s --latency http://localhost/server-id | tee /tmp/bench-before.txt
+echo "=== Baseline: 2 backends ==="
+wrk -t2 -c50 -d20s --latency http://localhost/server-id | tee /tmp/bench-before.txt
 grep "Requests/sec" /tmp/bench-before.txt
 ```
 
-### 4.2 — Scale-out: desired 2 → 3
+### 4.2 — Scale-out: tăng từ 2 → 3 instances
 
 ```bash
-aws autoscaling set-desired-capacity \
-  --auto-scaling-group-name $ASG_NAME --desired-capacity 3
+echo "=== Scale-out: desired 2 → 3 ==="
 
-docker run -d --name "app-3" -p 8083:80 nginx:alpine \
+# Tạo instance mới (ASG spin up)
+docker run -d \
+  --name "app-3" \
+  --network $APP_NETWORK \
+  --ip 10.1.0.13 \
+  -p 8083:80 \
+  --label asg=$ASG_NAME \
+  nginx:alpine \
   sh -c "
-    echo 'Server: app-3' > /usr/share/nginx/html/server-id
+    echo 'app-3' > /usr/share/nginx/html/server-id
     echo 'healthy' > /usr/share/nginx/html/health
     nginx -g 'daemon off;'
   "
-echo "✅ app-3 đã khởi động"
 
-# Thêm app-3 vào Nginx upstream
-cat > /etc/nginx/conf.d/alb.conf << 'EOF'
+# Cập nhật LB config thêm instance mới (tương đương target group registration)
+cat > /etc/nginx/conf.d/lb.conf << 'EOF'
 upstream backend {
     least_conn;
     server localhost:8081 max_fails=3 fail_timeout=10s;
@@ -55,49 +68,86 @@ server {
         proxy_set_header Connection "";
         add_header X-Served-By $upstream_addr always;
     }
+    location /lb-health { return 200 "OK\n"; add_header Content-Type text/plain; }
     location /health    { proxy_pass http://backend/health; }
     location /server-id { proxy_pass http://backend/server-id; }
 }
 EOF
+
 nginx -t && nginx -s reload
+sleep 2
+
+echo "✅ 3 instances đang chạy:"
+docker ps --filter "label=asg=$ASG_NAME" --format "table {{.Names}}\t{{.Status}}"
 ```
 
 ### 4.3 — So sánh throughput sau scale-out
 
 ```bash
-wrk -t4 -c100 -d20s --latency http://localhost/server-id | tee /tmp/bench-after.txt
+echo "=== Benchmark: 3 backends ==="
+wrk -t2 -c50 -d20s --latency http://localhost/server-id | tee /tmp/bench-after.txt
 
-echo "Requests/sec trước: $(grep 'Requests/sec' /tmp/bench-before.txt | awk '{print $2}')"
-echo "Requests/sec sau  : $(grep 'Requests/sec' /tmp/bench-after.txt | awk '{print $2}')"
+echo ""
+echo "Requests/sec trước (2 backends): $(grep 'Requests/sec' /tmp/bench-before.txt | awk '{print $2}')"
+echo "Requests/sec sau  (3 backends): $(grep 'Requests/sec' /tmp/bench-after.txt | awk '{print $2}')"
 ```
 
-### 4.4 — Dọn dẹp
+### 4.4 — Script Auto Scaling đơn giản
 
 ```bash
-# Containers
-for i in 1 2 3; do docker stop app-$i && docker rm app-$i; done
+cat > /tmp/autoscale.sh << 'SCALER'
+#!/bin/bash
+# Auto Scaler — tương đương CloudWatch Alarm + ASG Policy
+THRESHOLD_HIGH=80  # connections > 80 → scale out
+THRESHOLD_LOW=10   # connections < 10 → scale in
+CURRENT_DESIRED=$(docker ps --filter "label=asg=web-asg" -q | wc -l)
+CURRENT_CONNS=$(ss -tn state established "dport = :8081 or dport = :8082 or dport = :8083" 2>/dev/null | wc -l)
 
-# ALB resources
-aws elbv2 delete-listener --listener-arn $LISTENER_ARN 2>/dev/null
-aws elbv2 delete-target-group --target-group-arn $TG_ARN 2>/dev/null
-aws elbv2 delete-load-balancer --load-balancer-arn $ALB_ARN 2>/dev/null
+echo "Instances hiện tại: $CURRENT_DESIRED | Connections: $CURRENT_CONNS"
 
-# ASG + Alarms
-aws autoscaling delete-auto-scaling-group \
-  --auto-scaling-group-name $ASG_NAME --force-delete 2>/dev/null
-aws cloudwatch delete-alarms \
-  --alarm-names "cpu-high-scale-out" "cpu-low-scale-in" 2>/dev/null
-aws ec2 delete-launch-template --launch-template-id $LT_ID 2>/dev/null
+if [ $CURRENT_CONNS -gt $THRESHOLD_HIGH ] && [ $CURRENT_DESIRED -lt 4 ]; then
+  echo "⬆️  Scale-out: connections cao ($CURRENT_CONNS > $THRESHOLD_HIGH)"
+elif [ $CURRENT_CONNS -lt $THRESHOLD_LOW ] && [ $CURRENT_DESIRED -gt 1 ]; then
+  echo "⬇️  Scale-in: connections thấp ($CURRENT_CONNS < $THRESHOLD_LOW)"
+else
+  echo "✅ Ổn định — không cần scale"
+fi
+SCALER
 
-# Network
-aws ec2 delete-subnet --subnet-id $SUBNET_1 2>/dev/null
-aws ec2 delete-subnet --subnet-id $SUBNET_2 2>/dev/null
-aws ec2 detach-internet-gateway \
-  --internet-gateway-id $IGW_ID --vpc-id $VPC_ID 2>/dev/null
-aws ec2 delete-internet-gateway --internet-gateway-id $IGW_ID 2>/dev/null
-aws ec2 delete-security-group --group-id $SG_ID 2>/dev/null
-aws ec2 delete-vpc --vpc-id $VPC_ID 2>/dev/null
+chmod +x /tmp/autoscale.sh
+/tmp/autoscale.sh
+```
 
-rm -f /etc/nginx/conf.d/alb.conf && nginx -s reload 2>/dev/null || true
+### 4.5 — Dọn dẹp
+
+```bash
+# Xóa instances
+for i in 1 2 3; do
+  docker stop app-$i 2>/dev/null && docker rm app-$i 2>/dev/null
+done
+
+# Xóa network
+docker network rm app-network 2>/dev/null
+
+# Reset LB config
+rm -f /etc/nginx/conf.d/lb.conf
+nginx -s reload 2>/dev/null || true
+
 echo "✅ Dọn dẹp hoàn tất"
+```
+
+---
+
+## Tổng kết
+
+```
+Bước 1: Instance template + khởi động 2 instances (desired=2)
+Bước 2: Load Balancer (Nginx) + Health Check script
+Bước 3: Kiểm thử phân phối + giả lập instance down
+Bước 4: Scale-out 2→3, benchmark, auto-scale script
+
+Trên Cloud:
+  AWS   → Launch Template + ASG + ALB + CloudWatch Alarm
+  GCP   → Instance Template + MIG + Cloud LB + Cloud Monitoring
+  Azure → VM Scale Set + Azure LB + Azure Monitor
 ```

@@ -1,17 +1,16 @@
-# Bước 4: Kiểm thử và dọn dẹp tài nguyên
+# Bước 4: Kiểm thử hạ tầng và dọn dẹp
 
 ## Lý thuyết
 
-Trên AWS thật, tài nguyên không dùng vẫn tính phí:
+**Cleanup là kỹ năng bắt buộc** — tài nguyên Cloud không dùng vẫn tính phí theo giờ:
 
-| Tài nguyên idle | ~Chi phí/tháng |
-|----------------|----------------|
-| EC2 t3.medium | $30 |
-| ALB | $20 |
-| NAT Gateway | $32 |
-| Elastic IP chưa gắn | $3.6 |
+| Tài nguyên quên xóa | Chi phí ước tính |
+|--------------------|--------------------|
+| VM (t3.medium) idle | ~$30/tháng |
+| Load Balancer | ~$20/tháng |
+| Static IP chưa gắn | ~$3.6/tháng |
 
-> Thói quen tốt: luôn có cleanup script và đặt billing alert để phát hiện tài nguyên rò rỉ.
+Trong lab: dọn dẹp bằng `docker stop/rm` và `docker network rm`.
 
 ---
 
@@ -24,50 +23,76 @@ source /tmp/lab-env.sh
 ### 4.1 — Kiểm thử end-to-end
 
 ```bash
-# VPC
-aws ec2 describe-vpcs --vpc-ids $VPC_ID \
-  --query 'Vpcs[0].{State:State,CIDR:CidrBlock}' --output table
+echo "=== Kiểm thử toàn bộ hạ tầng ==="
 
-# Security Group rules
-aws ec2 describe-security-groups --group-ids $SG_ID \
-  --query 'SecurityGroups[0].IpPermissions[*].{Port:ToPort,Source:IpRanges[0].CidrIp}' \
-  --output table
+# 1. VPC (networks)
+echo "1. Networks (VPCs):"
+docker network ls | grep -E "public-subnet|private-subnet|devops-vpc"
 
-# HTTP test
-echo "HTTP $(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080)"
+# 2. Instances (containers)
+echo "2. Instances (Containers):"
+docker ps --filter "label=Environment=production" \
+  --format "table {{.Names}}\t{{.Status}}\t{{.Networks}}"
 
-# Port 443 phải bị chặn
-nc -z -w2 localhost 443 2>/dev/null && echo "OPEN" || echo "BLOCKED (đúng)"
+# 3. Security rules (UFW)
+echo "3. Security rules:"
+ufw status | grep -E "80|8080|8081|22|ALLOW"
+
+# 4. HTTP test
+echo "4. HTTP test:"
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081)
+echo "   Web server port 8081: HTTP $HTTP_CODE $([ $HTTP_CODE = "200" ] && echo ✅ || echo ❌)"
+
+# 5. Isolation test (private subnet không public)
+echo "5. DB isolation:"
+nc -z -w2 localhost 5432 2>/dev/null && echo "   Port 5432: OPEN ⚠️" || echo "   Port 5432: BLOCKED ✅"
 ```
 
-### 4.2 — Dọn dẹp
+### 4.2 — Tổng kết kiến trúc
 
 ```bash
-# Container
-docker stop web-server-1 && docker rm web-server-1
-echo "✅ Container đã xóa"
+cat << 'EOF'
+╔══════════════════════════════════════════════════════╗
+║         HẠ TẦNG MẠNG CLOUD — LAB 12                ║
+╠══════════════════════════════════════════════════════╣
+║  VPC (devops-vpc): 10.0.0.0/16                       ║
+║    ├── Public Subnet: 10.0.1.0/24                    ║
+║    │     └── web-server-1 (10.0.1.10)                ║
+║    │           SG: port 80 ✅  port 22 (VPC) ✅      ║
+║    │           Internet: port 8081 public             ║
+║    └── Private Subnet: 10.0.2.0/24                   ║
+║          └── db-server-1 (10.0.2.10)                 ║
+║                SG: port 5432 (VPC only) ✅           ║
+║                Internet: BLOCKED ✅                  ║
+╚══════════════════════════════════════════════════════╝
+EOF
+```
 
-# EC2 + Elastic IP
-aws ec2 terminate-instances --instance-ids $INSTANCE_ID
-aws ec2 release-address --allocation-id $EIP_ID 2>/dev/null
+### 4.3 — Dọn dẹp
 
-# Network resources (theo thứ tự đúng)
-sleep 3
-aws ec2 delete-security-group --group-id $SG_ID
-aws ec2 delete-subnet --subnet-id $SUBNET_ID
-aws ec2 detach-internet-gateway --internet-gateway-id $IGW_ID --vpc-id $VPC_ID
-aws ec2 delete-internet-gateway --internet-gateway-id $IGW_ID
-aws ec2 delete-vpc --vpc-id $VPC_ID
+```bash
+echo "=== Dọn dẹp tài nguyên ==="
 
-# Key Pair
-aws ec2 delete-key-pair --key-name devops-keypair
-rm -f ~/.ssh/devops-keypair.pem
+# Xóa Compute Instances (containers)
+for C in web-server-1 db-server-1 web-server; do
+  docker stop $C 2>/dev/null && docker rm $C 2>/dev/null && echo "✅ Xóa container $C"
+done
+
+# Xóa Networks (VPC + Subnets)
+for N in public-subnet private-subnet devops-vpc; do
+  docker network rm $N 2>/dev/null && echo "✅ Xóa network $N"
+done
+
+# Reset Security rules
+ufw delete allow 80/tcp 2>/dev/null
+ufw delete allow 8080/tcp 2>/dev/null
+ufw delete allow 8081/tcp 2>/dev/null
+ufw --force disable 2>/dev/null
 
 echo ""
-echo "✅ Dọn dẹp hoàn tất"
-aws ec2 describe-vpcs \
-  --filters "Name=cidr,Values=10.0.0.0/16" \
-  --query 'length(Vpcs)' --output text | xargs -I{} echo "VPC còn lại: {} (phải là 0)"
+echo "Xác nhận không còn gì:"
+docker ps -a | grep -E "web-server|db-server" || echo "✅ Không còn container nào"
+docker network ls | grep -E "public-subnet|private-subnet|devops-vpc" || echo "✅ Không còn network nào"
 ```
 
 ---
@@ -75,8 +100,11 @@ aws ec2 describe-vpcs \
 ## Tổng kết
 
 ```
-Bước 1: VPC → Subnet → IGW → Route Table
-Bước 2: Security Group (port 22 IP riêng, port 80 public)
-Bước 3: EC2 + Key Pair + Docker container (web server thật)
+Bước 1: VPC (docker network) → Public Subnet + Private Subnet
+Bước 2: Security Group (UFW) → port 80 public, port 5432 VPC only
+Bước 3: Compute Instance (container) → web server + db server
 Bước 4: End-to-end test + Cleanup
+
+Trên Cloud thật: thay docker → aws/gcloud/az CLI
+Concepts giống nhau 100%
 ```

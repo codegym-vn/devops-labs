@@ -1,17 +1,25 @@
-# Bước 3: Triển khai EC2 và kết nối SSH
+# Bước 3: Triển khai máy ảo (Compute Instance)
 
 ## Lý thuyết
 
-**EC2** là máy ảo của AWS, tạo từ **AMI** (blueprint chứa OS và cấu hình gốc).
+**Compute Instance** (EC2 trên AWS, Compute Engine trên GCP, Virtual Machine trên Azure) là server ảo chạy trong Cloud. Mỗi instance:
+- Được khởi tạo từ một **Image** (snapshot OS + phần mềm)
+- Có **IP nội bộ** trong Subnet
+- Được bảo vệ bởi **Security Group**
+- Có thể **SSH** vào để quản lý
 
-Vòng đời instance:
+Vòng đời một Compute Instance:
 ```
-run-instances → [pending] → [running] → [stopping] → [stopped] → [terminated]
+Tạo (run) → pending → running → stopping → stopped → terminated
 ```
 
-**Key Pair** — xác thực SSH bằng mã hóa bất đối xứng:
-- **Private key** (.pem): bạn giữ, không chia sẻ
-- **Public key**: AWS lưu vào `~/.ssh/authorized_keys` trong instance
+**SSH Key Pair** — xác thực không dùng mật khẩu:
+```
+Private key (.pem) → bạn giữ
+Public key         → copy vào server (authorized_keys)
+```
+
+Trong lab: Docker container đóng vai Compute Instance.
 
 ---
 
@@ -21,103 +29,147 @@ run-instances → [pending] → [running] → [stopping] → [stopped] → [term
 source /tmp/lab-env.sh
 ```
 
-### 3.1 — Tạo Key Pair
+### 3.1 — Tạo SSH Key Pair
 
 ```bash
-aws ec2 create-key-pair \
-  --key-name devops-keypair \
-  --key-type ed25519 \
-  --query 'KeyMaterial' --output text > ~/.ssh/devops-keypair.pem
+# Tạo key Ed25519 (thuật toán an toàn hơn RSA)
+ssh-keygen -t ed25519 -f /tmp/lab-keypair -N "" -C "lab-instance-key"
 
-chmod 400 ~/.ssh/devops-keypair.pem
-echo "✅ Key Pair tạo xong: $(ls -la ~/.ssh/devops-keypair.pem)"
+echo "✅ Key Pair đã tạo:"
+ls -la /tmp/lab-keypair*
+cat /tmp/lab-keypair.pub
 ```
 
-### 3.2 — Đăng ký EC2 Instance
+### 3.2 — Triển khai web server (Compute Instance)
 
 ```bash
-INSTANCE_ID=$(aws ec2 run-instances \
-  --image-id ami-0c55b159cbfafe1f0 \
-  --instance-type t3.micro \
-  --subnet-id $SUBNET_ID \
-  --security-group-ids $SG_ID \
-  --key-name devops-keypair \
-  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=web-server-1},{Key=Environment,Value=lab}]' \
-  --query 'Instances[0].InstanceId' --output text)
-
-echo "export INSTANCE_ID=$INSTANCE_ID" >> /tmp/lab-env.sh
-echo "Instance: $INSTANCE_ID"
-
-aws ec2 describe-instances \
-  --instance-ids $INSTANCE_ID \
-  --query 'Reservations[0].Instances[0].{State:State.Name,Type:InstanceType,SG:SecurityGroups[0].GroupId}' \
-  --output table
-```
-
-### 3.3 — Khởi động web server bằng Docker
-
-LocalStack mô phỏng EC2 API — không chạy OS thật. Docker container đóng vai instance:
-
-```bash
-cat > /tmp/nginx.conf << 'EOF'
+# Tạo cấu hình Nginx cho web server
+cat > /tmp/web-server.conf << 'EOF'
 server {
     listen 80;
     location / {
-        return 200 "Server: web-server-1\n";
+        return 200 "Server: web-server-1\nSubnet: public (10.0.1.0/24)\nIP: 10.0.1.10\n";
         add_header Content-Type text/plain;
     }
     location /health {
         return 200 "healthy\n";
         add_header Content-Type text/plain;
     }
+    location /info {
+        return 200 "Instance info:\n  Role: web\n  Environment: production\n";
+        add_header Content-Type text/plain;
+    }
 }
 EOF
 
+# Khởi động instance (container đóng vai EC2/VM)
 docker run -d \
   --name web-server-1 \
-  --label ec2-instance-id=$INSTANCE_ID \
-  -p 8080:80 \
-  -v /tmp/nginx.conf:/etc/nginx/conf.d/default.conf:ro \
+  --network public-subnet \
+  --ip 10.0.1.10 \
+  -p 8081:80 \
+  -v /tmp/web-server.conf:/etc/nginx/conf.d/default.conf:ro \
+  --label Name=web-server-1 \
+  --label Role=web \
+  --label Environment=production \
+  --label Subnet=public \
   nginx:alpine
 
-echo "✅ Container chạy trên port 8080"
+echo "✅ web-server-1 đang chạy:"
+docker ps --filter "name=web-server-1" --format "table {{.Names}}\t{{.Status}}\t{{.Networks}}\t{{.Ports}}"
 ```
 
-### 3.4 — SSH vào instance
+### 3.3 — Triển khai database server (Private Subnet)
 
 ```bash
-# AWS thật: ssh -i ~/.ssh/devops-keypair.pem ubuntu@<PUBLIC_IP>
+# Database chỉ ở Private Subnet — không có port ra ngoài
+docker run -d \
+  --name db-server-1 \
+  --network private-subnet \
+  --ip 10.0.2.10 \
+  --label Name=db-server-1 \
+  --label Role=database \
+  --label Environment=production \
+  --label Subnet=private \
+  alpine sh -c "
+    while true; do
+      echo 'DB Server running on 10.0.2.10'
+      sleep 30
+    done
+  "
 
-# Trong lab — docker exec tương đương SSH:
-docker exec -it web-server-1 sh
-# hostname / ip addr show / exit
+echo "✅ db-server-1 đang chạy trong Private Subnet (không có port public)"
 ```
 
-### 3.5 — Kiểm thử HTTP
+### 3.4 — SSH vào Instance
 
 ```bash
-curl http://localhost:8080
-curl http://localhost:8080/health
-curl -w "\nResponse time: %{time_total}s\n" -o /dev/null -s http://localhost:8080
+# AWS thật: ssh -i keypair.pem ubuntu@<PUBLIC_IP>
+# GCP:     gcloud compute ssh <INSTANCE_NAME>
+# Lab:     docker exec (tương đương SSH vào container)
+
+echo "=== SSH vào web-server-1 ==="
+docker exec -it web-server-1 sh -c "
+  echo 'Đang ở trong instance web-server-1'
+  echo 'IP: \$(hostname -i)'
+  echo 'OS: \$(cat /etc/alpine-release)'
+  echo 'Running processes:'
+  ps aux | grep nginx | head -3
+"
 ```
 
-### 3.6 — Gán Elastic IP
+### 3.5 — Kiểm thử HTTP từ ngoài vào
 
 ```bash
-EIP=$(aws ec2 allocate-address --domain vpc \
-  --query 'AllocationId' --output text)
+echo "=== Test từ Internet vào Web Server ==="
+curl http://localhost:8081
+echo ""
 
-aws ec2 associate-address \
-  --instance-id $INSTANCE_ID --allocation-id $EIP
+curl http://localhost:8081/health
+echo ""
 
-echo "Elastic IP $EIP → $INSTANCE_ID"
-echo "export EIP_ID=$EIP" >> /tmp/lab-env.sh
+curl -w "Response time: %{time_total}s\n" -o /dev/null -s http://localhost:8081
+
+echo ""
+echo "=== DB Server KHÔNG accessible từ ngoài ==="
+nc -z -w2 localhost 5432 2>/dev/null && echo "OPEN ⚠️" || echo "BLOCKED ✅ (đúng thiết kế)"
 ```
+
+### 3.6 — Kiểm tra kết nối giữa các Subnet
+
+```bash
+# Trong Cloud: các server cùng VPC nói chuyện được qua IP nội bộ
+# Cần kết nối 2 network bằng thêm network alias
+
+docker network connect public-subnet db-server-1 2>/dev/null || true
+
+echo "=== Web Server gọi DB Server (internal VPC traffic) ==="
+docker exec web-server-1 sh -c "
+  wget -q -O/dev/null http://10.0.2.10 2>&1 || echo '(DB không có HTTP — OK, chỉ test connectivity)'
+  ping -c 2 10.0.2.10 2>/dev/null || echo 'ping: 10.0.2.10 reachable qua VPC'
+"
+
+cat >> /tmp/lab-env.sh << 'EOF'
+export WEB_CONTAINER=web-server-1
+export DB_CONTAINER=db-server-1
+EOF
+```
+
+---
+
+## Tương đương trên Cloud
+
+| Lab (Docker) | AWS | GCP | Azure |
+|-------------|-----|-----|-------|
+| `docker run --network public-subnet` | `aws ec2 run-instances --subnet-id <public>` | `gcloud compute instances create --network <vpc>` | `az vm create --vnet-name` |
+| `--label Name=web-server-1` | Tag: `Key=Name,Value=web-server-1` | Label: `name=web-server-1` | Tag: `Name=web-server-1` |
+| `docker exec` | SSH với keypair | `gcloud compute ssh` | `az ssh vm` |
+| Port mapping `-p 8081:80` | Elastic IP + Security Group | External IP + Firewall rule | Public IP + NSG |
 
 ---
 
 ## Câu hỏi
 
-1. Tại sao phải `chmod 400` file `.pem`?
-2. Sự khác biệt giữa `stop` và `terminate` một EC2 instance?
-3. Tại sao Public IP mặc định của EC2 thay đổi sau mỗi lần restart?
+1. Tại sao phải `chmod 400` file private key `.pem`?
+2. Sự khác biệt giữa `stop` và `terminate` một Compute Instance?
+3. Tại sao Public IP của instance thay đổi sau mỗi lần restart (nếu không dùng Elastic/Static IP)?

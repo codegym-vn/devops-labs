@@ -1,127 +1,125 @@
-# Bước 1: Tạo VPC và hạ tầng mạng
-
-## Thiết lập môi trường
-
-```bash
-# Cài AWS CLI v2
-curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
-unzip -q /tmp/awscliv2.zip -d /tmp/ && /tmp/aws/install && rm -rf /tmp/aws /tmp/awscliv2.zip
-
-# Khởi động LocalStack
-docker run -d --rm --name localstack \
-  -p 4566:4566 \
-  -e SERVICES=ec2,elbv2,autoscaling,cloudwatch,budgets \
-  localstack/localstack:3.8
-
-echo "Chờ LocalStack..."
-until curl -sf http://localhost:4566/_localstack/health | grep -q '"ec2"'; do
-  sleep 3; printf "."
-done
-echo " ✅ Sẵn sàng!"
-
-alias aws='aws --endpoint-url=http://localhost:4566'
-export AWS_DEFAULT_REGION=ap-southeast-1
-export AWS_ACCESS_KEY_ID=test
-export AWS_SECRET_ACCESS_KEY=test
-```
-
----
+# Bước 1: Tạo VPC và Subnet
 
 ## Lý thuyết
 
-**VPC** là mạng ảo riêng trên Cloud — tương tự datacenter riêng.
+**VPC** là mạng ảo riêng — tất cả servers bên trong cùng VPC có thể nói chuyện với nhau qua IP nội bộ, nhưng tách biệt hoàn toàn với VPC khác.
+
+**Subnet** chia VPC thành các vùng nhỏ hơn:
+- **Public Subnet**: có đường ra Internet (các web server, load balancer)
+- **Private Subnet**: không có đường ra Internet trực tiếp (database, internal services)
 
 ```
-CIDR 10.0.0.0/16:
-  - 65,534 địa chỉ khả dụng
-  - Có thể chia thành nhiều Subnet nhỏ hơn
+VPC: 10.0.0.0/16
+  ├── Public Subnet:  10.0.1.0/24  → Web servers
+  └── Private Subnet: 10.0.2.0/24  → Databases
 ```
 
-**Internet Gateway (IGW)**: cổng nối VPC ra Internet — không có IGW, instances bị cô lập hoàn toàn.
-
-**Route Table**: xác định đường đi của traffic:
-- `10.0.0.0/16` → đi trong VPC
-- `0.0.0.0/0` → đi qua IGW ra Internet
+Trong Docker, VPC = **Docker network** với custom subnet.
 
 ---
 
 ## Thực hành
 
-### 1.1 — Tạo VPC
+### 1.1 — Tạo VPC (Docker network)
 
 ```bash
-VPC_ID=$(aws ec2 create-vpc \
-  --cidr-block 10.0.0.0/16 \
-  --tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=devops-vpc}]' \
-  --query 'Vpc.VpcId' --output text)
+# Tạo VPC: mạng ảo riêng với CIDR 10.0.0.0/16
+docker network create \
+  --driver bridge \
+  --subnet 10.0.0.0/16 \
+  --gateway 10.0.0.1 \
+  --label vpc=devops-vpc \
+  devops-vpc
 
-echo "VPC: $VPC_ID"
+echo "✅ VPC 'devops-vpc' đã tạo"
+docker network ls | grep devops-vpc
 ```
 
-### 1.2 — Tạo Subnet public
+### 1.2 — Tạo Public Subnet
 
 ```bash
-SUBNET_ID=$(aws ec2 create-subnet \
-  --vpc-id $VPC_ID \
-  --cidr-block 10.0.1.0/24 \
-  --availability-zone ap-southeast-1a \
-  --query 'Subnet.SubnetId' --output text)
+# Subnet public: 10.0.1.0/24 — cho web servers
+docker network create \
+  --driver bridge \
+  --subnet 10.0.1.0/24 \
+  --gateway 10.0.1.1 \
+  --label subnet=public \
+  --label vpc=devops-vpc \
+  public-subnet
 
-aws ec2 modify-subnet-attribute \
-  --subnet-id $SUBNET_ID --map-public-ip-on-launch
-
-echo "Subnet: $SUBNET_ID"
+echo "✅ Public Subnet 10.0.1.0/24"
 ```
 
-### 1.3 — Tạo Internet Gateway
+### 1.3 — Tạo Private Subnet
 
 ```bash
-IGW_ID=$(aws ec2 create-internet-gateway \
-  --query 'InternetGateway.InternetGatewayId' --output text)
+# Subnet private: 10.0.2.0/24 — cho database, internal services
+docker network create \
+  --driver bridge \
+  --subnet 10.0.2.0/24 \
+  --gateway 10.0.2.1 \
+  --label subnet=private \
+  --label vpc=devops-vpc \
+  private-subnet
 
-aws ec2 attach-internet-gateway \
-  --internet-gateway-id $IGW_ID --vpc-id $VPC_ID
-
-echo "IGW: $IGW_ID → gắn vào $VPC_ID"
+echo "✅ Private Subnet 10.0.2.0/24"
+docker network ls | grep subnet
 ```
 
-### 1.4 — Cấu hình Route Table
+### 1.4 — Triển khai server vào từng Subnet
 
 ```bash
-RTB_ID=$(aws ec2 describe-route-tables \
-  --filters "Name=vpc-id,Values=$VPC_ID" \
-  --query 'RouteTables[0].RouteTableId' --output text)
+# Web server → Public Subnet (có port ra ngoài = có Internet Gateway)
+docker run -d \
+  --name web-server \
+  --network public-subnet \
+  --ip 10.0.1.10 \
+  -p 8080:80 \
+  --label role=web \
+  --label environment=production \
+  nginx:alpine
 
-aws ec2 create-route \
-  --route-table-id $RTB_ID \
-  --destination-cidr-block 0.0.0.0/0 \
-  --gateway-id $IGW_ID
+# Database → Private Subnet (KHÔNG có port ra ngoài)
+docker run -d \
+  --name db-server \
+  --network private-subnet \
+  --ip 10.0.2.10 \
+  --label role=database \
+  --label environment=production \
+  alpine sleep infinity
 
-aws ec2 associate-route-table \
-  --route-table-id $RTB_ID --subnet-id $SUBNET_ID
-
-echo "Route Table $RTB_ID: 0.0.0.0/0 → $IGW_ID"
+echo "✅ Web server: 10.0.1.10 (port 8080 ra ngoài)"
+echo "✅ DB server:  10.0.2.10 (chỉ nội bộ)"
+docker ps --format "table {{.Names}}\t{{.Networks}}\t{{.Ports}}"
 ```
 
-### 1.5 — Lưu biến môi trường
+### 1.5 — Kiểm tra isolation
 
 ```bash
-cat > /tmp/lab-env.sh << EOF
-export VPC_ID=$VPC_ID
-export SUBNET_ID=$SUBNET_ID
-export IGW_ID=$IGW_ID
-export RTB_ID=$RTB_ID
+# Web server CÓ THỂ truy cập ra ngoài (public)
+echo "=== Web server ping ra ngoài ==="
+docker exec web-server wget -q -O- http://httpbin.org/ip 2>/dev/null | head -3 || echo "(không có internet trong lab — OK)"
+
+# DB server KHÔNG có port ra ngoài — chỉ internal
+echo "=== DB server: không có port public ==="
+docker inspect db-server --format '{{.NetworkSettings.Ports}}' 
+# Kết quả: map[] = không có port nào expose ra ngoài
+
+# Lưu biến môi trường
+cat > /tmp/lab-env.sh << 'EOF'
+export VPC_NETWORK=devops-vpc
+export PUBLIC_SUBNET=public-subnet
+export PRIVATE_SUBNET=private-subnet
+export WEB_SERVER_IP=10.0.1.10
+export DB_SERVER_IP=10.0.2.10
 EOF
-
 echo "✅ Lưu vào /tmp/lab-env.sh"
 ```
-
-> Mở terminal mới → chạy `source /tmp/lab-env.sh` để khôi phục biến.
 
 ---
 
 ## Câu hỏi
 
-1. Tại sao Subnet cần route `0.0.0.0/0 → IGW` mới là "public subnet"?
-2. VPC `10.0.0.0/16`, Subnet `10.0.1.0/24` — còn bao nhiêu slot để tạo thêm Subnet?
-3. Xóa IGW nhưng giữ route `0.0.0.0/0` trong Route Table — điều gì xảy ra?
+1. Tại sao database nên nằm ở **Private Subnet** thay vì Public Subnet?
+2. Trong bài lab, điều gì đóng vai trò **Internet Gateway** (cổng ra Internet)?
+3. Nếu VPC có CIDR `10.0.0.0/16`, có thể tạo tối đa bao nhiêu Subnet `/24`?

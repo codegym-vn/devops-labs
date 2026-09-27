@@ -1,60 +1,48 @@
-# Lab 13: Application Load Balancer · Auto Scaling Group
+# Lab 13: High Availability — Load Balancer & Auto Scaling
 
-## Bối cảnh
+## Vấn đề cần giải quyết
 
-Web server đơn từ Lab 12 không đáp ứng được traffic cao điểm. Nhiệm vụ: nâng cấp lên **High Availability** — nhiều instance chạy song song phía sau một Load Balancer, tự động scale khi tải tăng.
-
----
-
-## Nhắc lại: LocalStack & AWS CLI
-
-Bạn tiếp tục dùng LocalStack từ Lab 12. Mỗi lần mở terminal mới cần:
-
-```bash
-# Nếu LocalStack chưa chạy:
-docker run -d --rm --name localstack \
-  -p 4566:4566 \
-  -e SERVICES=ec2,elbv2,autoscaling,cloudwatch,budgets \
-  localstack/localstack:3.8
-
-# Trỏ AWS CLI vào LocalStack
-alias aws='aws --endpoint-url=http://localhost:4566'
-export AWS_DEFAULT_REGION=ap-southeast-1
-export AWS_ACCESS_KEY_ID=test
-export AWS_SECRET_ACCESS_KEY=test
-```
-
----
-
-## Kiến trúc
+Web server đơn từ Lab 12 có **single point of failure**: server down → toàn bộ service sập. Giải pháp:
 
 ```
-        Internet
-            │
-     ┌──────▼──────┐
-     │     ALB     │  ← Phân tải theo thuật toán
-     └──────┬──────┘
-            │
-  ┌─────────┼─────────┐
-  ▼         ▼         ▼
-[app-1]  [app-2]  [app-3]   ← EC2 trong Auto Scaling Group
- AZ-1a    AZ-1b    AZ-1a    ← Trải đều trên nhiều AZ
-
-CloudWatch: scale-out CPU > 70% / scale-in CPU < 30%
+Trước (Lab 12)           Sau (Lab 13)
+                         
+  [Client]                   [Client]
+      │                          │
+  [Server]            ┌──────────▼──────────┐
+  ← down → ❌         │   Load Balancer      │
+                      └──────────┬──────────┘
+                         ┌───────┼───────┐
+                         ▼       ▼       ▼
+                      [app-1] [app-2] [app-3]
+                      ← 1 down → 2 còn lại → ✅
 ```
+
+## Khái niệm
+
+**Load Balancer**: phân phối traffic đến nhiều server — không có single point of failure.
+
+**Auto Scaling**: tự động thêm/bớt server dựa trên tải:
+- Tải tăng → scale-out (thêm instance)
+- Tải giảm → scale-in (bớt instance)
+- Giữ min/max để kiểm soát chi phí
+
+**Health Check**: Load Balancer định kỳ kiểm tra sức khỏe backend — instance fail → tự động loại khỏi rotation.
+
+## Tương đương trên Cloud
+
+| Khái niệm | Lab (Docker + Nginx) | AWS | GCP | Azure |
+|-----------|---------------------|-----|-----|-------|
+| Load Balancer | Nginx upstream | ALB | Cloud Load Balancing | Azure Load Balancer |
+| Instance template | Docker image + config | Launch Template | Instance Template | VM Scale Set |
+| Auto Scaling | `docker compose scale` / script | Auto Scaling Group | Managed Instance Group | VMSS |
+| Health Check | Nginx passive / script | ALB Health Check | Health Check | Load Balancer Probe |
+| Scale trigger | Bash script monitoring | CloudWatch Alarm | Cloud Monitoring | Azure Monitor |
 
 ## Mục tiêu
 
-- Tạo Launch Template và Auto Scaling Group (min/max/desired)
-- Cấu hình ALB + Target Group với Health Check
-- Quan sát phân phối round-robin
-- Giả lập scale-out và đo throughput trước/sau
-
-## Công cụ
-
-| Công cụ | Vai trò |
-|---------|---------|
-| AWS CLI + LocalStack | Tạo ASG, ALB, CloudWatch |
-| Docker | Chạy backend containers (đóng vai EC2) |
-| Nginx | Proxy + phân tải HTTP thật |
-| wrk | Benchmark throughput |
+- Cấu hình Nginx làm Load Balancer với thuật toán least_conn
+- Khởi động nhiều backend containers (Compute Instances)
+- Quan sát phân phối traffic và Health Check
+- Mô phỏng scale-out: tăng số instance khi tải cao
+- Đo throughput trước/sau scale-out bằng `wrk`
