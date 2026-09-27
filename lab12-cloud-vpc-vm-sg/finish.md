@@ -1,23 +1,23 @@
-# 🎉 Chúc mừng! Bạn đã hoàn thành Lab: Cloud VPC + VM + Security Groups
+#  Chúc mừng! Bạn đã hoàn thành Lab: Cloud VPC + VM + Security Groups
 
 ## Những gì bạn đã làm được
 
 Bạn vừa tự tay xây dựng một hạ tầng Cloud chuẩn từ đầu:
 
 ```
-✅ Bước 1 — Hạ tầng mạng
+ Bước 1 — Hạ tầng mạng
    VPC (10.0.0.0/16) → Subnet public (10.0.1.0/24)
    → Internet Gateway → Route Table (0.0.0.0/0 → IGW)
 
-✅ Bước 2 — Bảo mật
+ Bước 2 — Bảo mật
    Security Group: SSH chỉ từ IP riêng, HTTP từ public
    Áp dụng nguyên tắc Least Privilege
 
-✅ Bước 3 — Triển khai
+ Bước 3 — Triển khai
    EC2 instance + Key Pair Ed25519
    Web server Nginx hoạt động thật (qua Docker)
 
-✅ Bước 4 — Vận hành
+ Bước 4 — Vận hành
    Kiểm thử end-to-end toàn bộ luồng
    Cleanup script dọn sạch tài nguyên
 ```

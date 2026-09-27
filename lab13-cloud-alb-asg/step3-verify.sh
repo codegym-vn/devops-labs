@@ -5,9 +5,9 @@ PASS=0; FAIL=0
 
 check() {
   if [ "$2" = "$3" ] || ([ "$3" = "nonempty" ] && [ -n "$2" ]); then
-    echo "  ✅ $1"; PASS=$((PASS+1))
+    echo "   $1"; PASS=$((PASS+1))
   else
-    echo "  ❌ $1"
+    echo "   $1"
     [ -n "$4" ] && echo "     Gợi ý: $4"
     FAIL=$((FAIL+1))
   fi
@@ -55,10 +55,10 @@ check "Benchmark baseline đã chạy (/tmp/bench-2.txt)" \
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
-[ $FAIL -eq 0 ] && echo "🎉 Load Balancer phân phối đúng!" && exit 0 || exit 1
+[ $FAIL -eq 0 ] && echo " Load Balancer phân phối đúng!" && exit 0 || exit 1
 
 echo ""
-echo "=== 🎯 Bài tập ==="
+echo "===  Bài tập ==="
 echo ""
 
 check "[Bài tập] Script /tmp/health-check-all.sh đã tạo và executable" \
@@ -71,7 +71,7 @@ HC_EXIT=$?
 HAS_OUTPUT=$(grep -ic "healthy\|app-" /tmp/hc-output.txt 2>/dev/null)
 check "[Bài tập] health-check-all.sh in ra trạng thái từng backend" \
   "$([ $HAS_OUTPUT -ge 1 ] && echo ok)" "ok" \
-  "Script phải in ra ✅/❌ cho mỗi app-*"
+  "Script phải in ra / cho mỗi app-*"
 
 check "[Bài tập] health-check-all.sh exit 0 khi tất cả healthy" \
   "$HC_EXIT" "0" \

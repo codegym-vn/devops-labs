@@ -69,7 +69,7 @@ cat > /opt/lab-data/budgets/config.json << 'EOF'
 }
 EOF
 
-echo "✅ Budget config: /opt/lab-data/budgets/config.json"
+echo " Budget config: /opt/lab-data/budgets/config.json"
 cat /opt/lab-data/budgets/config.json | python3 -m json.tool | head -20
 ```
 
@@ -126,11 +126,11 @@ for budget in config["budgets"]:
         notify = alert["notify"]
 
         if pct >= threshold and alert_type == "ACTUAL":
-            print(f"  🔴 ALERT {threshold}%: Gửi email → {notify}")
+            print(f"   ALERT {threshold}%: Gửi email → {notify}")
         elif pct >= threshold * 0.9 and alert_type == "FORECAST":
-            print(f"  🟡 FORECAST ALERT: Dự báo vượt {threshold}% → {notify}")
+            print(f"   FORECAST ALERT: Dự báo vượt {threshold}% → {notify}")
         else:
-            print(f"  ✅ Alert {threshold}% ({alert_type}): chưa kích hoạt")
+            print(f"   Alert {threshold}% ({alert_type}): chưa kích hoạt")
     print()
 EOF
 
@@ -144,7 +144,7 @@ python3 /opt/lab-data/budgets/check-budget.py
 echo "0 9 * * * root python3 /opt/lab-data/budgets/check-budget.py >> /var/log/budget-check.log 2>&1" \
   > /etc/cron.d/budget-check
 
-echo "✅ Cron job: budget check mỗi ngày lúc 9:00"
+echo " Cron job: budget check mỗi ngày lúc 9:00"
 cat /etc/cron.d/budget-check
 
 echo ""
@@ -173,7 +173,7 @@ python3 /opt/lab-data/budgets/check-budget.py
 
 ---
 
-## 🎯 Bài tập
+##  Bài tập
 
 > Hoàn thành phần thực hành trên trước khi làm bài tập này.
 

@@ -10,12 +10,12 @@ Trước (Lab 12)           Sau (Lab 13)
   [Client]                   [Client]
       │                          │
   [Server]            ┌──────────▼──────────┐
-  ← down → ❌         │   Load Balancer      │
+  ← down →          │   Load Balancer      │
                       └──────────┬──────────┘
                          ┌───────┼───────┐
                          ▼       ▼       ▼
                       [app-1] [app-2] [app-3]
-                      ← 1 down → 2 còn lại → ✅
+                      ← 1 down → 2 còn lại → 
 ```
 
 ## Khái niệm

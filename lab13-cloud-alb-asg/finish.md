@@ -1,22 +1,22 @@
-# 🎉 Hoàn thành Lab 13: ALB + Auto Scaling Group
+#  Hoàn thành Lab 13: ALB + Auto Scaling Group
 
 ## Những gì bạn đã làm được
 
 ```
-✅ Bước 1 — Launch Template + Auto Scaling Group
+ Bước 1 — Launch Template + Auto Scaling Group
    Blueprint EC2 (AMI, type, user-data) → ASG (min=1, desired=2, max=4)
    CloudWatch Alarms: scale-out CPU>70%, scale-in CPU<30%
 
-✅ Bước 2 — Application Load Balancer
+ Bước 2 — Application Load Balancer
    ALB + Target Group (Health Check /health) + Listener port 80
    Nginx proxy thật: least_conn + passive health check
 
-✅ Bước 3 — Kiểm thử phân tải
+ Bước 3 — Kiểm thử phân tải
    Round-robin thực tế: ~50% mỗi backend
    Mô phỏng backend lỗi: Health Check loại instance khỏi rotation
    Benchmark với wrk: đo throughput thực tế
 
-✅ Bước 4 — Scale-out & Cleanup
+ Bước 4 — Scale-out & Cleanup
    ASG tăng desired 2 → 3 → app-3 vào rotation
    Throughput tăng tương ứng khi thêm instance
    Dọn sạch: ALB, ASG, Launch Template, VPC, containers

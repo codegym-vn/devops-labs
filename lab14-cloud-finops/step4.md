@@ -60,7 +60,7 @@ for inst in instances:
     elif "Reserved" in action:     new_cost = current * 0.7
     else:                          new_cost = current
     total_after += new_cost
-    flag = "🔴" if new_type == "TERMINATE" else ("🟡" if new_type else "🟢")
+    flag = "" if new_type == "TERMINATE" else ("" if new_type else "")
     print(f"{flag} {inst['name']:20s} {inst['type']:12s} CPU:{inst['avg_cpu']:5.1f}%  ${current:.2f} → ${new_cost:.2f}  {action}")
 
 print(f"\nTổng trước : ${total_before:.2f}/tháng")
@@ -92,7 +92,7 @@ cat > /tmp/finops-report.md << 'EOF'
 - Thiết lập Auto Scaling để scale-in ngoài giờ cao điểm
 EOF
 
-echo "✅ Báo cáo: /tmp/finops-report.md"
+echo " Báo cáo: /tmp/finops-report.md"
 cat /tmp/finops-report.md
 ```
 
@@ -106,7 +106,7 @@ cat /tmp/finops-report.md
 
 ---
 
-## 🎯 Bài tập
+##  Bài tập
 
 > Hoàn thành phần thực hành trên trước khi làm bài tập này.
 

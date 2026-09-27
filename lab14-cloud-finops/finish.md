@@ -1,21 +1,21 @@
-# 🎉 Hoàn thành Lab 14: FinOps — Budget Alerts, Tags & Cost Optimization
+#  Hoàn thành Lab 14: FinOps — Budget Alerts, Tags & Cost Optimization
 
 ## Những gì bạn đã làm được
 
 ```
-✅ Bước 1 — Cost Allocation Tags
+ Bước 1 — Cost Allocation Tags
    5 EC2 instances + VPC + Subnet được gắn đủ 4 tags chuẩn
    Tag compliance check: 0 resources thiếu tag
 
-✅ Bước 2 — AWS Budgets
+ Bước 2 — AWS Budgets
    1 budget tổng ($100/tháng) + 3 budget theo project
    Alert 80% và 100% với email notification
 
-✅ Bước 3 — Cost & Usage Report Analysis
+ Bước 3 — Cost & Usage Report Analysis
    Breakdown theo Service, Project, Environment, Owner
    Phát hiện ngày chi phí đột biến
 
-✅ Bước 4 — Idle Resource Analysis + Báo cáo
+ Bước 4 — Idle Resource Analysis + Báo cáo
    Phát hiện 3/5 instances cần tối ưu
    Báo cáo đề xuất tiết kiệm ~47% chi phí/tháng
 ```

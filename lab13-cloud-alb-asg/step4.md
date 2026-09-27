@@ -77,7 +77,7 @@ EOF
 nginx -t && nginx -s reload
 sleep 2
 
-echo "✅ 3 instances đang chạy:"
+echo " 3 instances đang chạy:"
 docker ps --filter "label=asg=$ASG_NAME" --format "table {{.Names}}\t{{.Status}}"
 ```
 
@@ -106,11 +106,11 @@ CURRENT_CONNS=$(ss -tn state established "dport = :8081 or dport = :8082 or dpor
 echo "Instances hiện tại: $CURRENT_DESIRED | Connections: $CURRENT_CONNS"
 
 if [ $CURRENT_CONNS -gt $THRESHOLD_HIGH ] && [ $CURRENT_DESIRED -lt 4 ]; then
-  echo "⬆️  Scale-out: connections cao ($CURRENT_CONNS > $THRESHOLD_HIGH)"
+  echo "  Scale-out: connections cao ($CURRENT_CONNS > $THRESHOLD_HIGH)"
 elif [ $CURRENT_CONNS -lt $THRESHOLD_LOW ] && [ $CURRENT_DESIRED -gt 1 ]; then
-  echo "⬇️  Scale-in: connections thấp ($CURRENT_CONNS < $THRESHOLD_LOW)"
+  echo "  Scale-in: connections thấp ($CURRENT_CONNS < $THRESHOLD_LOW)"
 else
-  echo "✅ Ổn định — không cần scale"
+  echo " Ổn định — không cần scale"
 fi
 SCALER
 
@@ -133,7 +133,7 @@ docker network rm app-network 2>/dev/null
 rm -f /etc/nginx/conf.d/lb.conf
 nginx -s reload 2>/dev/null || true
 
-echo "✅ Dọn dẹp hoàn tất"
+echo " Dọn dẹp hoàn tất"
 ```
 
 ---
@@ -154,7 +154,7 @@ Trên Cloud:
 
 ---
 
-## 🎯 Bài tập
+##  Bài tập
 
 > Hoàn thành cleanup trên trước khi làm bài tập này.
 

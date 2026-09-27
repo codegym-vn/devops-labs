@@ -5,9 +5,9 @@ PASS=0; FAIL=0
 
 check() {
   if [ "$2" = "$3" ] || ([ "$3" = "nonempty" ] && [ -n "$2" ]); then
-    echo "  ✅ $1"; PASS=$((PASS+1))
+    echo "   $1"; PASS=$((PASS+1))
   else
-    echo "  ❌ $1"
+    echo "   $1"
     [ -n "$4" ] && echo "     Gợi ý: $4"
     FAIL=$((FAIL+1))
   fi
@@ -56,7 +56,7 @@ check "File /tmp/lab-env.sh đã lưu biến môi trường" \
   "Chạy phần 1.5 trong hướng dẫn để lưu biến"
 
 echo ""
-echo "=== 🎯 Bài tập ==="
+echo "===  Bài tập ==="
 echo ""
 
 # Challenge: tạo db-subnet (10.0.3.0/24) và container db-replica
@@ -88,4 +88,4 @@ check "[Bài tập] db-replica không expose port ra ngoài" \
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
-[ $FAIL -eq 0 ] && echo "🎉 Hoàn thành Bước 1!" && exit 0 || exit 1
+[ $FAIL -eq 0 ] && echo " Hoàn thành Bước 1!" && exit 0 || exit 1

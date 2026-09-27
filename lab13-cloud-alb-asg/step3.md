@@ -66,7 +66,7 @@ done
 docker start app-2
 sleep 2
 docker exec app-2 sh -c "echo 'healthy' > /usr/share/nginx/html/health"
-echo "✅ app-2 phục hồi"
+echo " app-2 phục hồi"
 ```
 
 ---
@@ -79,7 +79,7 @@ echo "✅ app-2 phục hồi"
 
 ---
 
-## 🎯 Bài tập
+##  Bài tập
 
 > Hoàn thành phần thực hành trên trước khi làm bài tập này.
 
@@ -87,7 +87,7 @@ echo "✅ app-2 phục hồi"
 
 Script phải:
 - Kiểm tra health của tất cả ports đang có container `app-*`
-- In ra `✅ app-X: healthy` hoặc `❌ app-X: UNHEALTHY`
+- In ra ` app-X: healthy` hoặc ` app-X: UNHEALTHY`
 - Thoát với exit code `0` nếu TẤT CẢ healthy, `1` nếu có bất kỳ backend nào fail
 - Phải executable (`chmod +x`)
 

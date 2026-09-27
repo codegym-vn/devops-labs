@@ -5,9 +5,9 @@ PASS=0; FAIL=0
 
 check() {
   if [ "$2" = "$3" ] || ([ "$3" = "nonempty" ] && [ -n "$2" ]); then
-    echo "  ✅ $1"; PASS=$((PASS+1))
+    echo "   $1"; PASS=$((PASS+1))
   else
-    echo "  ❌ $1"
+    echo "   $1"
     [ -n "$4" ] && echo "     Gợi ý: $4"
     FAIL=$((FAIL+1))
   fi
@@ -58,10 +58,10 @@ check "app-1 trả về server-id chứa 'app-1'" \
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
-[ $FAIL -eq 0 ] && echo "🎉 Instances sẵn sàng!" && exit 0 || exit 1
+[ $FAIL -eq 0 ] && echo " Instances sẵn sàng!" && exit 0 || exit 1
 
 echo ""
-echo "=== 🎯 Bài tập ==="
+echo "===  Bài tập ==="
 echo ""
 
 APP3=$(docker inspect app-3 --format '{{.State.Status}}' 2>/dev/null)

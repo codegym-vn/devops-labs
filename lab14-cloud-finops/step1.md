@@ -41,7 +41,7 @@ create_server() {
     nginx:alpine \
     sh -c "echo '$NAME' > /usr/share/nginx/html/index.html; nginx -g 'daemon off;'"
 
-  echo "✅ $NAME [Project=$PROJECT, Env=$ENV, Owner=$OWNER]"
+  echo " $NAME [Project=$PROJECT, Env=$ENV, Owner=$OWNER]"
 }
 
 create_server "api-server-prod"   "e-commerce"     "production"  "team-backend"  "CC-001"
@@ -66,15 +66,15 @@ for C in api-server-prod web-server-prod worker-prod reporting-server old-test-s
   done
 
   if [ -z "$MISSING" ]; then
-    echo "  ✅ $C — đủ tags"
+    echo "   $C — đủ tags"
   else
-    echo "  ❌ $C — thiếu:$MISSING"
+    echo "   $C — thiếu:$MISSING"
     FAIL=$((FAIL+1))
   fi
 done
 
 echo ""
-[ $FAIL -eq 0 ] && echo "Tag compliance: 100% ✅" || echo "Tag compliance: $FAIL servers thiếu tag ❌"
+[ $FAIL -eq 0 ] && echo "Tag compliance: 100% " || echo "Tag compliance: $FAIL servers thiếu tag "
 ```
 
 ### 1.3 — Query tài nguyên theo tag (như Cloud console)
@@ -163,7 +163,7 @@ EOF
 
 ---
 
-## 🎯 Bài tập
+##  Bài tập
 
 > Hoàn thành phần thực hành trên trước khi làm bài tập này.
 

@@ -41,11 +41,11 @@ ufw status | grep -E "80|8080|8081|22|ALLOW"
 # 4. HTTP test
 echo "4. HTTP test:"
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081)
-echo "   Web server port 8081: HTTP $HTTP_CODE $([ $HTTP_CODE = "200" ] && echo ✅ || echo ❌)"
+echo "   Web server port 8081: HTTP $HTTP_CODE $([ $HTTP_CODE = "200" ] && echo  || echo )"
 
 # 5. Isolation test (private subnet không public)
 echo "5. DB isolation:"
-nc -z -w2 localhost 5432 2>/dev/null && echo "   Port 5432: OPEN ⚠️" || echo "   Port 5432: BLOCKED ✅"
+nc -z -w2 localhost 5432 2>/dev/null && echo "   Port 5432: OPEN " || echo "   Port 5432: BLOCKED "
 ```
 
 ### 4.2 — Tổng kết kiến trúc
@@ -58,12 +58,12 @@ cat << 'EOF'
 ║  VPC (devops-vpc): 10.0.0.0/16                       ║
 ║    ├── Public Subnet: 10.0.1.0/24                    ║
 ║    │     └── web-server-1 (10.0.1.10)                ║
-║    │           SG: port 80 ✅  port 22 (VPC) ✅      ║
+║    │           SG: port 80   port 22 (VPC)       ║
 ║    │           Internet: port 8081 public             ║
 ║    └── Private Subnet: 10.0.2.0/24                   ║
 ║          └── db-server-1 (10.0.2.10)                 ║
-║                SG: port 5432 (VPC only) ✅           ║
-║                Internet: BLOCKED ✅                  ║
+║                SG: port 5432 (VPC only)            ║
+║                Internet: BLOCKED                   ║
 ╚══════════════════════════════════════════════════════╝
 EOF
 ```
@@ -75,12 +75,12 @@ echo "=== Dọn dẹp tài nguyên ==="
 
 # Xóa Compute Instances (containers)
 for C in web-server-1 db-server-1 web-server; do
-  docker stop $C 2>/dev/null && docker rm $C 2>/dev/null && echo "✅ Xóa container $C"
+  docker stop $C 2>/dev/null && docker rm $C 2>/dev/null && echo " Xóa container $C"
 done
 
 # Xóa Networks (VPC + Subnets)
 for N in public-subnet private-subnet devops-vpc; do
-  docker network rm $N 2>/dev/null && echo "✅ Xóa network $N"
+  docker network rm $N 2>/dev/null && echo " Xóa network $N"
 done
 
 # Reset Security rules
@@ -91,8 +91,8 @@ ufw --force disable 2>/dev/null
 
 echo ""
 echo "Xác nhận không còn gì:"
-docker ps -a | grep -E "web-server|db-server" || echo "✅ Không còn container nào"
-docker network ls | grep -E "public-subnet|private-subnet|devops-vpc" || echo "✅ Không còn network nào"
+docker ps -a | grep -E "web-server|db-server" || echo " Không còn container nào"
+docker network ls | grep -E "public-subnet|private-subnet|devops-vpc" || echo " Không còn network nào"
 ```
 
 ---
@@ -111,7 +111,7 @@ Concepts giống nhau 100%
 
 ---
 
-## 🎯 Bài tập
+##  Bài tập
 
 > Hoàn thành cleanup trên trước khi làm bài tập này.
 

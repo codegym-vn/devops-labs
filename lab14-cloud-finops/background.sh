@@ -95,13 +95,13 @@ for inst in instances:
     cost = inst["monthly_cost_usd"]
     if cpu < threshold:
         idle_count += 1
-        if cpu < 5:    rec = "🔴 TERMINATE hoặc right-size ngay"
-        elif cpu < 15: rec = "🟡 Downgrade instance type"
-        else:          rec = "🟠 Xem xét Schedule stop ngoài giờ"
+        if cpu < 5:    rec = " TERMINATE hoặc right-size ngay"
+        elif cpu < 15: rec = " Downgrade instance type"
+        else:          rec = " Xem xét Schedule stop ngoài giờ"
         print(f"  {inst['name']:25s} CPU:{cpu:5.1f}%  ${cost:.2f}/tháng")
         print(f"  → {rec}\n")
     else:
-        print(f"  ✅ {inst['name']:25s} CPU:{cpu:5.1f}%  ${cost:.2f}/tháng (OK)\n")
+        print(f"   {inst['name']:25s} CPU:{cpu:5.1f}%  ${cost:.2f}/tháng (OK)\n")
 
 print(f"Tổng idle (CPU < {threshold}%): {idle_count}/{len(instances)} instances")
 PYEOF

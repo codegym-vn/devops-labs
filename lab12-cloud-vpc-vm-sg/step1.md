@@ -31,7 +31,7 @@ docker network create \
   --label vpc=devops-vpc \
   devops-vpc
 
-echo "✅ VPC 'devops-vpc' đã tạo"
+echo " VPC 'devops-vpc' đã tạo"
 docker network ls | grep devops-vpc
 ```
 
@@ -47,7 +47,7 @@ docker network create \
   --label vpc=devops-vpc \
   public-subnet
 
-echo "✅ Public Subnet 10.0.1.0/24"
+echo " Public Subnet 10.0.1.0/24"
 ```
 
 ### 1.3 — Tạo Private Subnet
@@ -62,7 +62,7 @@ docker network create \
   --label vpc=devops-vpc \
   private-subnet
 
-echo "✅ Private Subnet 10.0.2.0/24"
+echo " Private Subnet 10.0.2.0/24"
 docker network ls | grep subnet
 ```
 
@@ -88,8 +88,8 @@ docker run -d \
   --label environment=production \
   alpine sleep infinity
 
-echo "✅ Web server: 10.0.1.10 (port 8080 ra ngoài)"
-echo "✅ DB server:  10.0.2.10 (chỉ nội bộ)"
+echo " Web server: 10.0.1.10 (port 8080 ra ngoài)"
+echo " DB server:  10.0.2.10 (chỉ nội bộ)"
 docker ps --format "table {{.Names}}\t{{.Networks}}\t{{.Ports}}"
 ```
 
@@ -113,7 +113,7 @@ export PRIVATE_SUBNET=private-subnet
 export WEB_SERVER_IP=10.0.1.10
 export DB_SERVER_IP=10.0.2.10
 EOF
-echo "✅ Lưu vào /tmp/lab-env.sh"
+echo " Lưu vào /tmp/lab-env.sh"
 ```
 
 ---
@@ -126,7 +126,7 @@ echo "✅ Lưu vào /tmp/lab-env.sh"
 
 ---
 
-## 🎯 Bài tập
+##  Bài tập
 
 > Hoàn thành phần thực hành trên trước khi làm bài tập này.
 

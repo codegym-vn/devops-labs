@@ -5,9 +5,9 @@ PASS=0; FAIL=0
 
 check() {
   if [ "$2" = "$3" ] || ([ "$3" = "nonempty" ] && [ -n "$2" ]); then
-    echo "  ✅ $1"; PASS=$((PASS+1))
+    echo "   $1"; PASS=$((PASS+1))
   else
-    echo "  ❌ $1"
+    echo "   $1"
     [ -n "$4" ] && echo "     Gợi ý: $4"
     FAIL=$((FAIL+1))
   fi
@@ -53,7 +53,7 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
 if [ $FAIL -eq 0 ]; then
-  echo "🎉 FinOps Lab hoàn thành!"
+  echo " FinOps Lab hoàn thành!"
   echo "   Bạn đã thực hành đầy đủ: Tagging → Budgets → Cost Analysis → Optimization"
   exit 0
 else
@@ -61,7 +61,7 @@ else
 fi
 
 echo ""
-echo "=== 🎯 Bài tập ==="
+echo "===  Bài tập ==="
 echo ""
 
 HAS_API_SECTION=$(grep -ic "api-server-prod" /tmp/finops-report.md 2>/dev/null)

@@ -63,7 +63,7 @@ EOF
 
 rm -f /etc/nginx/sites-enabled/default
 nginx -t && nginx -s reload
-echo "✅ Load Balancer sẵn sàng tại port 80"
+echo " Load Balancer sẵn sàng tại port 80"
 ```
 
 ### 2.2 — Kiểm tra LB hoạt động
@@ -96,9 +96,9 @@ for BACKEND in "${BACKENDS[@]}"; do
   STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://${BACKEND}/health)
   LATENCY=$(curl -s -o /dev/null -w "%{time_total}" http://${BACKEND}/health)
   if [ "$STATUS" = "200" ]; then
-    echo "  ✅ $BACKEND — HTTP $STATUS (${LATENCY}s)"
+    echo "   $BACKEND — HTTP $STATUS (${LATENCY}s)"
   else
-    echo "  ❌ $BACKEND — HTTP $STATUS UNHEALTHY"
+    echo "   $BACKEND — HTTP $STATUS UNHEALTHY"
   fi
 done
 EOF
@@ -125,7 +125,7 @@ done
 
 # Phục hồi app-2
 docker exec app-2 sh -c "echo 'healthy' > /usr/share/nginx/html/health"
-echo "✅ app-2 đã phục hồi"
+echo " app-2 đã phục hồi"
 ```
 
 ---
@@ -149,7 +149,7 @@ echo "✅ app-2 đã phục hồi"
 
 ---
 
-## 🎯 Bài tập
+##  Bài tập
 
 > Hoàn thành phần thực hành trên trước khi làm bài tập này.
 

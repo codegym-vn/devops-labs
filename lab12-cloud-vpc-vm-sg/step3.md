@@ -35,7 +35,7 @@ source /tmp/lab-env.sh
 # Tạo key Ed25519 (thuật toán an toàn hơn RSA)
 ssh-keygen -t ed25519 -f /tmp/lab-keypair -N "" -C "lab-instance-key"
 
-echo "✅ Key Pair đã tạo:"
+echo " Key Pair đã tạo:"
 ls -la /tmp/lab-keypair*
 cat /tmp/lab-keypair.pub
 ```
@@ -75,7 +75,7 @@ docker run -d \
   --label Subnet=public \
   nginx:alpine
 
-echo "✅ web-server-1 đang chạy:"
+echo " web-server-1 đang chạy:"
 docker ps --filter "name=web-server-1" --format "table {{.Names}}\t{{.Status}}\t{{.Networks}}\t{{.Ports}}"
 ```
 
@@ -98,7 +98,7 @@ docker run -d \
     done
   "
 
-echo "✅ db-server-1 đang chạy trong Private Subnet (không có port public)"
+echo " db-server-1 đang chạy trong Private Subnet (không có port public)"
 ```
 
 ### 3.4 — SSH vào Instance
@@ -132,7 +132,7 @@ curl -w "Response time: %{time_total}s\n" -o /dev/null -s http://localhost:8081
 
 echo ""
 echo "=== DB Server KHÔNG accessible từ ngoài ==="
-nc -z -w2 localhost 5432 2>/dev/null && echo "OPEN ⚠️" || echo "BLOCKED ✅ (đúng thiết kế)"
+nc -z -w2 localhost 5432 2>/dev/null && echo "OPEN " || echo "BLOCKED  (đúng thiết kế)"
 ```
 
 ### 3.6 — Kiểm tra kết nối giữa các Subnet
@@ -176,7 +176,7 @@ EOF
 
 ---
 
-## 🎯 Bài tập
+##  Bài tập
 
 > Hoàn thành phần thực hành trên trước khi làm bài tập này.
 

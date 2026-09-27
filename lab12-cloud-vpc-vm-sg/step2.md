@@ -11,9 +11,9 @@
 
 ```
 Internet ──→ [Security Group] ──→ Server
-               ✅ Port 80 (HTTP)
-               ✅ Port 22 (SSH, từ IP riêng)
-               ❌ Tất cả còn lại
+                Port 80 (HTTP)
+                Port 22 (SSH, từ IP riêng)
+                Tất cả còn lại
 ```
 
 **Nguyên tắc Least Privilege**: chỉ mở đúng port cần thiết, đúng nguồn cần thiết.
@@ -79,11 +79,11 @@ echo "Port 22: KHÔNG mở ra Internet"
 ```bash
 # Port 8080 phải OPEN (HTTP đã cho phép)
 echo -n "Port 8080 (HTTP): "
-curl -s -o /dev/null -w "%{http_code}" http://localhost:8080 && echo " ✅ OPEN"
+curl -s -o /dev/null -w "%{http_code}" http://localhost:8080 && echo "  OPEN"
 
 # Port 3306 phải BLOCKED (MySQL chưa khai báo)
 echo -n "Port 3306 (MySQL không khai báo): "
-nc -z -w2 localhost 3306 2>/dev/null && echo "OPEN ⚠️" || echo "BLOCKED ✅"
+nc -z -w2 localhost 3306 2>/dev/null && echo "OPEN " || echo "BLOCKED "
 ```
 
 ### 2.5 — Audit: kiểm tra rule thừa
@@ -96,7 +96,7 @@ ufw status numbered | grep 8443
 
 # Phát hiện → thu hồi ngay
 ufw delete allow 8443/tcp
-echo "✅ Đã thu hồi rule không cần thiết (port 8443)"
+echo " Đã thu hồi rule không cần thiết (port 8443)"
 ```
 
 ---
@@ -119,7 +119,7 @@ echo "✅ Đã thu hồi rule không cần thiết (port 8443)"
 
 ---
 
-## 🎯 Bài tập
+##  Bài tập
 
 > Hoàn thành phần thực hành trên trước khi làm bài tập này.
 

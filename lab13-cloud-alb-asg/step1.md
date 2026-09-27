@@ -33,7 +33,7 @@ export ASG_DESIRED=2
 export ASG_NAME=web-asg
 EOF
 
-echo "✅ Network app-network: 10.1.0.0/24"
+echo " Network app-network: 10.1.0.0/24"
 ```
 
 ### 1.2 — Tạo Instance Template (script khởi tạo server)
@@ -61,7 +61,7 @@ echo "Instance ${INSTANCE_ID} initialized"
 TEMPLATE
 
 chmod +x /tmp/instance-template.sh
-echo "✅ Instance template đã sẵn sàng"
+echo " Instance template đã sẵn sàng"
 ```
 
 ### 1.3 — Khởi động instances (desired-capacity = 2)
@@ -90,7 +90,7 @@ start_instance() {
       nginx -g 'daemon off;'
     "
 
-  echo "✅ app-${ID} → port ${PORT} (10.1.0.1${ID})"
+  echo " app-${ID} → port ${PORT} (10.1.0.1${ID})"
 }
 
 # Khởi động 2 instances (desired=2)
@@ -121,7 +121,7 @@ done
 
 ---
 
-## 🎯 Bài tập
+##  Bài tập
 
 > Hoàn thành phần thực hành trên trước khi làm bài tập này.
 
