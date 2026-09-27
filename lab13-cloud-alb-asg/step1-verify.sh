@@ -1,60 +1,61 @@
 #!/bin/bash
-# step1-verify.sh — Kiểm tra Launch Template + ASG + CloudWatch Alarms
-source /tmp/lab-env.sh 2>/dev/null || true
+# step1-verify.sh — Lab 13: Kiểm tra Instances + Network
+
 PASS=0; FAIL=0
 
 check() {
-  [ "$2" = "$3" ] && { echo "  ✅ $1"; PASS=$((PASS+1)); } \
-                  || { echo "  ❌ $1 (nhận: '$2', cần: '$3')"; FAIL=$((FAIL+1)); }
+  if [ "$2" = "$3" ] || ([ "$3" = "nonempty" ] && [ -n "$2" ]); then
+    echo "  ✅ $1"; PASS=$((PASS+1))
+  else
+    echo "  ❌ $1"
+    [ -n "$4" ] && echo "     Gợi ý: $4"
+    FAIL=$((FAIL+1))
+  fi
 }
 
-echo "=== Kiểm tra Bước 1: Launch Template + ASG + Alarms ==="
+echo "=== Bước 1: Instances + Network ==="
 echo ""
 
-# Launch Template tồn tại
-LT=$(aws ec2 describe-launch-templates \
-  --launch-template-names web-server-lt \
-  --query 'LaunchTemplates[0].LaunchTemplateName' --output text 2>/dev/null)
-check "Launch Template 'web-server-lt' đã tạo" "$LT" "web-server-lt"
+# 1. Network app-network tồn tại
+APP_NET=$(docker network inspect app-network \
+  --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}' 2>/dev/null)
+check "Network 'app-network' (10.1.0.0/24) đã tạo" \
+  "$(echo $APP_NET | grep -c '10.1.0')" "1" \
+  "Chạy: docker network create --subnet 10.1.0.0/24 app-network"
 
-# ASG tồn tại với đúng capacity
-ASG_DESIRED=$(aws autoscaling describe-auto-scaling-groups \
-  --auto-scaling-group-names web-asg \
-  --query 'AutoScalingGroups[0].DesiredCapacity' --output text 2>/dev/null)
-check "ASG 'web-asg' có DesiredCapacity = 2" "$ASG_DESIRED" "2"
+# 2. app-1 đang chạy
+APP1=$(docker inspect app-1 --format '{{.State.Status}}' 2>/dev/null)
+check "Container 'app-1' đang running" "$APP1" "running" \
+  "Chạy lại phần 1.3 để start_instance 1"
 
-ASG_MIN=$(aws autoscaling describe-auto-scaling-groups \
-  --auto-scaling-group-names web-asg \
-  --query 'AutoScalingGroups[0].MinSize' --output text 2>/dev/null)
-check "ASG MinSize = 1" "$ASG_MIN" "1"
+# 3. app-2 đang chạy
+APP2=$(docker inspect app-2 --format '{{.State.Status}}' 2>/dev/null)
+check "Container 'app-2' đang running" "$APP2" "running" \
+  "Chạy lại phần 1.3 để start_instance 2"
 
-ASG_MAX=$(aws autoscaling describe-auto-scaling-groups \
-  --auto-scaling-group-names web-asg \
-  --query 'AutoScalingGroups[0].MaxSize' --output text 2>/dev/null)
-check "ASG MaxSize = 4" "$ASG_MAX" "4"
+# 4. Cả 2 container có label asg=web-asg
+ASG_COUNT=$(docker ps --filter "label=asg=web-asg" -q | wc -l)
+check "Ít nhất 2 instances có label asg=web-asg (desired=2)" \
+  "$([ $ASG_COUNT -ge 2 ] && echo ok)" "ok" \
+  "Thêm --label asg=web-asg vào lệnh docker run"
 
-# Scaling Policies tồn tại
-SCALE_OUT=$(aws autoscaling describe-policies \
-  --auto-scaling-group-name web-asg --policy-names scale-out-policy \
-  --query 'ScalingPolicies[0].PolicyName' --output text 2>/dev/null)
-check "Scaling Policy 'scale-out-policy' đã tạo" "$SCALE_OUT" "scale-out-policy"
+# 5. Port 8081 phản hồi
+HTTP1=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/server-id 2>/dev/null)
+check "app-1 phản hồi HTTP 200 tại port 8081" "$HTTP1" "200" \
+  "Kiểm tra docker ps | grep app-1"
 
-SCALE_IN=$(aws autoscaling describe-policies \
-  --auto-scaling-group-name web-asg --policy-names scale-in-policy \
-  --query 'ScalingPolicies[0].PolicyName' --output text 2>/dev/null)
-check "Scaling Policy 'scale-in-policy' đã tạo" "$SCALE_IN" "scale-in-policy"
+# 6. Port 8082 phản hồi
+HTTP2=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/server-id 2>/dev/null)
+check "app-2 phản hồi HTTP 200 tại port 8082" "$HTTP2" "200" \
+  "Kiểm tra docker ps | grep app-2"
 
-# CloudWatch Alarms
-ALARM_OUT=$(aws cloudwatch describe-alarms --alarm-names "cpu-high-scale-out" \
-  --query 'MetricAlarms[0].AlarmName' --output text 2>/dev/null)
-check "CloudWatch Alarm scale-out (CPU > 70%) đã tạo" "$ALARM_OUT" "cpu-high-scale-out"
-
-ALARM_IN=$(aws cloudwatch describe-alarms --alarm-names "cpu-low-scale-in" \
-  --query 'MetricAlarms[0].AlarmName' --output text 2>/dev/null)
-check "CloudWatch Alarm scale-in (CPU < 30%) đã tạo" "$ALARM_IN" "cpu-low-scale-in"
+# 7. server-id endpoint trả về đúng tên
+SRV1=$(curl -s http://localhost:8081/server-id 2>/dev/null | grep -i "app-1")
+check "app-1 trả về server-id chứa 'app-1'" \
+  "$([ -n "$SRV1" ] && echo ok)" "ok" \
+  "Đảm bảo script tạo /usr/share/nginx/html/server-id chứa 'app-1'"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
-[ $FAIL -eq 0 ] && { echo "🎉 Hoàn thành! Tiếp tục Bước 2."; exit 0; } \
-               || { echo "⚠️  $FAIL lỗi cần sửa."; exit 1; }
+[ $FAIL -eq 0 ] && echo "🎉 Instances sẵn sàng!" && exit 0 || exit 1

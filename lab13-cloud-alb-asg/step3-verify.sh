@@ -1,61 +1,58 @@
 #!/bin/bash
-# step3-verify.sh — Kiểm tra round-robin + health check + benchmark
-source /tmp/lab-env.sh 2>/dev/null || true
+# step3-verify.sh — Lab 13: Kiểm tra phân phối traffic
+
 PASS=0; FAIL=0
 
 check() {
-  [ "$2" = "$3" ] && { echo "  ✅ $1"; PASS=$((PASS+1)); } \
-                  || { echo "  ❌ $1 (nhận: '$2', cần: '$3')"; FAIL=$((FAIL+1)); }
-}
-check_range() {
-  local desc="$1" val="$2" lo="$3" hi="$4"
-  if [ "$val" -ge "$lo" ] && [ "$val" -le "$hi" ] 2>/dev/null; then
-    echo "  ✅ $desc ($val trong khoảng $lo–$hi)"
-    PASS=$((PASS+1))
+  if [ "$2" = "$3" ] || ([ "$3" = "nonempty" ] && [ -n "$2" ]); then
+    echo "  ✅ $1"; PASS=$((PASS+1))
   else
-    echo "  ❌ $desc ($val nằm ngoài khoảng $lo–$hi)"
+    echo "  ❌ $1"
+    [ -n "$4" ] && echo "     Gợi ý: $4"
     FAIL=$((FAIL+1))
   fi
 }
 
-echo "=== Kiểm tra Bước 3: Phân tải và Health Check ==="
+echo "=== Bước 3: Phân phối traffic + Health Check ==="
 echo ""
 
-# Cả hai container đang chạy
-for i in 1 2; do
-  STATUS=$(docker inspect "app-${i}" --format '{{.State.Status}}' 2>/dev/null)
-  check "Container app-${i} đang chạy" "$STATUS" "running"
-done
-
-# Health endpoints đều healthy
-for PORT in 8081 8082; do
-  HC=$(curl -s http://localhost:${PORT}/health 2>/dev/null | tr -d '\n')
-  check "Backend port ${PORT} trả về 'healthy'" "$HC" "healthy"
-done
-
-# Nginx phân tải đúng: đếm tỷ lệ phân phối 20 request
-declare -A CNT
+# 1. LB đang phân phối đến nhiều backend
+echo "  Đang gửi 20 request để kiểm tra phân phối..."
+declare -A COUNT
 for i in $(seq 1 20); do
-  SRV=$(curl -s http://localhost/server-id 2>/dev/null | grep -oP 'app-\d+')
-  CNT[$SRV]=$((${CNT[$SRV]:-0} + 1))
+  SRV=$(curl -s http://localhost/server-id 2>/dev/null | grep -oE 'app-[0-9]+' | head -1)
+  [ -n "$SRV" ] && COUNT[$SRV]=$((${COUNT[$SRV]:-0}+1))
 done
-APP1=${CNT[app-1]:-0}
-APP2=${CNT[app-2]:-0}
-echo ""
-echo "  Phân phối 20 requests: app-1=$APP1, app-2=$APP2"
-check_range "app-1 nhận 30–70% traffic" "$APP1" 6 14
-check_range "app-2 nhận 30–70% traffic" "$APP2" 6 14
 
-# Header X-Served-By xuất hiện trong response
-HEADER=$(curl -sI http://localhost/ 2>/dev/null | grep -ci "x-served-by")
-check "Nginx thêm header X-Served-By vào response" "$HEADER" "1"
+BACKENDS_HIT=$(echo ${!COUNT[@]} | wc -w)
+check "LB phân phối đến ≥2 backend khác nhau (trong 20 request)" \
+  "$([ $BACKENDS_HIT -ge 2 ] && echo ok)" "ok" \
+  "Kiểm tra upstream config có đủ 2 server đang healthy"
 
-# Nginx config có max_fails (passive health check)
-HAS_MAXFAIL=$(grep -c "max_fails" /etc/nginx/conf.d/alb.conf 2>/dev/null || echo "0")
-check "Nginx upstream cấu hình max_fails (passive health check)" "$HAS_MAXFAIL" "2"
+# 2. app-1 nhận ít nhất 1 request
+check "app-1 nhận ít nhất 1 request" \
+  "$([ ${COUNT[app-1]:-0} -ge 1 ] && echo ok)" "ok" \
+  "Kiểm tra app-1 đang chạy: docker ps | grep app-1"
+
+# 3. app-2 nhận ít nhất 1 request
+check "app-2 nhận ít nhất 1 request" \
+  "$([ ${COUNT[app-2]:-0} -ge 1 ] && echo ok)" "ok" \
+  "Kiểm tra app-2 đang chạy: docker ps | grep app-2"
+
+echo "  Phân phối: $(for k in "${!COUNT[@]}"; do echo "$k:${COUNT[$k]}"; done | tr '\n' ' ')"
+
+# 4. /health endpoint phản hồi healthy
+HEALTH_RESP=$(curl -s http://localhost/health 2>/dev/null | grep -ic "healthy")
+check "/health qua LB trả về 'healthy'" \
+  "$([ $HEALTH_RESP -ge 1 ] && echo ok)" "ok" \
+  "Kiểm tra nginx config có: location /health { proxy_pass http://backend/health; }"
+
+# 5. File benchmark /tmp/bench-2.txt tồn tại (learner đã chạy wrk)
+check "Benchmark baseline đã chạy (/tmp/bench-2.txt)" \
+  "$(test -f /tmp/bench-2.txt && grep -q 'Requests' /tmp/bench-2.txt && echo ok)" "ok" \
+  "Chạy: wrk -t2 -c20 -d15s http://localhost/server-id | tee /tmp/bench-2.txt"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
-[ $FAIL -eq 0 ] && { echo "🎉 Load Balancer hoạt động đúng! Tiếp tục Bước 4."; exit 0; } \
-               || { echo "⚠️  $FAIL lỗi cần sửa."; exit 1; }
+[ $FAIL -eq 0 ] && echo "🎉 Load Balancer phân phối đúng!" && exit 0 || exit 1

@@ -1,45 +1,62 @@
 #!/bin/bash
-# step4-verify.sh — Scale-out + Cleanup
-source /tmp/lab-env.sh 2>/dev/null || true
+# step4-verify.sh — Lab 13: Kiểm tra Scale-out + Cleanup
+
 PASS=0; FAIL=0
 
 check() {
-  [ "$2" = "$3" ] && { echo "  ✅ $1"; PASS=$((PASS+1)); } \
-                  || { echo "  ❌ $1 (nhận: '$2', cần: '$3')"; FAIL=$((FAIL+1)); }
+  if [ "$2" = "$3" ] || ([ "$3" = "nonempty" ] && [ -n "$2" ]); then
+    echo "  ✅ $1"; PASS=$((PASS+1))
+  else
+    echo "  ❌ $1"
+    [ -n "$4" ] && echo "     Gợi ý: $4"
+    FAIL=$((FAIL+1))
+  fi
 }
 
-echo "=== Kiểm tra Bước 4: Scale-out + Cleanup ==="
+echo "=== Bước 4: Scale-out + Cleanup ==="
 echo ""
 
-# ASG desired = 3
-ASG_DESIRED=$(aws autoscaling describe-auto-scaling-groups \
-  --auto-scaling-group-names web-asg \
-  --query 'AutoScalingGroups[0].DesiredCapacity' --output text 2>/dev/null || echo "0")
-check "ASG đã scale-out lên desired = 3" "$ASG_DESIRED" "3"
+# 1. Benchmark trước scale đã có
+check "Benchmark baseline (trước scale) đã chạy" \
+  "$(test -f /tmp/bench-before.txt && grep -q 'Requests' /tmp/bench-before.txt && echo ok)" "ok" \
+  "Chạy: wrk -t2 -c50 -d20s http://localhost/server-id | tee /tmp/bench-before.txt"
 
-# app-3 đã từng chạy (benchmark file tồn tại)
-BENCH_EXISTS=$([ -f /tmp/bench-after.txt ] && echo "yes" || echo "no")
-check "Đã chạy benchmark sau scale-out" "$BENCH_EXISTS" "yes"
+# 2. Benchmark sau scale đã có
+check "Benchmark sau scale-out đã chạy" \
+  "$(test -f /tmp/bench-after.txt && grep -q 'Requests' /tmp/bench-after.txt && echo ok)" "ok" \
+  "Chạy: wrk -t2 -c50 -d20s http://localhost/server-id | tee /tmp/bench-after.txt"
 
-# Containers đã dọn dẹp
-for i in 1 2 3; do
-  EXIST=$(docker ps -a --filter "name=app-${i}" --format "{{.Names}}" 2>/dev/null)
-  check "Container app-${i} đã xóa" "$EXIST" ""
-done
+# 3. So sánh throughput (sau >= trước)
+if [ -f /tmp/bench-before.txt ] && [ -f /tmp/bench-after.txt ]; then
+  RPS_BEFORE=$(grep "Requests/sec" /tmp/bench-before.txt | awk '{print $2}' | sed 's/\..*//')
+  RPS_AFTER=$(grep "Requests/sec" /tmp/bench-after.txt | awk '{print $2}' | sed 's/\..*//')
+  echo "  Throughput: $RPS_BEFORE req/s → $RPS_AFTER req/s"
+  check "Throughput sau scale-out ≥ trước scale" \
+    "$([ ${RPS_AFTER:-0} -ge ${RPS_BEFORE:-0} ] && echo ok)" "ok" \
+    "Scale-out nên tăng throughput — kiểm tra app-3 có trong upstream config"
+fi
 
-# ALB đã xóa
-ALB_REMAIN=$(aws elbv2 describe-load-balancers --names web-alb \
-  --query 'length(LoadBalancers)' --output text 2>/dev/null || echo "0")
-check "ALB 'web-alb' đã xóa" "$ALB_REMAIN" "0"
+# 4. Auto-scale script đã tạo
+check "Script /tmp/autoscale.sh đã tạo" \
+  "$(test -x /tmp/autoscale.sh && echo ok)" "ok" \
+  "Chạy phần 4.4 để tạo autoscale.sh"
 
-# ASG đã xóa
-ASG_REMAIN=$(aws autoscaling describe-auto-scaling-groups \
-  --auto-scaling-group-names web-asg \
-  --query 'length(AutoScalingGroups)' --output text 2>/dev/null || echo "0")
-check "ASG 'web-asg' đã xóa" "$ASG_REMAIN" "0"
+# 5. CLEANUP: không còn container app-*
+APP_REMAIN=$(docker ps -a --filter "label=asg=web-asg" -q | wc -l)
+check "Tất cả app containers đã xóa (cleanup)" "$APP_REMAIN" "0" \
+  "Chạy: for i in 1 2 3; do docker stop app-\$i && docker rm app-\$i; done"
+
+# 6. Network đã xóa
+NET_REMAIN=$(docker network ls --filter "name=app-network" -q | wc -l)
+check "Network 'app-network' đã xóa" "$NET_REMAIN" "0" \
+  "Chạy: docker network rm app-network"
+
+# 7. LB config đã dọn
+check "Nginx LB config đã xóa" \
+  "$(test ! -f /etc/nginx/conf.d/lb.conf && echo ok)" "ok" \
+  "Chạy: rm -f /etc/nginx/conf.d/lb.conf && nginx -s reload"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
-[ $FAIL -eq 0 ] && { echo "🏆 Hoàn thành Lab 13! ALB + ASG đã thành thạo."; exit 0; } \
-               || { echo "⚠️  $FAIL lỗi cần sửa."; exit 1; }
+[ $FAIL -eq 0 ] && echo "🎉 Scale-out thành công và cleanup hoàn tất!" && exit 0 || exit 1

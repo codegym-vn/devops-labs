@@ -1,20 +1,55 @@
 #!/bin/bash
-PASS=0; FAIL=0
-check() { [ "$2" = "$3" ] && { echo "  ✅ $1"; PASS=$((PASS+1)); } || { echo "  ❌ $1"; FAIL=$((FAIL+1)); }; }
+# step3-verify.sh — Lab 14: Kiểm tra Cost Analysis
 
-echo "=== Kiểm tra Bước 3: Phân tích CUR ==="
+PASS=0; FAIL=0
+
+check() {
+  if [ "$2" = "$3" ] || ([ "$3" = "nonempty" ] && [ -n "$2" ]); then
+    echo "  ✅ $1"; PASS=$((PASS+1))
+  else
+    echo "  ❌ $1"
+    [ -n "$4" ] && echo "     Gợi ý: $4"
+    FAIL=$((FAIL+1))
+  fi
+}
+
+echo "=== Bước 3: Cost Analysis ==="
 echo ""
 
-FILE_OK=$([ -f /opt/lab-data/cost-usage-report.csv ] && echo "yes" || echo "no")
-check "File CUR tồn tại" "$FILE_OK" "yes"
+# 1. CUR file tồn tại
+check "File cost-usage-report.csv tồn tại" \
+  "$(test -f /opt/lab-data/cost-usage-report.csv && echo ok)" "ok" \
+  "Background script phải tạo file này. Kiểm tra /opt/lab-data/ tồn tại."
 
-LINE_COUNT=$(wc -l < /opt/lab-data/cost-usage-report.csv 2>/dev/null || echo "0")
-[ "$LINE_COUNT" -gt 100 ] && { echo "  ✅ File CUR có $LINE_COUNT dòng (>100)"; PASS=$((PASS+1)); } || { echo "  ❌ File CUR quá nhỏ"; FAIL=$((FAIL+1)); }
+# 2. CUR có ít nhất 100 dòng
+ROWS=$(wc -l < /opt/lab-data/cost-usage-report.csv 2>/dev/null)
+check "CUR có ít nhất 100 dòng dữ liệu" \
+  "$([ ${ROWS:-0} -ge 100 ] && echo ok)" "ok" \
+  "File được tạo bởi background.sh — chờ background hoàn tất"
 
-SCRIPT_OK=$(python3 /opt/lab-data/analyze-cost.py --file /opt/lab-data/cost-usage-report.csv --group-by ProductName 2>/dev/null | grep -c "EC2" || echo "0")
-[ "$SCRIPT_OK" -ge 1 ] && { echo "  ✅ Script phân tích chạy thành công"; PASS=$((PASS+1)); } || { echo "  ❌ Script phân tích lỗi"; FAIL=$((FAIL+1)); }
+# 3. Script analyze-cost.py chạy được
+ANALYZE_OK=$(python3 /opt/lab-data/analyze-cost.py \
+  --file /opt/lab-data/cost-usage-report.csv \
+  --group-by ProductName 2>/dev/null | grep -c "Chi phí")
+check "Script analyze-cost.py chạy thành công" \
+  "$([ ${ANALYZE_OK:-0} -ge 1 ] && echo ok)" "ok" \
+  "Kiểm tra: python3 /opt/lab-data/analyze-cost.py --file /opt/lab-data/cost-usage-report.csv --group-by ProductName"
+
+# 4. Learner đã chạy breakdown theo Project
+check "Breakdown theo Project đã chạy (có output)" \
+  "$(python3 /opt/lab-data/analyze-cost.py \
+    --file /opt/lab-data/cost-usage-report.csv \
+    --group-by Project 2>/dev/null | grep -c 'e-commerce')" "1" \
+  "Chạy: python3 /opt/lab-data/analyze-cost.py --group-by Project"
+
+# 5. Learner đã viết script phát hiện spike (kiểm tra script tồn tại trong lịch sử)
+# Kiểm tra gián tiếp: file có chứa cột "Project" không
+HAS_PROJECT_COL=$(head -1 /opt/lab-data/cost-usage-report.csv | grep -c "Project")
+check "CUR có cột 'Project' để phân tích" \
+  "$([ ${HAS_PROJECT_COL:-0} -ge 1 ] && echo ok)" "ok" \
+  "Background script phải tạo đúng format CUR"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
-[ $FAIL -eq 0 ] && { echo "🎉 Phân tích CUR hoàn thành! Tiếp tục Bước 4."; exit 0; } || { echo "⚠️  $FAIL lỗi."; exit 1; }
+[ $FAIL -eq 0 ] && echo "🎉 Cost analysis thành công!" && exit 0 || exit 1

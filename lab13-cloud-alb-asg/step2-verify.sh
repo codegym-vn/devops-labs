@@ -1,64 +1,68 @@
 #!/bin/bash
-# step2-verify.sh — Kiểm tra ALB + Target Group + Docker containers + Nginx
-source /tmp/lab-env.sh 2>/dev/null || true
+# step2-verify.sh — Lab 13: Kiểm tra Load Balancer + Health Check
+
 PASS=0; FAIL=0
 
 check() {
-  [ "$2" = "$3" ] && { echo "  ✅ $1"; PASS=$((PASS+1)); } \
-                  || { echo "  ❌ $1 (nhận: '$2', cần: '$3')"; FAIL=$((FAIL+1)); }
-}
-check_gt() {
-  [ "$2" -gt "$3" ] 2>/dev/null && { echo "  ✅ $1"; PASS=$((PASS+1)); } \
-                                || { echo "  ❌ $1"; FAIL=$((FAIL+1)); }
+  if [ "$2" = "$3" ] || ([ "$3" = "nonempty" ] && [ -n "$2" ]); then
+    echo "  ✅ $1"; PASS=$((PASS+1))
+  else
+    echo "  ❌ $1"
+    [ -n "$4" ] && echo "     Gợi ý: $4"
+    FAIL=$((FAIL+1))
+  fi
 }
 
-echo "=== Kiểm tra Bước 2: ALB + Target Group + Nginx ==="
+echo "=== Bước 2: Load Balancer + Health Check ==="
 echo ""
 
-# ALB tồn tại
-ALB_STATE=$(aws elbv2 describe-load-balancers --names web-alb \
-  --query 'LoadBalancers[0].State.Code' --output text 2>/dev/null)
-check "ALB 'web-alb' đã tạo" "$ALB_STATE" "active"
+# 1. File config LB tồn tại
+check "Nginx LB config /etc/nginx/conf.d/lb.conf đã tạo" \
+  "$(test -f /etc/nginx/conf.d/lb.conf && echo ok)" "ok" \
+  "Chạy phần 2.1 để tạo /etc/nginx/conf.d/lb.conf"
 
-# Target Group tồn tại
-TG_NAME=$(aws elbv2 describe-target-groups --names web-tg \
-  --query 'TargetGroups[0].TargetGroupName' --output text 2>/dev/null)
-check "Target Group 'web-tg' đã tạo" "$TG_NAME" "web-tg"
+# 2. Config chứa upstream backend
+UPSTREAM=$(grep -c "upstream backend" /etc/nginx/conf.d/lb.conf 2>/dev/null)
+check "Config có 'upstream backend' block" \
+  "$([ $UPSTREAM -ge 1 ] && echo ok)" "ok" \
+  "Đảm bảo file lb.conf có block 'upstream backend { ... }'"
 
-# Health Check path đúng
-HC_PATH=$(aws elbv2 describe-target-groups --names web-tg \
-  --query 'TargetGroups[0].HealthCheckPath' --output text 2>/dev/null)
-check "Health Check path là /health" "$HC_PATH" "/health"
+# 3. Config dùng least_conn
+LEASTCONN=$(grep -c "least_conn" /etc/nginx/conf.d/lb.conf 2>/dev/null)
+check "Load Balancer dùng thuật toán least_conn" \
+  "$([ $LEASTCONN -ge 1 ] && echo ok)" "ok" \
+  "Thêm 'least_conn;' vào upstream block"
 
-# Listener tồn tại
-LISTENER_PORT=$(aws elbv2 describe-listeners \
-  --load-balancer-arn $(aws elbv2 describe-load-balancers --names web-alb \
-    --query 'LoadBalancers[0].LoadBalancerArn' --output text 2>/dev/null) \
-  --query 'Listeners[0].Port' --output text 2>/dev/null)
-check "Listener trên port 80 đã tạo" "$LISTENER_PORT" "80"
+# 4. max_fails được cấu hình (passive health check)
+MAX_FAILS=$(grep -c "max_fails" /etc/nginx/conf.d/lb.conf 2>/dev/null)
+check "Passive health check (max_fails) đã cấu hình" \
+  "$([ $MAX_FAILS -ge 1 ] && echo ok)" "ok" \
+  "Thêm 'max_fails=3 fail_timeout=10s' vào từng server trong upstream"
 
-# Docker containers app-1, app-2 đang chạy
-for i in 1 2; do
-  STATUS=$(docker inspect "app-${i}" --format '{{.State.Status}}' 2>/dev/null)
-  check "Container 'app-${i}' đang chạy" "$STATUS" "running"
-done
+# 5. Nginx đang chạy với config mới
+NGINX_OK=$(nginx -t 2>&1 | grep -c "ok")
+check "Nginx config hợp lệ (nginx -t)" \
+  "$([ $NGINX_OK -ge 1 ] && echo ok)" "ok" \
+  "Chạy: nginx -t để xem lỗi"
 
-# Health endpoints của từng backend
-for PORT in 8081 8082; do
-  HC=$(curl -s http://localhost:${PORT}/health 2>/dev/null)
-  check "Backend port ${PORT} health check OK" "$HC" "healthy"
-done
+# 6. LB phản hồi tại port 80
+LB_HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/lb-health 2>/dev/null)
+check "Load Balancer phản hồi HTTP 200 tại port 80" "$LB_HTTP" "200" \
+  "Kiểm tra: systemctl status nginx | nginx -s reload"
 
-# Nginx reload thành công và proxy hoạt động
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost 2>/dev/null)
-check "Nginx ALB proxy phản hồi HTTP 200" "$HTTP_CODE" "200"
+# 7. LB phân phối đến đúng backend (kiểm tra header X-Served-By)
+SERVED_BY=$(curl -s -I http://localhost/server-id 2>/dev/null \
+  | grep -i "x-served-by" | head -1)
+check "Header X-Served-By có trong response (proxy hoạt động)" \
+  "$([ -n "$SERVED_BY" ] && echo ok)" "ok" \
+  "Đảm bảo config có: add_header X-Served-By \$upstream_addr always;"
 
-# Kiểm tra header X-Served-By (nginx đang proxy)
-SERVED_BY=$(curl -s -I http://localhost/server-id 2>/dev/null | grep -i "x-served-by" | wc -l)
-check_gt "Nginx thêm header X-Served-By (upstream routing)" "$SERVED_BY" "0"
+# 8. Health script tồn tại và chạy được
+check "Script /tmp/health-monitor.sh đã tạo" \
+  "$(test -x /tmp/health-monitor.sh && echo ok)" "ok" \
+  "Chạy phần 2.3 để tạo health-monitor.sh"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
-[ $FAIL -eq 0 ] && { echo "🎉 ALB sẵn sàng! Tiếp tục Bước 3."; exit 0; } \
-               || { echo "⚠️  $FAIL lỗi cần sửa."; exit 1; }
+[ $FAIL -eq 0 ] && echo "🎉 Load Balancer hoạt động đúng!" && exit 0 || exit 1

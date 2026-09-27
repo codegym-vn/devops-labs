@@ -1,26 +1,60 @@
 #!/bin/bash
-source /tmp/lab-env.sh 2>/dev/null || true
-PASS=0; FAIL=0
-check() { [ "$2" = "$3" ] && { echo "  ✅ $1"; PASS=$((PASS+1)); } || { echo "  ❌ $1 (cần: '$3', nhận: '$2')"; FAIL=$((FAIL+1)); }; }
+# step1-verify.sh — Lab 14: Kiểm tra Tagging
 
-echo "=== Kiểm tra Bước 1: Cost Allocation Tags ==="
+PASS=0; FAIL=0
+
+check() {
+  if [ "$2" = "$3" ] || ([ "$3" = "nonempty" ] && [ -n "$2" ]); then
+    echo "  ✅ $1"; PASS=$((PASS+1))
+  else
+    echo "  ❌ $1"
+    [ -n "$4" ] && echo "     Gợi ý: $4"
+    FAIL=$((FAIL+1))
+  fi
+}
+
+check_label() {
+  local CONTAINER=$1 LABEL=$2 EXPECTED=$3
+  VALUE=$(docker inspect $CONTAINER --format "{{index .Config.Labels \"$LABEL\"}}" 2>/dev/null)
+  check "$CONTAINER có label $LABEL=$EXPECTED" \
+    "$VALUE" "$EXPECTED" \
+    "Thêm --label $LABEL=$EXPECTED khi tạo container $CONTAINER"
+}
+
+echo "=== Bước 1: Cost Allocation Tags ==="
 echo ""
-for INST_VAR in INST_0 INST_1 INST_2 INST_3 INST_4; do
-  INST=${!INST_VAR}
-  for TAG in Name Project Environment Owner; do
-    VAL=$(aws ec2 describe-instances --instance-ids $INST \
-      --query "Reservations[0].Instances[0].Tags[?Key=='$TAG'].Value" --output text 2>/dev/null)
-    [ -n "$VAL" ] && { echo "  ✅ $INST có tag $TAG=$VAL"; PASS=$((PASS+1)); } \
-                  || { echo "  ❌ $INST thiếu tag $TAG"; FAIL=$((FAIL+1)); }
-  done
+
+CONTAINERS="api-server-prod web-server-prod worker-prod reporting-server old-test-server"
+
+# Kiểm tra từng container tồn tại và có đủ 5 tags chuẩn
+for C in $CONTAINERS; do
+  STATUS=$(docker inspect $C --format '{{.State.Status}}' 2>/dev/null)
+  check "Container '$C' đang running" "$STATUS" "running" \
+    "Chạy lại hàm create_server để tạo $C"
 done
 
-# VPC có tag Project
-VPC_TAG=$(aws ec2 describe-vpcs --vpc-ids $VPC_ID \
-  --query "Vpcs[0].Tags[?Key=='Project'].Value" --output text 2>/dev/null)
-check "VPC có tag Project" "$VPC_TAG" "e-commerce"
+echo ""
+echo "  Kiểm tra tags chuẩn:"
+
+# Kiểm tra api-server-prod
+check_label "api-server-prod" "Project" "e-commerce"
+check_label "api-server-prod" "Environment" "production"
+check_label "api-server-prod" "Owner" "team-backend"
+
+# Kiểm tra worker-prod (phải là data-platform)
+check_label "worker-prod" "Project" "data-platform"
+
+# Kiểm tra old-test-server (phải có Project tag sau phần 1.3)
+check_label "old-test-server" "Project" "internal-tools"
+check_label "old-test-server" "Environment" "development"
+
+# Kiểm tra query theo tag hoạt động
+ECOMMERCE_COUNT=$(docker ps --filter "label=Project=e-commerce" -q | wc -l)
+check "Có ít nhất 2 servers thuộc Project 'e-commerce'" \
+  "$([ $ECOMMERCE_COUNT -ge 2 ] && echo ok)" "ok" \
+  "Tạo api-server-prod và web-server-prod với --label Project=e-commerce"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
-[ $FAIL -eq 0 ] && { echo "🎉 Tags đã gắn đúng! Tiếp tục Bước 2."; exit 0; } || { echo "⚠️  $FAIL lỗi."; exit 1; }
+[ $FAIL -eq 0 ] && echo "🎉 Tagging đúng chuẩn!" && exit 0 || exit 1

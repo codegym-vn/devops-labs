@@ -1,71 +1,61 @@
 #!/bin/bash
-# step1-verify.sh — Kiểm tra Bước 1: VPC + Subnet + IGW + Route Table
+# step1-verify.sh — Lab 12: Kiểm tra VPC + Subnet
 
-source /tmp/lab-env.sh 2>/dev/null || true
-
-PASS=0
-FAIL=0
+PASS=0; FAIL=0
 
 check() {
-  local desc="$1"
-  local result="$2"
-  local expected="$3"
-  if [ "$result" = "$expected" ]; then
-    echo "  ✅ $desc"
-    PASS=$((PASS + 1))
+  if [ "$2" = "$3" ] || ([ "$3" = "nonempty" ] && [ -n "$2" ]); then
+    echo "  ✅ $1"; PASS=$((PASS+1))
   else
-    echo "  ❌ $desc (nhận: '$result', cần: '$expected')"
-    FAIL=$((FAIL + 1))
+    echo "  ❌ $1"
+    [ -n "$4" ] && echo "     Gợi ý: $4"
+    FAIL=$((FAIL+1))
   fi
 }
 
-echo "=== Kiểm tra Bước 1: Hạ tầng mạng VPC ==="
+echo "=== Bước 1: VPC + Subnet ==="
 echo ""
 
-# 1. VPC tồn tại với CIDR đúng
-VPC_CIDR=$(aws ec2 describe-vpcs \
-  --filters "Name=cidr,Values=10.0.0.0/16" \
-  --query 'Vpcs[0].CidrBlock' --output text 2>/dev/null)
-check "VPC với CIDR 10.0.0.0/16 đã được tạo" "$VPC_CIDR" "10.0.0.0/16"
+# 1. Network public-subnet tồn tại với subnet đúng
+PUBLIC_SUBNET=$(docker network inspect public-subnet \
+  --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}' 2>/dev/null)
+check "Network 'public-subnet' tồn tại với CIDR 10.0.1.0/24" \
+  "$PUBLIC_SUBNET" "10.0.1.0/24" \
+  "Chạy: docker network create --subnet 10.0.1.0/24 --gateway 10.0.1.1 public-subnet"
 
-# 2. Subnet tồn tại với CIDR đúng
-SUBNET_CIDR=$(aws ec2 describe-subnets \
-  --filters "Name=cidr,Values=10.0.1.0/24" \
-  --query 'Subnets[0].CidrBlock' --output text 2>/dev/null)
-check "Subnet với CIDR 10.0.1.0/24 đã được tạo" "$SUBNET_CIDR" "10.0.1.0/24"
+# 2. Network private-subnet tồn tại
+PRIVATE_SUBNET=$(docker network inspect private-subnet \
+  --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}' 2>/dev/null)
+check "Network 'private-subnet' tồn tại với CIDR 10.0.2.0/24" \
+  "$PRIVATE_SUBNET" "10.0.2.0/24" \
+  "Chạy: docker network create --subnet 10.0.2.0/24 --gateway 10.0.2.1 private-subnet"
 
-# 3. Subnet bật MapPublicIpOnLaunch
-MAP_PUBLIC=$(aws ec2 describe-subnets \
-  --filters "Name=cidr,Values=10.0.1.0/24" \
-  --query 'Subnets[0].MapPublicIpOnLaunch' --output text 2>/dev/null)
-check "Subnet bật tự động gán Public IP" "$MAP_PUBLIC" "True"
+# 3. web-server container đang chạy trong public-subnet
+WEB_NET=$(docker inspect web-server \
+  --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}' 2>/dev/null)
+check "Container 'web-server' chạy trong public-subnet" \
+  "$WEB_NET" "public-subnet" \
+  "Chạy: docker run -d --name web-server --network public-subnet --ip 10.0.1.10 ..."
 
-# 4. Internet Gateway tồn tại và đã gắn vào VPC
-IGW_STATE=$(aws ec2 describe-internet-gateways \
-  --filters "Name=attachment.vpc-id,Values=$(aws ec2 describe-vpcs \
-    --filters "Name=cidr,Values=10.0.0.0/16" \
-    --query 'Vpcs[0].VpcId' --output text 2>/dev/null)" \
-  --query 'InternetGateways[0].Attachments[0].State' --output text 2>/dev/null)
-check "Internet Gateway đã gắn vào VPC" "$IGW_STATE" "available"
+# 4. web-server có IP 10.0.1.10
+WEB_IP=$(docker inspect web-server \
+  --format '{{.NetworkSettings.Networks.public-subnet.IPAddress}}' 2>/dev/null)
+check "web-server có IP 10.0.1.10" "$WEB_IP" "10.0.1.10" \
+  "Thêm --ip 10.0.1.10 vào lệnh docker run"
 
-# 5. Route Table có route 0.0.0.0/0 qua IGW
-VPC_ID_CHECK=$(aws ec2 describe-vpcs \
-  --filters "Name=cidr,Values=10.0.0.0/16" \
-  --query 'Vpcs[0].VpcId' --output text 2>/dev/null)
-ROUTE_DEST=$(aws ec2 describe-route-tables \
-  --filters "Name=vpc-id,Values=$VPC_ID_CHECK" \
-  --query "RouteTables[0].Routes[?DestinationCidrBlock=='0.0.0.0/0'].DestinationCidrBlock" \
-  --output text 2>/dev/null)
-check "Route Table có route 0.0.0.0/0 qua Internet Gateway" "$ROUTE_DEST" "0.0.0.0/0"
+# 5. db-server chạy trong private-subnet (KHÔNG expose port ra ngoài)
+DB_PORTS=$(docker inspect db-server \
+  --format '{{.HostConfig.PortBindings}}' 2>/dev/null)
+check "db-server không có port public (Private Subnet)" \
+  "$DB_PORTS" "map[]" \
+  "Tạo db-server với --network private-subnet và KHÔNG dùng -p"
+
+# 6. /tmp/lab-env.sh tồn tại
+check "File /tmp/lab-env.sh đã lưu biến môi trường" \
+  "$(test -f /tmp/lab-env.sh && echo ok)" "ok" \
+  "Chạy phần 1.5 trong hướng dẫn để lưu biến"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Kết quả: $PASS thành công / $((PASS + FAIL)) kiểm tra"
-
-if [ $FAIL -eq 0 ]; then
-  echo "🎉 Tất cả đều đúng! Tiếp tục Bước 2."
-  exit 0
-else
-  echo "⚠️  Có $FAIL lỗi cần sửa. Đọc lại hướng dẫn và thử lại."
-  exit 1
-fi
+echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
+[ $FAIL -eq 0 ] && echo "🎉 Hoàn thành Bước 1!" && exit 0 || exit 1
