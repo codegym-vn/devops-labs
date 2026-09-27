@@ -7,11 +7,11 @@
 curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
 unzip -q /tmp/awscliv2.zip -d /tmp/ && /tmp/aws/install && rm -rf /tmp/aws /tmp/awscliv2.zip
 
-# Cài LocalStack
-pip3 install -q --break-system-packages localstack
-
-# Khởi động LocalStack
-localstack start -d
+# Chạy LocalStack qua Docker (community, miễn phí — không cần license)
+docker run -d --rm --name localstack \
+  -p 4566:4566 \
+  -e SERVICES=ec2,elbv2,autoscaling,cloudwatch,budgets \
+  localstack/localstack:3.8
 
 echo "Đang chờ LocalStack..."
 until curl -sf http://localhost:4566/_localstack/health | grep -q '"elasticloadbalancing": "available"'; do

@@ -2,22 +2,22 @@
 
 ## Thiết lập môi trường (chạy một lần)
 
-Trước khi bắt đầu, cài AWS CLI và LocalStack:
+Trước khi bắt đầu, cài AWS CLI và khởi động LocalStack:
 
 ```bash
 # Cài AWS CLI v2
 curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
 unzip -q /tmp/awscliv2.zip -d /tmp/ && /tmp/aws/install && rm -rf /tmp/aws /tmp/awscliv2.zip
 
-# Cài LocalStack
-pip3 install -q --break-system-packages localstack
-
-# Khởi động LocalStack (chạy nền)
-localstack start -d
+# Khởi động LocalStack qua Docker (community, miễn phí)
+docker run -d --rm --name localstack \
+  -p 4566:4566 \
+  -e SERVICES=ec2,elbv2,autoscaling,cloudwatch,budgets \
+  localstack/localstack:3.8
 
 # Chờ LocalStack sẵn sàng (~30-60 giây)
 echo "Đang chờ LocalStack..."
-until curl -sf http://localhost:4566/_localstack/health | grep -q '"ec2": "available"'; do
+until curl -sf http://localhost:4566/_localstack/health | grep -q '"ec2"'; do
   sleep 3; printf "."
 done
 echo " ✅ LocalStack sẵn sàng!"
