@@ -170,3 +170,24 @@ python3 /opt/lab-data/budgets/check-budget.py
 1. Khi nào cần ACTUAL alert, khi nào cần FORECASTED alert?
 2. Budget nên đặt ở mức nào — bằng đúng mức dự báo hay thấp hơn?
 3. Nếu budget vượt — ngoài email, hành động tự động nào nên kích hoạt?
+
+---
+
+## 🎯 Bài tập
+
+> Hoàn thành phần thực hành trên trước khi làm bài tập này.
+
+**Yêu cầu:** Thêm budget cho team security vừa thành lập vào file `config.json`.
+
+Budget cần có:
+- `name`: `"project-security-tools"`
+- `limit_usd`: `25`
+- Filter theo `Project=security-tools`
+- Alert tại 90% (ACTUAL), gửi đến `team-security@company.com`
+
+**Gợi ý khi bí:**
+- Mở `/opt/lab-data/budgets/config.json` và thêm entry mới vào mảng `budgets`
+- Xem format của entry `project-internal-tools` làm mẫu
+- Validate: `python3 -m json.tool /opt/lab-data/budgets/config.json`
+
+> Nhấn **Check** khi hoàn thành.

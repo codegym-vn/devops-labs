@@ -77,3 +77,37 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
 [ $FAIL -eq 0 ] && echo "🎉 Budget alerts đã cấu hình đúng!" && exit 0 || exit 1
+
+echo ""
+echo "=== 🎯 Bài tập ==="
+echo ""
+
+HAS_SEC_BUDGET=$(python3 -c "
+import json
+data = json.load(open('/opt/lab-data/budgets/config.json'))
+b = next((x for x in data['budgets'] if x['name']=='project-security-tools'), None)
+print('ok' if b else '')
+" 2>/dev/null)
+check "[Bài tập] Budget 'project-security-tools' đã thêm" "$HAS_SEC_BUDGET" "ok" \
+  "Thêm entry {\"name\": \"project-security-tools\", ...} vào mảng budgets"
+
+SEC_LIMIT=$(python3 -c "
+import json
+data = json.load(open('/opt/lab-data/budgets/config.json'))
+b = next((x for x in data['budgets'] if x['name']=='project-security-tools'), None)
+print(b['limit_usd'] if b else 0)
+" 2>/dev/null)
+check "[Bài tập] Limit của security-tools budget là \$25" \
+  "$([ ${SEC_LIMIT:-0} -eq 25 ] && echo ok)" "ok" \
+  "Đặt limit_usd: 25"
+
+HAS_90=$(python3 -c "
+import json
+data = json.load(open('/opt/lab-data/budgets/config.json'))
+b = next((x for x in data['budgets'] if x['name']=='project-security-tools'), None)
+if b:
+  for a in b.get('alerts',[]):
+    if a.get('threshold_pct')==90: print('ok'); exit()
+" 2>/dev/null)
+check "[Bài tập] Alert tại 90% trong security-tools budget" "$HAS_90" "ok" \
+  "Thêm alert với threshold_pct: 90"

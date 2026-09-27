@@ -103,3 +103,30 @@ cat /tmp/finops-report.md
 1. Trước khi terminate `old-test-server`, quy trình cần làm là gì?
 2. Reserved Instance và Savings Plans khác nhau thế nào?
 3. Làm sao tự động hóa việc phát hiện idle resources trong production?
+
+---
+
+## 🎯 Bài tập
+
+> Hoàn thành phần thực hành trên trước khi làm bài tập này.
+
+**Yêu cầu:** `api-server-prod` có CPU trung bình 78.2% — đây là server **đang dùng cao**, không nên downsize. Thay vào đó, đề xuất tối ưu chi phí theo hướng khác.
+
+Thêm vào `/tmp/finops-report.md` một section mới:
+
+```
+## Đề xuất bổ sung: api-server-prod
+
+- Instance type hiện tại: t3.large (CPU avg: 78.2%)
+- Không nên downsize — đang chịu tải cao
+- Đề xuất: [Chọn 1 trong: Reserved Instance 1 năm / Savings Plans / Schedule scale-down off-peak]
+- Tiết kiệm ước tính: [tính toán % tiết kiệm tương ứng]
+- Rủi ro: [mô tả rủi ro của đề xuất đã chọn]
+```
+
+**Gợi ý khi bí:**
+- Reserved Instance 1 năm → tiết kiệm ~30% (nhưng cần cam kết 1 năm)
+- Savings Plans → linh hoạt hơn RI, tiết kiệm ~20-28%
+- `api-server-prod` monthly cost: $59.90 → tính tiết kiệm từ đây
+
+> Nhấn **Check** khi hoàn thành.

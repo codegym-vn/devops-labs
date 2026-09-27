@@ -123,3 +123,24 @@ echo "✅ Lưu vào /tmp/lab-env.sh"
 1. Tại sao database nên nằm ở **Private Subnet** thay vì Public Subnet?
 2. Trong bài lab, điều gì đóng vai trò **Internet Gateway** (cổng ra Internet)?
 3. Nếu VPC có CIDR `10.0.0.0/16`, có thể tạo tối đa bao nhiêu Subnet `/24`?
+
+---
+
+## 🎯 Bài tập
+
+> Hoàn thành phần thực hành trên trước khi làm bài tập này.
+
+**Yêu cầu:** Hệ thống cần thêm một Subnet chuyên dụng cho database layer.
+
+Tạo một Docker network mới với các thuộc tính sau:
+- Tên: `db-subnet`
+- CIDR: `10.0.3.0/24`, gateway: `10.0.3.1`
+- Label: `subnet=database` và `vpc=devops-vpc`
+
+Sau khi tạo xong, khởi động container `db-replica` vào network này với IP `10.0.3.10`, không expose port ra ngoài.
+
+**Gợi ý khi bí:**
+- Xem lại lệnh ở phần 1.3 và 1.4 — cú pháp tương tự
+- `docker network inspect db-subnet` để kiểm tra kết quả
+
+> Nhấn **Check** khi hoàn thành.

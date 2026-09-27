@@ -56,6 +56,36 @@ check "File /tmp/lab-env.sh đã lưu biến môi trường" \
   "Chạy phần 1.5 trong hướng dẫn để lưu biến"
 
 echo ""
+echo "=== 🎯 Bài tập ==="
+echo ""
+
+# Challenge: tạo db-subnet (10.0.3.0/24) và container db-replica
+DB_SUBNET=$(docker network inspect db-subnet \
+  --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}' 2>/dev/null)
+check "[Bài tập] Network 'db-subnet' tồn tại với CIDR 10.0.3.0/24" \
+  "$(echo $DB_SUBNET | grep -c '10.0.3')" "1" \
+  "docker network create --subnet 10.0.3.0/24 --gateway 10.0.3.1 \\
+         --label subnet=database --label vpc=devops-vpc db-subnet"
+
+DB_SUBNET_LABEL=$(docker network inspect db-subnet \
+  --format '{{index .Labels "subnet"}}' 2>/dev/null)
+check "[Bài tập] Network 'db-subnet' có label subnet=database" \
+  "$DB_SUBNET_LABEL" "database" \
+  "Thêm --label subnet=database vào lệnh docker network create"
+
+DB_REPLICA_IP=$(docker inspect db-replica \
+  --format '{{.NetworkSettings.Networks.db-subnet.IPAddress}}' 2>/dev/null)
+check "[Bài tập] Container 'db-replica' chạy trong db-subnet với IP 10.0.3.10" \
+  "$DB_REPLICA_IP" "10.0.3.10" \
+  "docker run -d --name db-replica --network db-subnet --ip 10.0.3.10 alpine sleep infinity"
+
+DB_REPLICA_PORTS=$(docker inspect db-replica \
+  --format '{{.HostConfig.PortBindings}}' 2>/dev/null)
+check "[Bài tập] db-replica không expose port ra ngoài" \
+  "$DB_REPLICA_PORTS" "map[]" \
+  "Xóa flag -p khi tạo db-replica"
+
+echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
 [ $FAIL -eq 0 ] && echo "🎉 Hoàn thành Bước 1!" && exit 0 || exit 1

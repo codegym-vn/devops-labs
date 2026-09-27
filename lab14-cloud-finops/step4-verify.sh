@@ -59,3 +59,22 @@ if [ $FAIL -eq 0 ]; then
 else
   exit 1
 fi
+
+echo ""
+echo "=== 🎯 Bài tập ==="
+echo ""
+
+HAS_API_SECTION=$(grep -ic "api-server-prod" /tmp/finops-report.md 2>/dev/null)
+check "[Bài tập] Báo cáo có section về api-server-prod" \
+  "$([ $HAS_API_SECTION -ge 1 ] && echo ok)" "ok" \
+  "Thêm section 'Đề xuất bổ sung: api-server-prod' vào /tmp/finops-report.md"
+
+HAS_RESERVED=$(grep -ic "Reserved\|Savings Plans\|tiết kiệm\|saving" /tmp/finops-report.md 2>/dev/null)
+check "[Bài tập] Đề xuất có giải pháp tối ưu (Reserved/Savings Plans)" \
+  "$([ $HAS_RESERVED -ge 1 ] && echo ok)" "ok" \
+  "Thêm đề xuất Reserved Instance hoặc Savings Plans với % tiết kiệm"
+
+HAS_RISK=$(grep -ic "rủi ro\|risk\|Rủi ro" /tmp/finops-report.md 2>/dev/null)
+check "[Bài tập] Đề xuất có phân tích rủi ro" \
+  "$([ $HAS_RISK -ge 1 ] && echo ok)" "ok" \
+  "Thêm dòng 'Rủi ro: ...' vào đề xuất"

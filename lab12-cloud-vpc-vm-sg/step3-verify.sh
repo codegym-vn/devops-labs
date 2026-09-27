@@ -63,3 +63,30 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
 [ $FAIL -eq 0 ] && echo "🎉 Instances triển khai đúng!" && exit 0 || exit 1
+
+echo ""
+echo "=== 🎯 Bài tập ==="
+echo ""
+
+# Challenge: api-server tại 10.0.1.11, port 8082
+API_STATUS=$(docker inspect api-server --format '{{.State.Status}}' 2>/dev/null)
+check "[Bài tập] Container 'api-server' đang running" "$API_STATUS" "running" \
+  "docker run -d --name api-server --network public-subnet --ip 10.0.1.11 -p 8082:80 ..."
+
+API_IP=$(docker inspect api-server \
+  --format '{{.NetworkSettings.Networks.public-subnet.IPAddress}}' 2>/dev/null)
+check "[Bài tập] api-server có IP 10.0.1.11" "$API_IP" "10.0.1.11" \
+  "Thêm --ip 10.0.1.11 vào lệnh docker run"
+
+API_HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/api/status 2>/dev/null)
+check "[Bài tập] Endpoint /api/status trả về HTTP 200" "$API_HTTP" "200" \
+  "Tạo nginx config với location /api/status { return 200 '{...}'; }"
+
+API_BODY=$(curl -s http://localhost:8082/api/status 2>/dev/null)
+check "[Bài tập] Response chứa 'status' và 'api'" \
+  "$(echo $API_BODY | grep -c '"status"' && echo $API_BODY | grep -c 'api')" "1" \
+  "Trả về JSON: {\"status\": \"ok\", \"service\": \"api\"}"
+
+API_ROLE=$(docker inspect api-server --format '{{index .Config.Labels "Role"}}' 2>/dev/null)
+check "[Bài tập] api-server có label Role=api" "$API_ROLE" "api" \
+  "Thêm --label Role=api vào lệnh docker run"

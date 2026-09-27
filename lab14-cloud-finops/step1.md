@@ -160,3 +160,25 @@ EOF
 1. Điều gì xảy ra với chi phí nếu một team không gắn tag đúng chuẩn?
 2. Chiến lược nào đảm bảo **tag consistency** khi team scale lên 50 engineers?
 3. Nếu dùng Terraform/Ansible, làm sao tự động gắn tag cho mọi resource?
+
+---
+
+## 🎯 Bài tập
+
+> Hoàn thành phần thực hành trên trước khi làm bài tập này.
+
+**Yêu cầu:** Team bảo mật vừa được thành lập và cần tracking chi phí riêng.
+
+Tạo container `security-scanner` với đầy đủ 5 tags chuẩn:
+- `Name=security-scanner`
+- `Project=security-tools`
+- `Environment=production`
+- `Owner=team-security`
+- `CostCenter=CC-004`
+
+Sau đó chạy lệnh kiểm tra: danh sách containers thuộc `Owner=team-security` phải hiển thị đúng 1 container.
+
+**Gợi ý khi bí:**
+- Xem hàm `create_server` đã viết ở phần 1.1
+
+> Nhấn **Check** khi hoàn thành.

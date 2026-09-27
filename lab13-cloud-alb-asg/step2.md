@@ -146,3 +146,27 @@ echo "✅ app-2 đã phục hồi"
 1. Tại sao Health Check dùng `/health` thay vì `/`?
 2. Connection Draining giải quyết vấn đề gì khi xóa instance đang có traffic?
 3. LB có thể định tuyến theo path (`/api/*` vs `/static/*`) không? Loại LB nào hỗ trợ điều này?
+
+---
+
+## 🎯 Bài tập
+
+> Hoàn thành phần thực hành trên trước khi làm bài tập này.
+
+**Yêu cầu:** Thêm endpoint `/metrics` vào Nginx Load Balancer. Endpoint này trả về thống kê đơn giản:
+
+```
+upstream: backend
+algorithm: least_conn
+servers: 2
+status: active
+```
+
+Endpoint phải trả về `Content-Type: text/plain` và HTTP 200.
+
+**Gợi ý khi bí:**
+- Thêm một `location /metrics { ... }` vào block `server` trong `/etc/nginx/conf.d/lb.conf`
+- `return 200 "text..."` — xem cách viết ở phần 2.1
+- Đừng quên `nginx -s reload` sau khi sửa config
+
+> Nhấn **Check** khi hoàn thành.

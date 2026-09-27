@@ -58,3 +58,23 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
 [ $FAIL -eq 0 ] && echo "🎉 Tagging đúng chuẩn!" && exit 0 || exit 1
+
+echo ""
+echo "=== 🎯 Bài tập ==="
+echo ""
+
+SEC_STATUS=$(docker inspect security-scanner --format '{{.State.Status}}' 2>/dev/null)
+check "[Bài tập] Container 'security-scanner' đang running" "$SEC_STATUS" "running" \
+  "create_server 'security-scanner' 'security-tools' 'production' 'team-security' 'CC-004'"
+
+for TAG in "Project=security-tools" "Owner=team-security" "CostCenter=CC-004"; do
+  KEY="${TAG%%=*}"; VAL="${TAG##*=}"
+  ACTUAL=$(docker inspect security-scanner --format "{{index .Config.Labels \"$KEY\"}}" 2>/dev/null)
+  check "[Bài tập] security-scanner có label $KEY=$VAL" "$ACTUAL" "$VAL" \
+    "Thêm --label $KEY=$VAL khi tạo container"
+done
+
+SEC_OWNER_COUNT=$(docker ps --filter "label=Owner=team-security" -q | wc -l)
+check "[Bài tập] Đúng 1 container thuộc Owner=team-security" \
+  "$([ $SEC_OWNER_COUNT -eq 1 ] && echo ok)" "ok" \
+  "Chỉ security-scanner phải có label Owner=team-security"

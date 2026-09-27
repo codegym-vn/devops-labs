@@ -68,3 +68,25 @@ EOF
 1. Tại sao dùng CUR thay vì chỉ xem tổng hóa đơn cuối tháng?
 2. Phân tích chi phí theo `Owner` tag giúp gì trong quy trình chargeback?
 3. Bạn sẽ tự động hóa báo cáo CUR này như thế nào (cron job, Lambda)?
+
+---
+
+## 🎯 Bài tập
+
+> Hoàn thành phần thực hành trên trước khi làm bài tập này.
+
+**Yêu cầu:** Tìm và ghi ra file `/tmp/top-service.txt` service tốn chi phí nhiều nhất trong 30 ngày, theo format:
+
+```
+Top service by cost:
+Service: <tên service>
+Total cost: $<số tiền>
+% of total: <phần trăm>%
+```
+
+**Gợi ý khi bí:**
+- Dùng `python3 /opt/lab-data/analyze-cost.py --group-by ProductName` để xem breakdown
+- Xử lý output bằng Python hoặc awk để tìm max
+- Tính `% of total = service_cost / total_cost * 100`
+
+> Nhấn **Check** khi hoàn thành.

@@ -151,3 +151,30 @@ Trên Cloud:
   GCP   → Instance Template + MIG + Cloud LB + Cloud Monitoring
   Azure → VM Scale Set + Azure LB + Azure Monitor
 ```
+
+---
+
+## 🎯 Bài tập
+
+> Hoàn thành cleanup trên trước khi làm bài tập này.
+
+**Yêu cầu:** Từ hai file benchmark `/tmp/bench-before.txt` và `/tmp/bench-after.txt`, tính và ghi ra file `/tmp/scaling-report.txt` với nội dung:
+
+```
+Scale-out Report
+================
+Backends before : 2
+Backends after  : 3
+RPS before      : XXXX
+RPS after       : XXXX
+Improvement     : XX%
+Verdict         : Scale-out EFFECTIVE (nếu tăng >= 20%)
+               hoặc Scale-out MARGINAL (nếu tăng < 20%)
+```
+
+**Gợi ý khi bí:**
+- `grep "Requests/sec" /tmp/bench-before.txt | awk '{print $2}'` lấy số RPS
+- Tính % cải thiện: `(after - before) / before * 100`
+- Có thể dùng `python3 -c "..."` hoặc `bash` arithmetic
+
+> Nhấn **Check** khi hoàn thành.

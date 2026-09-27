@@ -56,3 +56,23 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
 [ $FAIL -eq 0 ] && echo "🎉 Load Balancer phân phối đúng!" && exit 0 || exit 1
+
+echo ""
+echo "=== 🎯 Bài tập ==="
+echo ""
+
+check "[Bài tập] Script /tmp/health-check-all.sh đã tạo và executable" \
+  "$(test -x /tmp/health-check-all.sh && echo ok)" "ok" \
+  "Tạo file và: chmod +x /tmp/health-check-all.sh"
+
+# Chạy script và kiểm tra exit code khi tất cả healthy
+/tmp/health-check-all.sh > /tmp/hc-output.txt 2>&1
+HC_EXIT=$?
+HAS_OUTPUT=$(grep -ic "healthy\|app-" /tmp/hc-output.txt 2>/dev/null)
+check "[Bài tập] health-check-all.sh in ra trạng thái từng backend" \
+  "$([ $HAS_OUTPUT -ge 1 ] && echo ok)" "ok" \
+  "Script phải in ra ✅/❌ cho mỗi app-*"
+
+check "[Bài tập] health-check-all.sh exit 0 khi tất cả healthy" \
+  "$HC_EXIT" "0" \
+  "Script phải thoát với exit code 0 nếu tất cả backends healthy"

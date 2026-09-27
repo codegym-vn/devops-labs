@@ -56,3 +56,23 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
 [ $FAIL -eq 0 ] && echo "🎉 Security Group cấu hình đúng!" && exit 0 || exit 1
+
+echo ""
+echo "=== 🎯 Bài tập ==="
+echo ""
+
+# Challenge: port 443 chỉ từ 10.0.0.0/8, port 8443 từ 172.16.0.0/12
+PORT_443_RESTRICTED=$(ufw status | grep "443" | grep "10.0.0.0/8" | head -1)
+check "[Bài tập] Port 443 chỉ cho phép từ 10.0.0.0/8" \
+  "$([ -n "$PORT_443_RESTRICTED" ] && echo ok)" "ok" \
+  "ufw allow from 10.0.0.0/8 to any port 443 comment 'HTTPS internal'"
+
+PORT_443_PUBLIC=$(ufw status | grep "^443" | grep "0.0.0.0/0" | grep "ALLOW IN" | head -1)
+check "[Bài tập] Port 443 KHÔNG mở cho 0.0.0.0/0 (phải restricted)" \
+  "$([ -z "$PORT_443_PUBLIC" ] && echo ok)" "ok" \
+  "Xóa: ufw delete allow 443/tcp | Dùng: ufw allow from 10.0.0.0/8 to any port 443"
+
+PORT_8443_CORP=$(ufw status | grep "8443" | grep "172.16.0.0/12" | head -1)
+check "[Bài tập] Port 8443 chỉ cho phép từ 172.16.0.0/12" \
+  "$([ -n "$PORT_8443_CORP" ] && echo ok)" "ok" \
+  "ufw allow from 172.16.0.0/12 to any port 8443 comment 'API corporate'"

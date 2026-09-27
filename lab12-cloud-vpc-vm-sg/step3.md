@@ -173,3 +173,24 @@ EOF
 1. Tại sao phải `chmod 400` file private key `.pem`?
 2. Sự khác biệt giữa `stop` và `terminate` một Compute Instance?
 3. Tại sao Public IP của instance thay đổi sau mỗi lần restart (nếu không dùng Elastic/Static IP)?
+
+---
+
+## 🎯 Bài tập
+
+> Hoàn thành phần thực hành trên trước khi làm bài tập này.
+
+**Yêu cầu:** Deploy một API server tách biệt với web server hiện tại.
+
+Tạo container `api-server` với các yêu cầu sau:
+- Network: `public-subnet`, IP: `10.0.1.11`
+- Expose ra ngoài tại port `8082`
+- Endpoint `/api/status` phải trả về text: `{"status": "ok", "service": "api"}`
+- Có labels: `Role=api`, `Environment=production`
+
+**Gợi ý khi bí:**
+- Xem cách tạo `web-server.conf` ở phần 3.2 — tạo Nginx config tương tự
+- `return 200 '{"status": "ok"}';` trong Nginx location block
+- `add_header Content-Type application/json;`
+
+> Nhấn **Check** khi hoàn thành.

@@ -118,3 +118,23 @@ done
 1. Tại sao dùng template thay vì tạo instance thủ công từng cái?
 2. Khi ASG giảm từ 2 → 1, nó chọn instance nào để xóa?
 3. **Grace period** là gì — tại sao cần chờ trước khi health check?
+
+---
+
+## 🎯 Bài tập
+
+> Hoàn thành phần thực hành trên trước khi làm bài tập này.
+
+**Yêu cầu:** Tăng `desired capacity` từ 2 lên 3 — thêm instance `app-3` vào Auto Scaling Group.
+
+Kết quả cần đạt:
+- Container `app-3` đang chạy trong `app-network`, IP `10.1.0.13`, port `8083`
+- Có label `asg=web-asg` (thuộc cùng ASG)
+- Endpoint `/server-id` trả về text chứa `app-3`
+- Endpoint `/health` trả về `healthy`
+
+**Gợi ý khi bí:**
+- Dùng hàm `start_instance` đã viết ở phần 1.3 với argument `3`
+- Hoặc viết tay lệnh `docker run` theo pattern tương tự app-1 và app-2
+
+> Nhấn **Check** khi hoàn thành.

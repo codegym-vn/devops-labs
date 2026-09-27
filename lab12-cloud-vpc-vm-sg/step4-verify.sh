@@ -51,3 +51,32 @@ if [ $FAIL -eq 0 ]; then
 else
   exit 1
 fi
+
+echo ""
+echo "=== 🎯 Bài tập ==="
+echo ""
+
+# Challenge: /tmp/infra-snapshot.json
+check "[Bài tập] File /tmp/infra-snapshot.json đã tạo" \
+  "$(test -f /tmp/infra-snapshot.json && echo ok)" "ok" \
+  "Tạo file JSON với python3 hoặc echo/printf"
+
+JSON_VALID=$(python3 -c "import json; json.load(open('/tmp/infra-snapshot.json'))" 2>/dev/null && echo ok)
+check "[Bài tập] /tmp/infra-snapshot.json là JSON hợp lệ" "$JSON_VALID" "ok" \
+  "Kiểm tra: python3 -m json.tool /tmp/infra-snapshot.json"
+
+HAS_STATUS=$(python3 -c "
+import json
+d = json.load(open('/tmp/infra-snapshot.json'))
+print('ok' if d.get('status') == 'cleaned' else '')
+" 2>/dev/null)
+check "[Bài tập] JSON có field 'status': 'cleaned'" "$HAS_STATUS" "ok" \
+  "Thêm 'status': 'cleaned' vào JSON"
+
+HAS_TIMESTAMP=$(python3 -c "
+import json
+d = json.load(open('/tmp/infra-snapshot.json'))
+print('ok' if d.get('timestamp') else '')
+" 2>/dev/null)
+check "[Bài tập] JSON có field 'timestamp'" "$HAS_TIMESTAMP" "ok" \
+  "Dùng: \$(date -u +\"%Y-%m-%dT%H:%M:%SZ\") để lấy thời gian"

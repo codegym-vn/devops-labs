@@ -59,3 +59,23 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
 [ $FAIL -eq 0 ] && echo "🎉 Instances sẵn sàng!" && exit 0 || exit 1
+
+echo ""
+echo "=== 🎯 Bài tập ==="
+echo ""
+
+APP3=$(docker inspect app-3 --format '{{.State.Status}}' 2>/dev/null)
+check "[Bài tập] Container 'app-3' đang running" "$APP3" "running" \
+  "start_instance 3 hoặc docker run -d --name app-3 --network app-network --ip 10.1.0.13 -p 8083:80 ..."
+
+APP3_IP=$(docker inspect app-3 --format '{{.NetworkSettings.Networks.app-network.IPAddress}}' 2>/dev/null)
+check "[Bài tập] app-3 có IP 10.1.0.13" "$APP3_IP" "10.1.0.13" \
+  "Thêm --ip 10.1.0.13 vào lệnh docker run"
+
+APP3_ASG=$(docker inspect app-3 --format '{{index .Config.Labels "asg"}}' 2>/dev/null)
+check "[Bài tập] app-3 có label asg=web-asg" "$APP3_ASG" "web-asg" \
+  "Thêm --label asg=web-asg"
+
+APP3_HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8083/server-id 2>/dev/null)
+check "[Bài tập] app-3 phản hồi HTTP 200 tại port 8083" "$APP3_HTTP" "200" \
+  "Kiểm tra port mapping -p 8083:80"

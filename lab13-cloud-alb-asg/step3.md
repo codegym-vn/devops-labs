@@ -76,3 +76,24 @@ echo "✅ app-2 phục hồi"
 1. Tỷ lệ phân phối có bao giờ chính xác 50/50 không? Tại sao?
 2. Passive health check (`max_fails`) và Active health check (ALB polling) khác thế nào?
 3. Nếu app-1 nhanh gấp đôi app-2, thuật toán nào phù hợp hơn?
+
+---
+
+## 🎯 Bài tập
+
+> Hoàn thành phần thực hành trên trước khi làm bài tập này.
+
+**Yêu cầu:** Viết script `/tmp/health-check-all.sh` tự động kiểm tra tất cả backends.
+
+Script phải:
+- Kiểm tra health của tất cả ports đang có container `app-*`
+- In ra `✅ app-X: healthy` hoặc `❌ app-X: UNHEALTHY`
+- Thoát với exit code `0` nếu TẤT CẢ healthy, `1` nếu có bất kỳ backend nào fail
+- Phải executable (`chmod +x`)
+
+**Gợi ý khi bí:**
+- Dùng `docker ps --filter "label=asg=web-asg"` để lấy danh sách containers
+- `curl -s -o /dev/null -w "%{http_code}" http://localhost:<PORT>/health`
+- Lấy port từ `docker inspect <name> --format '{{...}}'`
+
+> Nhấn **Check** khi hoàn thành.

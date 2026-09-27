@@ -116,3 +116,25 @@ echo "✅ Đã thu hồi rule không cần thiết (port 8443)"
 1. Security Group "stateful" nghĩa là gì? Lợi thế so với tường lửa stateless?
 2. Nếu không khai báo Outbound rule — điều gì xảy ra với traffic đi ra?
 3. Tại sao SSH (port 22) không nên mở cho `0.0.0.0/0`?
+
+---
+
+## 🎯 Bài tập
+
+> Hoàn thành phần thực hành trên trước khi làm bài tập này.
+
+**Yêu cầu:** Hệ thống sẽ triển khai HTTPS. Mở port 443 cho public, nhưng chỉ cho traffic từ network `10.0.0.0/8` (không phải toàn bộ internet).
+
+Ngoài ra, thêm rule rate-limit: chỉ cho phép port 8443 từ địa chỉ `172.16.0.0/12` (internal corporate network).
+
+**Kết quả cần đạt:**
+- Port 443: chỉ từ `10.0.0.0/8`
+- Port 8443: chỉ từ `172.16.0.0/12`
+- Hai rule phải có comment mô tả mục đích
+
+**Gợi ý khi bí:**
+- `ufw allow from <CIDR> to any port <PORT>` — xem lại phần 2.2
+- `comment "mô tả"` thêm vào cuối lệnh ufw
+- `ufw status numbered` để kiểm tra sau khi thêm
+
+> Nhấn **Check** khi hoàn thành.

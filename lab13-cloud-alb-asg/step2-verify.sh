@@ -66,3 +66,16 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
 [ $FAIL -eq 0 ] && echo "🎉 Load Balancer hoạt động đúng!" && exit 0 || exit 1
+
+echo ""
+echo "=== 🎯 Bài tập ==="
+echo ""
+
+METRICS_HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/metrics 2>/dev/null)
+check "[Bài tập] Endpoint /metrics trả về HTTP 200" "$METRICS_HTTP" "200" \
+  "Thêm: location /metrics { return 200 'upstream: backend\nalgorithm: least_conn\n...'; } vào lb.conf"
+
+METRICS_BODY=$(curl -s http://localhost/metrics 2>/dev/null)
+check "[Bài tập] /metrics có chứa 'upstream' hoặc 'algorithm'" \
+  "$(echo $METRICS_BODY | grep -ic 'upstream\|algorithm')" "1" \
+  "Response phải chứa thông tin về upstream backend"

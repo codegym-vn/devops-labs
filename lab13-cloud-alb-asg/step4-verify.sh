@@ -60,3 +60,21 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
 [ $FAIL -eq 0 ] && echo "🎉 Scale-out thành công và cleanup hoàn tất!" && exit 0 || exit 1
+
+echo ""
+echo "=== 🎯 Bài tập ==="
+echo ""
+
+check "[Bài tập] File /tmp/scaling-report.txt đã tạo" \
+  "$(test -f /tmp/scaling-report.txt && echo ok)" "ok" \
+  "Tạo file với python3 hoặc shell script từ bench-before.txt và bench-after.txt"
+
+HAS_RPS=$(grep -ic "RPS\|req\|Requests" /tmp/scaling-report.txt 2>/dev/null)
+check "[Bài tập] Report chứa thông tin RPS" \
+  "$([ $HAS_RPS -ge 1 ] && echo ok)" "ok" \
+  "Report phải có dòng 'RPS before' và 'RPS after'"
+
+HAS_VERDICT=$(grep -ic "EFFECTIVE\|MARGINAL\|Verdict\|Improvement" /tmp/scaling-report.txt 2>/dev/null)
+check "[Bài tập] Report có Verdict (EFFECTIVE/MARGINAL)" \
+  "$([ $HAS_VERDICT -ge 1 ] && echo ok)" "ok" \
+  "Thêm dòng Verdict: Scale-out EFFECTIVE hoặc MARGINAL"

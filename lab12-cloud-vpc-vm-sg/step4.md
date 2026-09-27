@@ -108,3 +108,28 @@ Bước 4: End-to-end test + Cleanup
 Trên Cloud thật: thay docker → aws/gcloud/az CLI
 Concepts giống nhau 100%
 ```
+
+---
+
+## 🎯 Bài tập
+
+> Hoàn thành cleanup trên trước khi làm bài tập này.
+
+**Yêu cầu:** Trước khi tắt lab, kỹ sư Cloud thường lưu lại trạng thái hạ tầng để audit.
+
+Viết lệnh (hoặc script ngắn) tạo file `/tmp/infra-snapshot.json` chứa:
+```json
+{
+  "timestamp": "<thời gian hiện tại>",
+  "containers": ["<danh sách tên containers đã xóa>"],
+  "networks": ["<danh sách networks đã xóa>"],
+  "status": "cleaned"
+}
+```
+
+**Gợi ý khi bí:**
+- `date -u +"%Y-%m-%dT%H:%M:%SZ"` lấy timestamp
+- `python3 -c "import json; ..."` để tạo JSON
+- File phải hợp lệ JSON: `python3 -m json.tool /tmp/infra-snapshot.json`
+
+> Nhấn **Check** khi hoàn thành.

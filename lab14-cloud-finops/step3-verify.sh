@@ -53,3 +53,21 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
 [ $FAIL -eq 0 ] && echo "🎉 Cost analysis thành công!" && exit 0 || exit 1
+
+echo ""
+echo "=== 🎯 Bài tập ==="
+echo ""
+
+check "[Bài tập] File /tmp/top-service.txt đã tạo" \
+  "$(test -f /tmp/top-service.txt && echo ok)" "ok" \
+  "Tạo file sau khi phân tích với analyze-cost.py"
+
+HAS_SERVICE=$(grep -ic "Service\|service\|Top" /tmp/top-service.txt 2>/dev/null)
+check "[Bài tập] File chứa tên service tốn nhiều nhất" \
+  "$([ $HAS_SERVICE -ge 1 ] && echo ok)" "ok" \
+  "Ghi: 'Service: <tên>' vào file"
+
+HAS_PCT=$(grep -ic "%\|percent\|phần trăm" /tmp/top-service.txt 2>/dev/null)
+check "[Bài tập] File chứa % of total" \
+  "$([ $HAS_PCT -ge 1 ] && echo ok)" "ok" \
+  "Tính và ghi % chiếm tổng chi phí"
