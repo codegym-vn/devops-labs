@@ -1,0 +1,41 @@
+{
+  "title": "Lab: Thực hành triển khai Application Load Balancer và thiết lập Auto Scaling Group cho cụm máy chủ",
+  "description": "Sử dụng AWS CLI và LocalStack để xây dựng hệ thống phân tải và tự động mở rộng. Học viên tạo Launch Template, Auto Scaling Group, Application Load Balancer và kiểm thử cơ chế scale-out khi tải tăng.",
+  "difficulty": "Intermediate",
+  "time": "55",
+  "details": {
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "steps": [
+      {
+        "title": "Bước 1: Tạo Launch Template và Auto Scaling Group",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Bước 2: Tạo Application Load Balancer và Target Group",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Bước 3: Kiểm thử phân tải và quan sát round-robin",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Bước 4: Giả lập scale-out và dọn dẹp tài nguyên",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu:2204"
+  }
+}

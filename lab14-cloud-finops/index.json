@@ -1,0 +1,41 @@
+{
+  "title": "Lab: Thực hành thiết lập Budget Alerts, gắn Tag phân bổ chi phí và phân tích tài nguyên idle trên Cloud",
+  "description": "Áp dụng các nguyên tắc FinOps: gắn Cost Allocation Tags lên tài nguyên Cloud, thiết lập AWS Budgets cảnh báo ngân sách, phân tích Cost & Usage Report và phát hiện tài nguyên idle để đề xuất tối ưu chi phí.",
+  "difficulty": "Intermediate",
+  "time": "40",
+  "details": {
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "steps": [
+      {
+        "title": "Bước 1: Gắn Cost Allocation Tags lên tài nguyên Cloud",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Bước 2: Thiết lập AWS Budgets và cảnh báo ngân sách",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Bước 3: Phân tích Cost & Usage Report",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Bước 4: Phát hiện tài nguyên idle và đề xuất tối ưu",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu:2204"
+  }
+}

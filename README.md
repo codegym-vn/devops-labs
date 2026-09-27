@@ -21,6 +21,9 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | **Lab 9** | `lab9-docker-cli-fundamentals/` | Docker CLI, Image Layers, `overlay2`, CoW | Tải và phân tích Image Layers, SHA256 digest, `run -it`, `exec -it`, `cp`, `diff`, `commit` | 35-40 phút |
 | **Lab 10** | `lab10-runtime-logs-graceful-shutdown/` | Docker Runtime, cgroups, OOM Killer, Signals | Vòng đời container, tham số runtime, giới hạn CPU/RAM, Log Rotation, kiểm thử Graceful Shutdown | 35-40 phút |
 | **Lab 11** | `lab11-dockerfile-multistage-security/` | Dockerfile, Multi-stage, BuildKit, Non-Root | Tối ưu layer cache, chống cache busting, Multi-stage build giảm 95% dung lượng, phân quyền non-root (UID 10001) | 35-40 phút |
+| **Lab 12** | `lab12-cloud-vpc-vm-sg/` | AWS CLI, LocalStack, Docker, VPC, EC2, Security Groups | Xây dựng hạ tầng mạng VPC, phân vùng Subnet, cấu hình Security Groups, triển khai EC2 và kết nối SSH | 40-45 phút |
+| **Lab 13** | `lab13-cloud-alb-asg/` | AWS CLI, LocalStack, Nginx, ALB, Auto Scaling, CloudWatch | Launch Template, Auto Scaling Group (min/max/desired), ALB + Target Group + Health Check, scale-out | 50-55 phút |
+| **Lab 14** | `lab14-cloud-finops/` | AWS CLI, LocalStack, Python, Cost Allocation Tags, Budgets | Gắn Tags phân bổ chi phí, thiết lập Budget Alerts, phân tích Cost & Usage Report, phát hiện idle resources | 35-40 phút |
 
 ---
 
