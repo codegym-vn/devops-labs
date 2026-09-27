@@ -165,8 +165,8 @@ status: active
 Endpoint phải trả về `Content-Type: text/plain` và HTTP 200.
 
 **Gợi ý khi bí:**
-- Thêm một `location /metrics { ... }` vào block `server` trong `/etc/nginx/conf.d/lb.conf`
-- `return 200 "text..."` — xem cách viết ở phần 2.1
-- Đừng quên `nginx -s reload` sau khi sửa config
+- Thêm một location block tên  vào block  trong file 
+- Dùng  trả về text — xem cách viết ở phần 2.1
+- Đừng quên chạy  sau khi sửa config
 
 > Nhấn **Check** khi hoàn thành.

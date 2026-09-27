@@ -93,7 +93,7 @@ Script phải:
 
 **Gợi ý khi bí:**
 - Dùng `docker ps --filter "label=asg=web-asg"` để lấy danh sách containers
-- `curl -s -o /dev/null -w "%{http_code}" http://localhost:<PORT>/health`
-- Lấy port từ `docker inspect <name> --format '{{...}}'`
+- Dùng `curl` với option `-w` để lấy HTTP status code từ endpoint `/health`
+- Dùng `docker inspect <name>` với `--format` để lấy port mapping của từng container
 
 > Nhấn **Check** khi hoàn thành.

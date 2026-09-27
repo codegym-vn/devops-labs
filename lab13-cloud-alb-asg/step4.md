@@ -173,7 +173,7 @@ Verdict         : Scale-out EFFECTIVE (nếu tăng >= 20%)
 ```
 
 **Gợi ý khi bí:**
-- `grep "Requests/sec" /tmp/bench-before.txt | awk '{print $2}'` lấy số RPS
+- Dùng `grep` + `awk` để lấy số RPS từ file bench-before.txt (cột thứ 2 của dòng Requests/sec)
 - Tính % cải thiện: `(after - before) / before * 100`
 - Có thể dùng `python3 -c "..."` hoặc `bash` arithmetic
 

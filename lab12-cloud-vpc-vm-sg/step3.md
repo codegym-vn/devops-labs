@@ -185,12 +185,12 @@ EOF
 Tạo container `api-server` với các yêu cầu sau:
 - Network: `public-subnet`, IP: `10.0.1.11`
 - Expose ra ngoài tại port `8082`
-- Endpoint `/api/status` phải trả về text: `{"status": "ok", "service": "api"}`
+- Endpoint `/api/status` phải trả về JSON text với hai field: `status` (giá trị "ok") và `service` (giá trị "api")
 - Có labels: `Role=api`, `Environment=production`
 
 **Gợi ý khi bí:**
 - Xem cách tạo `web-server.conf` ở phần 3.2 — tạo Nginx config tương tự
-- `return 200 '{"status": "ok"}';` trong Nginx location block
+- Dùng `return 200` trả về JSON string trong Nginx — xem cú pháp tại phần 3.2
 - `add_header Content-Type application/json;`
 
 > Nhấn **Check** khi hoàn thành.
