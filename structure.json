@@ -1,6 +1,6 @@
 {
-  "title": "Khóa Thực Hành DevOps & Networking",
-  "description": "Chuỗi bài thực hành chuyên sâu chuẩn Production: TCP/IP & DNS, HTTP/HTTPS & SSL/TLS, SSH Hardening & UFW, Nginx Load Balancing & Connection Pooling, Server Monitoring & Webhook Alerting, Git Internals & Reflog, Branching Strategy & PR Workflows, PostgreSQL & Redis Cache-Aside & Flyway Migration, Docker CLI & Image Layers, Docker Runtime Resources, Log Rotation & Graceful Shutdown, Production Multi-stage Dockerfile, Cache Optimization & Non-Root Security Hardening.",
+  "title": "Khóa Thực Hành DevOps, Networking & Cloud",
+  "description": "Chuỗi bài thực hành chuyên sâu chuẩn Production: TCP/IP & DNS, HTTP/HTTPS & SSL/TLS, SSH Hardening & UFW, Nginx Load Balancing & Connection Pooling, Server Monitoring & Webhook Alerting, Git Internals & Reflog, Branching Strategy & PR Workflows, PostgreSQL & Redis Cache-Aside & Flyway Migration, Docker CLI & Image Layers, Docker Runtime Resources, Log Rotation & Graceful Shutdown, Production Multi-stage Dockerfile, Cloud VPC & EC2 & Security Groups, Application Load Balancer & Auto Scaling, FinOps & Cost Optimization.",
   "items": [
     {
       "path": "lab1-tcpip-dns",
@@ -45,6 +45,18 @@
     {
       "path": "lab11-dockerfile-multistage-security",
       "title": "Lab 11: Thiết Kế Dockerfile Multi-stage, Tối Ưu Cache & Phân Quyền Non-Root"
+    },
+    {
+      "path": "lab12-cloud-vpc-vm-sg",
+      "title": "Lab 12: Thực hành xây dựng hạ tầng mạng VPC, triển khai máy ảo và cấu hình Security Groups"
+    },
+    {
+      "path": "lab13-cloud-alb-asg",
+      "title": "Lab 13: Thực hành triển khai Application Load Balancer và thiết lập Auto Scaling Group"
+    },
+    {
+      "path": "lab14-cloud-finops",
+      "title": "Lab 14: Thực hành thiết lập Budget Alerts, gắn Tag phân bổ chi phí và phân tích tài nguyên idle"
     }
   ]
 }
