@@ -4,7 +4,36 @@
 
 Công ty bạn chuyển hệ thống lên Cloud. Nhiệm vụ: xây dựng hạ tầng mạng nền tảng trước khi triển khai bất kỳ dịch vụ nào.
 
-## Kiến trúc
+---
+
+## LocalStack — "AWS giả" chạy trên máy bạn
+
+Từ lab này, bạn sẽ dùng **AWS CLI** để ra lệnh cho Cloud. Tuy nhiên, thay vì kết nối vào AWS thật (cần tài khoản, cần thẻ tín dụng, có thể phát sinh chi phí), chúng ta dùng **LocalStack** — một tool chạy ngay trong Docker, mô phỏng lại toàn bộ AWS API.
+
+```
+Lab 1-11 (Docker, Git, Networking...)
+         │
+         ▼
+    Docker container
+    ─────────────────────────────────────────────
+    │  LocalStack                               │
+    │  (giả lập AWS API tại localhost:4566)     │
+    │  • EC2, VPC, Security Groups              │
+    │  • ALB, Auto Scaling                      │
+    │  • Budgets, Cost Tags                     │
+    ─────────────────────────────────────────────
+         │ AWS CLI trỏ vào đây
+         ▼
+    $ aws ec2 create-vpc ...   ← lệnh giống hệt AWS thật
+```
+
+**Kết quả**: bạn gõ đúng lệnh AWS như người dùng AWS thật, nhưng không tốn một đồng nào.
+
+> **Khi nào dùng AWS thật?** Sau khi nắm vững các lệnh trong lab này, bạn chỉ cần thay `--endpoint-url=http://localhost:4566` thành endpoint của AWS thật là toàn bộ lệnh chạy được ngay.
+
+---
+
+## Kiến trúc bài lab
 
 ```
             Internet
@@ -38,6 +67,6 @@ Công ty bạn chuyển hệ thống lên Cloud. Nhiệm vụ: xây dựng hạ 
 
 | Công cụ | Vai trò |
 |---------|---------|
-| AWS CLI | Gọi Cloud API qua terminal |
-| LocalStack | Mô phỏng AWS miễn phí, không cần tài khoản |
-| Docker | Chạy container đóng vai EC2 instance |
+| AWS CLI | Giao tiếp với Cloud API qua terminal |
+| LocalStack | Mô phỏng AWS miễn phí, chạy trong Docker |
+| Docker | Chạy container đóng vai EC2 instance (web server thật) |

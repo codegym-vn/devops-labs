@@ -4,6 +4,27 @@
 
 Hóa đơn Cloud tháng này cao gấp đôi dự tính. CEO yêu cầu báo cáo phân tích và đề xuất tối ưu 30% trong 1 tuần.
 
+---
+
+## Nhắc lại: LocalStack & AWS CLI
+
+```bash
+# Nếu LocalStack chưa chạy:
+docker run -d --rm --name localstack \
+  -p 4566:4566 \
+  -e SERVICES=ec2,elbv2,autoscaling,cloudwatch,budgets \
+  localstack/localstack:3.8
+
+alias aws='aws --endpoint-url=http://localhost:4566'
+export AWS_DEFAULT_REGION=ap-southeast-1
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
+```
+
+> Lab này **không dùng AWS Billing thật** (vì LocalStack không có billing API). Thay vào đó, dataset chi phí 30 ngày đã được tạo sẵn trong `/opt/lab-data/` bởi background script.
+
+---
+
 ## Ba trụ cột FinOps
 
 ```

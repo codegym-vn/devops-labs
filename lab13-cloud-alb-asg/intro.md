@@ -4,6 +4,28 @@
 
 Web server đơn từ Lab 12 không đáp ứng được traffic cao điểm. Nhiệm vụ: nâng cấp lên **High Availability** — nhiều instance chạy song song phía sau một Load Balancer, tự động scale khi tải tăng.
 
+---
+
+## Nhắc lại: LocalStack & AWS CLI
+
+Bạn tiếp tục dùng LocalStack từ Lab 12. Mỗi lần mở terminal mới cần:
+
+```bash
+# Nếu LocalStack chưa chạy:
+docker run -d --rm --name localstack \
+  -p 4566:4566 \
+  -e SERVICES=ec2,elbv2,autoscaling,cloudwatch,budgets \
+  localstack/localstack:3.8
+
+# Trỏ AWS CLI vào LocalStack
+alias aws='aws --endpoint-url=http://localhost:4566'
+export AWS_DEFAULT_REGION=ap-southeast-1
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
+```
+
+---
+
 ## Kiến trúc
 
 ```
