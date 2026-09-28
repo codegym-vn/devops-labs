@@ -1,11 +1,36 @@
 #!/bin/bash
 # background.sh — Lab 13: AWS CLI & LocalStack (ALB + ASG)
 
-# 1. Cài đặt các công cụ cần thiết
-apt-get update -y > /dev/null 2>&1
-apt-get install -y awscli jq curl netcat-openbsd > /dev/null 2>&1
+# 1. Chờ giải phóng lock apt nếu hệ thống đang update ngầm
+while fuser /var/lib/dpkg/lock >/dev/null 2>&1 || fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+  sleep 1
+done
 
-# 2. Khởi động LocalStack hỗ trợ dịch vụ ec2, elbv2, autoscaling
+# 2. Cài đặt các công cụ cần thiết
+apt-get update -y > /dev/null 2>&1
+apt-get install -y awscli jq curl netcat-openbsd unzip > /dev/null 2>&1
+
+# 3. Đảm bảo AWS CLI nhị phân tồn tại (nếu apt không có thì cài AWS CLI v2 chính thức)
+if [ ! -x /usr/bin/aws ] && [ ! -x /usr/local/aws-cli/v2/current/bin/aws ]; then
+  curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
+  unzip -q -o /tmp/awscliv2.zip -d /tmp
+  /tmp/aws/install --update > /dev/null 2>&1
+  rm -rf /tmp/aws /tmp/awscliv2.zip
+fi
+
+# 4. Xác định chính xác đường dẫn binary thật của aws
+REAL_AWS=""
+if [ -x /usr/local/aws-cli/v2/current/bin/aws ]; then
+  REAL_AWS="/usr/local/aws-cli/v2/current/bin/aws"
+elif [ -x /usr/bin/aws ]; then
+  REAL_AWS="/usr/bin/aws"
+elif [ -x /snap/bin/aws ]; then
+  REAL_AWS="/snap/bin/aws"
+else
+  REAL_AWS=$(which aws 2>/dev/null || echo "/usr/bin/aws")
+fi
+
+# 5. Khởi động LocalStack hỗ trợ dịch vụ ec2, elbv2, autoscaling
 docker run -d \
   --name localstack \
   --restart unless-stopped \
@@ -14,30 +39,39 @@ docker run -d \
   -e DEFAULT_REGION=us-east-1 \
   localstack/localstack:latest > /dev/null 2>&1
 
-# 3. Cấu hình AWS CLI mặc định
-export AWS_ACCESS_KEY_ID=test
-export AWS_SECRET_ACCESS_KEY=test
-export AWS_DEFAULT_REGION=us-east-1
+# 6. Cấu hình thông số mặc định cho AWS CLI
+mkdir -p /root/.aws /home/ubuntu/.aws 2>/dev/null
 
-aws configure set aws_access_key_id test
-aws configure set aws_secret_access_key test
-aws configure set default.region us-east-1
-aws configure set default.output json
-
-# 4. Tạo wrapper script cho aws và awslocal
-cat << 'EOF' > /usr/local/bin/awslocal
-#!/bin/bash
-/usr/bin/aws --endpoint-url=http://localhost:4566 "$@"
+cat << 'EOF' > /root/.aws/config
+[default]
+region = us-east-1
+output = json
+endpoint_url = http://localhost:4566
 EOF
-chmod +x /usr/local/bin/awslocal
 
-cat << 'EOF' > /usr/local/bin/aws
+cat << 'EOF' > /root/.aws/credentials
+[default]
+aws_access_key_id = test
+aws_secret_access_key = test
+EOF
+
+cp -r /root/.aws /home/ubuntu/ 2>/dev/null || true
+chown -R ubuntu:ubuntu /home/ubuntu/.aws 2>/dev/null || true
+
+# 7. Tạo wrapper an toàn cho aws và awslocal trỏ về LocalStack
+cat << EOF > /usr/local/bin/aws
 #!/bin/bash
-/usr/bin/aws --endpoint-url=http://localhost:4566 "$@"
+exec "$REAL_AWS" --endpoint-url=http://localhost:4566 "\$@"
 EOF
 chmod +x /usr/local/bin/aws
 
-cat << 'EOF' >> /etc/profile.d/aws.sh
+cat << EOF > /usr/local/bin/awslocal
+#!/bin/bash
+exec "$REAL_AWS" --endpoint-url=http://localhost:4566 "\$@"
+EOF
+chmod +x /usr/local/bin/awslocal
+
+cat << 'EOF' > /etc/profile.d/aws.sh
 export AWS_ACCESS_KEY_ID=test
 export AWS_SECRET_ACCESS_KEY=test
 export AWS_DEFAULT_REGION=us-east-1
@@ -45,7 +79,7 @@ export AWS_ENDPOINT_URL=http://localhost:4566
 alias awslocal="aws --endpoint-url=http://localhost:4566"
 EOF
 
-# 5. Chờ LocalStack sẵn sàng
+# 8. Chờ LocalStack sẵn sàng
 MAX_RETRY=30
 RETRY=0
 while [ $RETRY -lt $MAX_RETRY ]; do
@@ -56,7 +90,7 @@ while [ $RETRY -lt $MAX_RETRY ]; do
   RETRY=$((RETRY+1))
 done
 
-# 6. Khởi tạo sẵn VPC và 2 Subnet ở 2 Availability Zones khác nhau (bắt buộc cho ALB)
+# 9. Khởi tạo sẵn VPC và 2 Subnet ở 2 Availability Zones khác nhau (bắt buộc cho ALB)
 VPC_ID=$(/usr/local/bin/aws ec2 create-vpc --cidr-block 10.1.0.0/16 --tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=alb-asg-vpc}]' --query 'Vpc.VpcId' --output text)
 SUBNET_1=$(/usr/local/bin/aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.1.1.0/24 --availability-zone us-east-1a --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=alb-subnet-1a}]' --query 'Subnet.SubnetId' --output text)
 SUBNET_2=$(/usr/local/bin/aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.1.2.0/24 --availability-zone us-east-1b --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=alb-subnet-1b}]' --query 'Subnet.SubnetId' --output text)

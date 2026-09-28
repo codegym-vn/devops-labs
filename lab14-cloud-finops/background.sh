@@ -1,10 +1,36 @@
 #!/bin/bash
 # background.sh — Lab 14: FinOps với AWS CLI, LocalStack & Python
 
-apt-get update -y > /dev/null 2>&1
-apt-get install -y python3 python3-pip curl awscli jq > /dev/null 2>&1
+# 1. Chờ giải phóng lock apt nếu hệ thống đang update ngầm
+while fuser /var/lib/dpkg/lock >/dev/null 2>&1 || fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+  sleep 1
+done
 
-# 1. Khởi động LocalStack hỗ trợ dịch vụ ec2
+# 2. Cài đặt các công cụ cần thiết
+apt-get update -y > /dev/null 2>&1
+apt-get install -y python3 python3-pip curl awscli jq unzip > /dev/null 2>&1
+
+# 3. Đảm bảo AWS CLI nhị phân tồn tại
+if [ ! -x /usr/bin/aws ] && [ ! -x /usr/local/aws-cli/v2/current/bin/aws ]; then
+  curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
+  unzip -q -o /tmp/awscliv2.zip -d /tmp
+  /tmp/aws/install --update > /dev/null 2>&1
+  rm -rf /tmp/aws /tmp/awscliv2.zip
+fi
+
+# 4. Xác định chính xác đường dẫn binary thật của aws
+REAL_AWS=""
+if [ -x /usr/local/aws-cli/v2/current/bin/aws ]; then
+  REAL_AWS="/usr/local/aws-cli/v2/current/bin/aws"
+elif [ -x /usr/bin/aws ]; then
+  REAL_AWS="/usr/bin/aws"
+elif [ -x /snap/bin/aws ]; then
+  REAL_AWS="/snap/bin/aws"
+else
+  REAL_AWS=$(which aws 2>/dev/null || echo "/usr/bin/aws")
+fi
+
+# 5. Khởi động LocalStack hỗ trợ dịch vụ ec2
 docker run -d \
   --name localstack \
   --restart unless-stopped \
@@ -13,29 +39,39 @@ docker run -d \
   -e DEFAULT_REGION=us-east-1 \
   localstack/localstack:latest > /dev/null 2>&1
 
-# 2. Cấu hình AWS CLI
-export AWS_ACCESS_KEY_ID=test
-export AWS_SECRET_ACCESS_KEY=test
-export AWS_DEFAULT_REGION=us-east-1
+# 6. Cấu hình AWS CLI
+mkdir -p /root/.aws /home/ubuntu/.aws 2>/dev/null
 
-aws configure set aws_access_key_id test
-aws configure set aws_secret_access_key test
-aws configure set default.region us-east-1
-aws configure set default.output json
-
-cat << 'EOF' > /usr/local/bin/awslocal
-#!/bin/bash
-/usr/bin/aws --endpoint-url=http://localhost:4566 "$@"
+cat << 'EOF' > /root/.aws/config
+[default]
+region = us-east-1
+output = json
+endpoint_url = http://localhost:4566
 EOF
-chmod +x /usr/local/bin/awslocal
 
-cat << 'EOF' > /usr/local/bin/aws
+cat << 'EOF' > /root/.aws/credentials
+[default]
+aws_access_key_id = test
+aws_secret_access_key = test
+EOF
+
+cp -r /root/.aws /home/ubuntu/ 2>/dev/null || true
+chown -R ubuntu:ubuntu /home/ubuntu/.aws 2>/dev/null || true
+
+# 7. Tạo wrapper an toàn cho aws và awslocal trỏ về LocalStack
+cat << EOF > /usr/local/bin/aws
 #!/bin/bash
-/usr/bin/aws --endpoint-url=http://localhost:4566 "$@"
+exec "$REAL_AWS" --endpoint-url=http://localhost:4566 "\$@"
 EOF
 chmod +x /usr/local/bin/aws
 
-cat << 'EOF' >> /etc/profile.d/aws.sh
+cat << EOF > /usr/local/bin/awslocal
+#!/bin/bash
+exec "$REAL_AWS" --endpoint-url=http://localhost:4566 "\$@"
+EOF
+chmod +x /usr/local/bin/awslocal
+
+cat << 'EOF' > /etc/profile.d/aws.sh
 export AWS_ACCESS_KEY_ID=test
 export AWS_SECRET_ACCESS_KEY=test
 export AWS_DEFAULT_REGION=us-east-1
@@ -43,7 +79,7 @@ export AWS_ENDPOINT_URL=http://localhost:4566
 alias awslocal="aws --endpoint-url=http://localhost:4566"
 EOF
 
-# 3. Chờ LocalStack sẵn sàng
+# 8. Chờ LocalStack sẵn sàng
 MAX_RETRY=30
 RETRY=0
 while [ $RETRY -lt $MAX_RETRY ]; do
@@ -54,7 +90,7 @@ while [ $RETRY -lt $MAX_RETRY ]; do
   RETRY=$((RETRY+1))
 done
 
-# 4. Khởi tạo 5 EC2 instances đại diện cho các cụm máy chủ trong công ty
+# 9. Khởi tạo 5 EC2 instances đại diện cho các cụm máy chủ trong công ty
 VPC_ID=$(/usr/local/bin/aws ec2 create-vpc --cidr-block 10.0.0.0/16 --query 'Vpc.VpcId' --output text)
 SUBNET_ID=$(/usr/local/bin/aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.0.1.0/24 --query 'Subnet.SubnetId' --output text)
 
@@ -85,7 +121,7 @@ export SRV_REPORT=$SRV_REPORT
 export SRV_TEST=$SRV_TEST
 EOF
 
-# 5. Sinh dataset CUR (Cost & Usage Report) 30 ngày
+# 10. Sinh dataset CUR (Cost & Usage Report) 30 ngày
 mkdir -p /opt/lab-data/budgets
 python3 << 'PYEOF'
 import csv, random, datetime
@@ -164,7 +200,6 @@ from collections import defaultdict
 with open("/opt/lab-data/budgets/config.json") as f:
     budgets_cfg = json.load(f)["budgets"]
 
-# Tính tổng chi phí phát sinh (Actual)
 costs_by_project = defaultdict(float)
 total_cost = 0.0
 with open("/opt/lab-data/cost-usage-report.csv") as f:
@@ -180,7 +215,7 @@ for b in budgets_cfg:
     filter_proj = b.get("filter", {}).get("Project")
     actual = costs_by_project[filter_proj] if filter_proj else total_cost
     spent_pct = (actual / limit) * 100
-    forecast_pct = spent_pct * 1.15  # Dự báo xu hướng
+    forecast_pct = spent_pct * 1.15
 
     print(f"📌 Budget: {name} (Giới hạn: ${limit:.2f})")
     print(f"   Thực chi (Actual): ${actual:.2f} ({spent_pct:.1f}%)")
