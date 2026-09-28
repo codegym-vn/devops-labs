@@ -8,11 +8,11 @@ Trong bước cuối cùng, bạn sẽ kiểm tra bức tranh tổng thể của
 
 ### 1.1 — Luồng gói tin (Traffic Flow)
 * **Từ ngoài Internet vào Web Server:**
-  $$\text{User} \longrightarrow \text{IGW} \longrightarrow \text{Route Table (0.0.0.0/0)} \longrightarrow \text{Public Subnet} \longrightarrow \text{web-sg (Port 80/443)} \longrightarrow \text{web-server-1}$$
+  `User ➔ IGW ➔ Route Table (0.0.0.0/0) ➔ Public Subnet ➔ web-sg (Port 80/443) ➔ web-server-1`
 * **Từ ngoài Internet vào Database Server:**
-  $$\text{Hacker / Scanner} \longrightarrow \text{Không thể tìm thấy đường dẫn (Private Subnet không có route ra IGW)} \mathrel{\mathbf{\times}} \text{Bị chặn}$$
+  `Hacker / Scanner ➔ (Không có route ra IGW) ➔ ❌ Bị chặn hoàn toàn tại cửa mạng!`
 * **Từ Web Server sang Database Server:**
-  $$\text{web-server-1} \longrightarrow \text{Giao tiếp nội bộ VPC} \longrightarrow \text{db-sg (Kiểm tra source-group: đúng là web-sg)} \longrightarrow \text{Cho phép kết nối port 5432!}$$
+  `web-server-1 ➔ Giao tiếp nội bộ VPC ➔ db-sg (Kiểm tra source-group: web-sg) ➔ ✅ Cho phép kết nối port 5432!`
 
 ### 1.2 — Thứ tự phụ thuộc khi dọn dẹp tài nguyên (Dependency Order)
 Trên Cloud, bạn **không thể** xóa bừa bãi một tài nguyên cha nếu các tài nguyên con bên trong nó vẫn còn tồn tại. Thứ tự dọn dẹp chuẩn:

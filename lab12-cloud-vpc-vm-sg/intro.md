@@ -38,9 +38,16 @@ Bạn sẽ thiết kế và triển khai một hệ thống mạng cô lập nhi
 
 ## 2. Giải Mã Công Thức Câu Lệnh AWS CLI
 
-Trong thực tế vận hành DevOps, các kỹ sư ít khi dùng giao diện web (Console) để bấm click chuột vì chậm và khó tự động hóa. Thay vào đó, chúng ta sử dụng **AWS CLI**:
+Trong thực tế vận hành DevOps, các kỹ sư ít khi dùng giao diện web (Console) để bấm click chuột vì chậm và khó tự động hóa. Thay vào đó, chúng ta sử dụng **AWS CLI** theo công thức:
 
-$$\text{\Large \texttt{aws}} \quad \underbrace{\text{\Large \texttt{<service>}}}_{\text{Dịch vụ (ec2, s3...)}} \quad \underbrace{\text{\Large \texttt{<action>}}}_{\text{Hành động (create, run...)}} \quad \underbrace{\text{\Large \texttt{[--options]}}}_{\text{Tham số cấu hình}}$$
+```text
+aws   <service>   <action>   [--parameters]
+ │        │           │             │
+ │        │           │             └── Tham số cấu hình (--cidr-block, --region...)
+ │        │           └──────────────── Hành động muốn thực hiện (create-vpc, run-instances...)
+ │        └──────────────────────────── Dịch vụ cần thao tác (ec2, s3, elbv2...)
+ └───────────────────────────────────── Lệnh gọi công cụ AWS CLI
+```
 
 * **Ví dụ 1:** Tạo một mạng VPC mới:
   ```bash
