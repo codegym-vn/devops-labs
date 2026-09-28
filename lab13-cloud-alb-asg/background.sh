@@ -1,45 +1,54 @@
 #!/bin/bash
 # background.sh — Lab 13: AWS CLI & LocalStack (ALB + ASG)
 
-# 1. Chờ giải phóng lock apt nếu hệ thống đang update ngầm
-while fuser /var/lib/dpkg/lock >/dev/null 2>&1 || fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
-  sleep 1
-done
+echo "Khởi tạo môi trường Cloud Lab..." > /tmp/lab-status.log
 
-# 2. Cài đặt các công cụ cần thiết
-apt-get update -y > /dev/null 2>&1
-apt-get install -y awscli jq curl netcat-openbsd unzip > /dev/null 2>&1
-
-# 3. Đảm bảo AWS CLI nhị phân tồn tại (nếu apt không có thì cài AWS CLI v2 chính thức)
-if [ ! -x /usr/bin/aws ] && [ ! -x /usr/local/aws-cli/v2/current/bin/aws ]; then
-  curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
-  unzip -q -o /tmp/awscliv2.zip -d /tmp
-  /tmp/aws/install --update > /dev/null 2>&1
-  rm -rf /tmp/aws /tmp/awscliv2.zip
-fi
-
-# 4. Xác định chính xác đường dẫn binary thật của aws
-REAL_AWS=""
-if [ -x /usr/local/aws-cli/v2/current/bin/aws ]; then
-  REAL_AWS="/usr/local/aws-cli/v2/current/bin/aws"
-elif [ -x /usr/bin/aws ]; then
-  REAL_AWS="/usr/bin/aws"
-elif [ -x /snap/bin/aws ]; then
-  REAL_AWS="/snap/bin/aws"
-else
-  REAL_AWS=$(which aws 2>/dev/null || echo "/usr/bin/aws")
-fi
-
-# 5. Khởi động LocalStack hỗ trợ dịch vụ ec2, elbv2, autoscaling
+# 1. Khởi động LocalStack chạy ngầm ngay từ đầu với các dịch vụ ec2, elbv2, autoscaling
+echo "Đang khởi chạy LocalStack container..." > /tmp/lab-status.log
 docker run -d \
   --name localstack \
   --restart unless-stopped \
   -p 4566:4566 \
   -e SERVICES=ec2,elbv2,autoscaling \
   -e DEFAULT_REGION=us-east-1 \
-  localstack/localstack:latest > /dev/null 2>&1
+  localstack/localstack:3.8 >/dev/null 2>&1
 
-# 6. Cấu hình thông số mặc định cho AWS CLI
+# 2. Giải phóng triệt để lock apt nếu Ubuntu đang chạy auto-update ngầm
+echo "Đang dọn dẹp tiến trình apt hệ thống..." > /tmp/lab-status.log
+systemctl stop unattended-upgrades.service apt-daily.service apt-daily-upgrade.service apt-daily.timer apt-daily-upgrade.timer >/dev/null 2>&1 || true
+killall -9 apt apt-get dpkg unattended-upgrade >/dev/null 2>&1 || true
+rm -f /var/lib/dpkg/lock* /var/lib/apt/lists/lock* /var/cache/apt/archives/lock* >/dev/null 2>&1 || true
+dpkg --configure -a >/dev/null 2>&1 || true
+
+# 3. Cài đặt các công cụ cần thiết (tối giản dependency để tải nhanh nhất)
+echo "Đang cài đặt AWS CLI và các công cụ bổ trợ..." > /tmp/lab-status.log
+apt-get update -qq >/dev/null 2>&1
+apt-get install -y -qq --no-install-recommends awscli jq curl netcat-openbsd unzip >/dev/null 2>&1
+
+# Fallback: nếu apt không có awscli, cài qua bản AWS CLI v2 chính thức
+if ! command -v aws >/dev/null 2>&1 && [ ! -x /usr/bin/aws ]; then
+  echo "Đang tải AWS CLI v2 dự phòng..." > /tmp/lab-status.log
+  curl -sSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
+  python3 -c "import zipfile; zipfile.ZipFile('/tmp/awscliv2.zip').extractall('/tmp')" 2>/dev/null || unzip -q -o /tmp/awscliv2.zip -d /tmp
+  /tmp/aws/install --update >/dev/null 2>&1 || true
+  rm -rf /tmp/aws /tmp/awscliv2.zip
+fi
+
+# 4. Xác định chính xác binary gốc của aws
+REAL_AWS=""
+if [ -x /usr/bin/aws ]; then
+  REAL_AWS="/usr/bin/aws"
+elif [ -x /usr/local/aws-cli/v2/current/bin/aws ]; then
+  REAL_AWS="/usr/local/aws-cli/v2/current/bin/aws"
+elif [ -x /usr/local/bin/aws ] && ! grep -q "endpoint-url" /usr/local/bin/aws 2>/dev/null; then
+  REAL_AWS="/usr/local/bin/aws"
+elif [ -x /snap/bin/aws ]; then
+  REAL_AWS="/snap/bin/aws"
+elif command -v aws >/dev/null 2>&1; then
+  REAL_AWS=$(which aws)
+fi
+
+# 5. Cấu hình thông số mặc định cho AWS CLI
 mkdir -p /root/.aws /home/ubuntu/.aws 2>/dev/null
 
 cat << 'EOF' > /root/.aws/config
@@ -58,18 +67,25 @@ EOF
 cp -r /root/.aws /home/ubuntu/ 2>/dev/null || true
 chown -R ubuntu:ubuntu /home/ubuntu/.aws 2>/dev/null || true
 
-# 7. Tạo wrapper an toàn cho aws và awslocal trỏ về LocalStack
-cat << EOF > /usr/local/bin/aws
-#!/bin/bash
-exec "$REAL_AWS" --endpoint-url=http://localhost:4566 "\$@"
-EOF
-chmod +x /usr/local/bin/aws
+# 6. Tạo wrapper an toàn cho aws và awslocal trỏ về LocalStack
+if [ -n "$REAL_AWS" ] && [ -x "$REAL_AWS" ]; then
+  if [ "$REAL_AWS" = "/usr/local/bin/aws" ]; then
+    mv /usr/local/bin/aws /usr/local/bin/aws-bin
+    REAL_AWS="/usr/local/bin/aws-bin"
+  fi
 
-cat << EOF > /usr/local/bin/awslocal
+  cat << EOF > /usr/local/bin/aws
 #!/bin/bash
 exec "$REAL_AWS" --endpoint-url=http://localhost:4566 "\$@"
 EOF
-chmod +x /usr/local/bin/awslocal
+  chmod +x /usr/local/bin/aws
+
+  cat << EOF > /usr/local/bin/awslocal
+#!/bin/bash
+exec "$REAL_AWS" --endpoint-url=http://localhost:4566 "\$@"
+EOF
+  chmod +x /usr/local/bin/awslocal
+fi
 
 cat << 'EOF' > /etc/profile.d/aws.sh
 export AWS_ACCESS_KEY_ID=test
@@ -79,29 +95,36 @@ export AWS_ENDPOINT_URL=http://localhost:4566
 alias awslocal="aws --endpoint-url=http://localhost:4566"
 EOF
 
-# 8. Chờ LocalStack sẵn sàng
-MAX_RETRY=30
+# 7. Chờ LocalStack sẵn sàng
+echo "Đang chờ dịch vụ LocalStack EC2 & ELBv2 sẵn sàng..." > /tmp/lab-status.log
+MAX_RETRY=50
 RETRY=0
 while [ $RETRY -lt $MAX_RETRY ]; do
-  if curl -s http://localhost:4566/_localstack/health | grep -q '"ec2": "available"\|"ec2": "running"'; then
+  if curl -s http://localhost:4566/_localstack/health 2>/dev/null | grep -q '"ec2": "available"\|"ec2": "running"'; then
     break
+  fi
+  if ! docker ps -q --filter "name=localstack" 2>/dev/null | grep -q .; then
+    echo "Đang tải LocalStack Docker image (khoảng 20-35s)..." > /tmp/lab-status.log
+  else
+    echo "LocalStack đang khởi tạo dịch vụ ELB & Auto Scaling..." > /tmp/lab-status.log
   fi
   sleep 2
   RETRY=$((RETRY+1))
 done
 
-# 9. Khởi tạo sẵn VPC và 2 Subnet ở 2 Availability Zones khác nhau (bắt buộc cho ALB)
-VPC_ID=$(/usr/local/bin/aws ec2 create-vpc --cidr-block 10.1.0.0/16 --tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=alb-asg-vpc}]' --query 'Vpc.VpcId' --output text)
-SUBNET_1=$(/usr/local/bin/aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.1.1.0/24 --availability-zone us-east-1a --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=alb-subnet-1a}]' --query 'Subnet.SubnetId' --output text)
-SUBNET_2=$(/usr/local/bin/aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.1.2.0/24 --availability-zone us-east-1b --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=alb-subnet-1b}]' --query 'Subnet.SubnetId' --output text)
+# 8. Khởi tạo sẵn VPC và 2 Subnet ở 2 Availability Zones khác nhau (bắt buộc cho ALB)
+echo "Đang khởi tạo hạ tầng VPC & Subnet mẫu cho ALB..." > /tmp/lab-status.log
+VPC_ID=$(/usr/local/bin/aws ec2 create-vpc --cidr-block 10.1.0.0/16 --tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=alb-asg-vpc}]' --query 'Vpc.VpcId' --output text 2>/dev/null)
+SUBNET_1=$(/usr/local/bin/aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.1.1.0/24 --availability-zone us-east-1a --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=alb-subnet-1a}]' --query 'Subnet.SubnetId' --output text 2>/dev/null)
+SUBNET_2=$(/usr/local/bin/aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.1.2.0/24 --availability-zone us-east-1b --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=alb-subnet-1b}]' --query 'Subnet.SubnetId' --output text 2>/dev/null)
 
-IGW_ID=$(/usr/local/bin/aws ec2 create-internet-gateway --tag-specifications 'ResourceType=internet-gateway,Tags=[{Key=Name,Value=alb-igw}]' --query 'InternetGateway.InternetGatewayId' --output text)
-/usr/local/bin/aws ec2 attach-internet-gateway --vpc-id $VPC_ID --internet-gateway-id $IGW_ID
+IGW_ID=$(/usr/local/bin/aws ec2 create-internet-gateway --tag-specifications 'ResourceType=internet-gateway,Tags=[{Key=Name,Value=alb-igw}]' --query 'InternetGateway.InternetGatewayId' --output text 2>/dev/null)
+/usr/local/bin/aws ec2 attach-internet-gateway --vpc-id $VPC_ID --internet-gateway-id $IGW_ID > /dev/null 2>&1 || true
 
-RT_ID=$(/usr/local/bin/aws ec2 create-route-table --vpc-id $VPC_ID --tag-specifications 'ResourceType=route-table,Tags=[{Key=Name,Value=alb-rt}]' --query 'RouteTable.RouteTableId' --output text)
-/usr/local/bin/aws ec2 create-route --route-table-id $RT_ID --destination-cidr-block 0.0.0.0/0 --gateway-id $IGW_ID > /dev/null 2>&1
-/usr/local/bin/aws ec2 associate-route-table --subnet-id $SUBNET_1 --route-table-id $RT_ID > /dev/null 2>&1
-/usr/local/bin/aws ec2 associate-route-table --subnet-id $SUBNET_2 --route-table-id $RT_ID > /dev/null 2>&1
+RT_ID=$(/usr/local/bin/aws ec2 create-route-table --vpc-id $VPC_ID --tag-specifications 'ResourceType=route-table,Tags=[{Key=Name,Value=alb-rt}]' --query 'RouteTable.RouteTableId' --output text 2>/dev/null)
+/usr/local/bin/aws ec2 create-route --route-table-id $RT_ID --destination-cidr-block 0.0.0.0/0 --gateway-id $IGW_ID > /dev/null 2>&1 || true
+/usr/local/bin/aws ec2 associate-route-table --subnet-id $SUBNET_1 --route-table-id $RT_ID > /dev/null 2>&1 || true
+/usr/local/bin/aws ec2 associate-route-table --subnet-id $SUBNET_2 --route-table-id $RT_ID > /dev/null 2>&1 || true
 
 cat << EOF > /tmp/lab-env.sh
 export VPC_ID=$VPC_ID
@@ -111,4 +134,5 @@ export IGW_ID=$IGW_ID
 export RT_ID=$RT_ID
 EOF
 
+echo "Môi trường đã sẵn sàng!" > /tmp/lab-status.log
 touch /tmp/.lab_ready

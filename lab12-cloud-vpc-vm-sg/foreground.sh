@@ -1,13 +1,36 @@
 #!/bin/bash
+clear
+echo "================================================================"
+echo " 🚀 DevOps Labs: Khởi tạo môi trường Cloud (AWS & LocalStack)"
+echo "================================================================"
 echo ""
-echo "⏳ Đang khởi động LocalStack (AWS Cloud Simulator) và AWS CLI..."
+
+STATUS_FILE="/tmp/lab-status.log"
+spinner=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
+i=0
+
 while [ ! -f /tmp/.lab_ready ]; do
-  sleep 1
+  if [ -f "$STATUS_FILE" ]; then
+    STATUS=$(cat "$STATUS_FILE")
+  else
+    STATUS="Đang chuẩn bị hệ thống..."
+  fi
+  idx=$((i % ${#spinner[@]}))
+  printf "\r\033[K %s %s" "${spinner[$idx]}" "$STATUS"
+  sleep 0.5
+  i=$((i + 1))
 done
 
+printf "\r\033[K ✅ Môi trường Cloud & AWS CLI đã sẵn sàng!\n\n"
+echo "----------------------------------------------------------------"
+echo "💡 Thông tin môi trường:"
+echo "   - AWS Endpoint : http://localhost:4566 (LocalStack)"
+echo "   - Default Region: us-east-1"
+echo "   - Lệnh sử dụng : aws [command] hoặc awslocal [command]"
+echo "----------------------------------------------------------------"
 echo ""
-echo "✅ LocalStack & AWS CLI đã sẵn sàng!"
-echo "💡 Bạn có thể dùng lệnh 'aws' hoặc 'awslocal' trực tiếp (đã cấu hình sẵn Endpoint http://localhost:4566)."
-echo ""
-aws --version
+
+if command -v aws >/dev/null 2>&1; then
+  aws --version 2>/dev/null || true
+fi
 echo ""

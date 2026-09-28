@@ -1,45 +1,54 @@
 #!/bin/bash
 # background.sh — Lab 14: FinOps với AWS CLI, LocalStack & Python
 
-# 1. Chờ giải phóng lock apt nếu hệ thống đang update ngầm
-while fuser /var/lib/dpkg/lock >/dev/null 2>&1 || fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
-  sleep 1
-done
+echo "Khởi tạo môi trường FinOps Lab..." > /tmp/lab-status.log
 
-# 2. Cài đặt các công cụ cần thiết
-apt-get update -y > /dev/null 2>&1
-apt-get install -y python3 python3-pip curl awscli jq unzip > /dev/null 2>&1
-
-# 3. Đảm bảo AWS CLI nhị phân tồn tại
-if [ ! -x /usr/bin/aws ] && [ ! -x /usr/local/aws-cli/v2/current/bin/aws ]; then
-  curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
-  unzip -q -o /tmp/awscliv2.zip -d /tmp
-  /tmp/aws/install --update > /dev/null 2>&1
-  rm -rf /tmp/aws /tmp/awscliv2.zip
-fi
-
-# 4. Xác định chính xác đường dẫn binary thật của aws
-REAL_AWS=""
-if [ -x /usr/local/aws-cli/v2/current/bin/aws ]; then
-  REAL_AWS="/usr/local/aws-cli/v2/current/bin/aws"
-elif [ -x /usr/bin/aws ]; then
-  REAL_AWS="/usr/bin/aws"
-elif [ -x /snap/bin/aws ]; then
-  REAL_AWS="/snap/bin/aws"
-else
-  REAL_AWS=$(which aws 2>/dev/null || echo "/usr/bin/aws")
-fi
-
-# 5. Khởi động LocalStack hỗ trợ dịch vụ ec2
+# 1. Khởi động LocalStack chạy ngầm ngay từ đầu
+echo "Đang khởi chạy LocalStack container..." > /tmp/lab-status.log
 docker run -d \
   --name localstack \
   --restart unless-stopped \
   -p 4566:4566 \
   -e SERVICES=ec2 \
   -e DEFAULT_REGION=us-east-1 \
-  localstack/localstack:latest > /dev/null 2>&1
+  localstack/localstack:3.8 >/dev/null 2>&1
 
-# 6. Cấu hình AWS CLI
+# 2. Giải phóng triệt để lock apt nếu Ubuntu đang chạy auto-update ngầm
+echo "Đang dọn dẹp tiến trình apt hệ thống..." > /tmp/lab-status.log
+systemctl stop unattended-upgrades.service apt-daily.service apt-daily-upgrade.service apt-daily.timer apt-daily-upgrade.timer >/dev/null 2>&1 || true
+killall -9 apt apt-get dpkg unattended-upgrade >/dev/null 2>&1 || true
+rm -f /var/lib/dpkg/lock* /var/lib/apt/lists/lock* /var/cache/apt/archives/lock* >/dev/null 2>&1 || true
+dpkg --configure -a >/dev/null 2>&1 || true
+
+# 3. Cài đặt các công cụ cần thiết (tối giản dependency)
+echo "Đang cài đặt AWS CLI, Python & công cụ bổ trợ..." > /tmp/lab-status.log
+apt-get update -qq >/dev/null 2>&1
+apt-get install -y -qq --no-install-recommends python3 python3-pip curl awscli jq unzip >/dev/null 2>&1
+
+# Fallback nếu apt thiếu awscli
+if ! command -v aws >/dev/null 2>&1 && [ ! -x /usr/bin/aws ]; then
+  echo "Đang tải AWS CLI v2 dự phòng..." > /tmp/lab-status.log
+  curl -sSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
+  python3 -c "import zipfile; zipfile.ZipFile('/tmp/awscliv2.zip').extractall('/tmp')" 2>/dev/null || unzip -q -o /tmp/awscliv2.zip -d /tmp
+  /tmp/aws/install --update >/dev/null 2>&1 || true
+  rm -rf /tmp/aws /tmp/awscliv2.zip
+fi
+
+# 4. Xác định chính xác binary gốc của aws
+REAL_AWS=""
+if [ -x /usr/bin/aws ]; then
+  REAL_AWS="/usr/bin/aws"
+elif [ -x /usr/local/aws-cli/v2/current/bin/aws ]; then
+  REAL_AWS="/usr/local/aws-cli/v2/current/bin/aws"
+elif [ -x /usr/local/bin/aws ] && ! grep -q "endpoint-url" /usr/local/bin/aws 2>/dev/null; then
+  REAL_AWS="/usr/local/bin/aws"
+elif [ -x /snap/bin/aws ]; then
+  REAL_AWS="/snap/bin/aws"
+elif command -v aws >/dev/null 2>&1; then
+  REAL_AWS=$(which aws)
+fi
+
+# 5. Cấu hình AWS CLI
 mkdir -p /root/.aws /home/ubuntu/.aws 2>/dev/null
 
 cat << 'EOF' > /root/.aws/config
@@ -58,18 +67,25 @@ EOF
 cp -r /root/.aws /home/ubuntu/ 2>/dev/null || true
 chown -R ubuntu:ubuntu /home/ubuntu/.aws 2>/dev/null || true
 
-# 7. Tạo wrapper an toàn cho aws và awslocal trỏ về LocalStack
-cat << EOF > /usr/local/bin/aws
-#!/bin/bash
-exec "$REAL_AWS" --endpoint-url=http://localhost:4566 "\$@"
-EOF
-chmod +x /usr/local/bin/aws
+# 6. Tạo wrapper an toàn cho aws và awslocal trỏ về LocalStack
+if [ -n "$REAL_AWS" ] && [ -x "$REAL_AWS" ]; then
+  if [ "$REAL_AWS" = "/usr/local/bin/aws" ]; then
+    mv /usr/local/bin/aws /usr/local/bin/aws-bin
+    REAL_AWS="/usr/local/bin/aws-bin"
+  fi
 
-cat << EOF > /usr/local/bin/awslocal
+  cat << EOF > /usr/local/bin/aws
 #!/bin/bash
 exec "$REAL_AWS" --endpoint-url=http://localhost:4566 "\$@"
 EOF
-chmod +x /usr/local/bin/awslocal
+  chmod +x /usr/local/bin/aws
+
+  cat << EOF > /usr/local/bin/awslocal
+#!/bin/bash
+exec "$REAL_AWS" --endpoint-url=http://localhost:4566 "\$@"
+EOF
+  chmod +x /usr/local/bin/awslocal
+fi
 
 cat << 'EOF' > /etc/profile.d/aws.sh
 export AWS_ACCESS_KEY_ID=test
@@ -79,20 +95,27 @@ export AWS_ENDPOINT_URL=http://localhost:4566
 alias awslocal="aws --endpoint-url=http://localhost:4566"
 EOF
 
-# 8. Chờ LocalStack sẵn sàng
-MAX_RETRY=30
+# 7. Chờ LocalStack sẵn sàng
+echo "Đang chờ dịch vụ LocalStack EC2 sẵn sàng..." > /tmp/lab-status.log
+MAX_RETRY=50
 RETRY=0
 while [ $RETRY -lt $MAX_RETRY ]; do
-  if curl -s http://localhost:4566/_localstack/health | grep -q '"ec2": "available"\|"ec2": "running"'; then
+  if curl -s http://localhost:4566/_localstack/health 2>/dev/null | grep -q '"ec2": "available"\|"ec2": "running"'; then
     break
+  fi
+  if ! docker ps -q --filter "name=localstack" 2>/dev/null | grep -q .; then
+    echo "Đang tải LocalStack Docker image (khoảng 20-35s)..." > /tmp/lab-status.log
+  else
+    echo "LocalStack đang khởi tạo dịch vụ EC2..." > /tmp/lab-status.log
   fi
   sleep 2
   RETRY=$((RETRY+1))
 done
 
-# 9. Khởi tạo 5 EC2 instances đại diện cho các cụm máy chủ trong công ty
-VPC_ID=$(/usr/local/bin/aws ec2 create-vpc --cidr-block 10.0.0.0/16 --query 'Vpc.VpcId' --output text)
-SUBNET_ID=$(/usr/local/bin/aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.0.1.0/24 --query 'Subnet.SubnetId' --output text)
+# 8. Khởi tạo 5 EC2 instances đại diện cho các cụm máy chủ trong công ty
+echo "Đang khởi tạo các máy ảo EC2 mẫu trên LocalStack..." > /tmp/lab-status.log
+VPC_ID=$(/usr/local/bin/aws ec2 create-vpc --cidr-block 10.0.0.0/16 --query 'Vpc.VpcId' --output text 2>/dev/null)
+SUBNET_ID=$(/usr/local/bin/aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.0.1.0/24 --query 'Subnet.SubnetId' --output text 2>/dev/null)
 
 run_ec2() {
   local NAME=$1
@@ -102,7 +125,7 @@ run_ec2() {
     --instance-type $TYPE \
     --subnet-id $SUBNET_ID \
     --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$NAME}]" \
-    --query 'Instances[0].InstanceId' --output text
+    --query 'Instances[0].InstanceId' --output text 2>/dev/null
 }
 
 SRV_API=$(run_ec2 "api-server-prod" "t3.large")
@@ -121,7 +144,8 @@ export SRV_REPORT=$SRV_REPORT
 export SRV_TEST=$SRV_TEST
 EOF
 
-# 10. Sinh dataset CUR (Cost & Usage Report) 30 ngày
+# 9. Sinh dataset CUR (Cost & Usage Report) 30 ngày & scripts phân tích
+echo "Đang tạo tập dữ liệu FinOps mẫu (CUR 30 ngày)..." > /tmp/lab-status.log
 mkdir -p /opt/lab-data/budgets
 python3 << 'PYEOF'
 import csv, random, datetime
@@ -263,4 +287,5 @@ PYEOF
 chmod +x /opt/lab-data/*.py
 chmod +x /opt/lab-data/budgets/*.py
 
+echo "Môi trường đã sẵn sàng!" > /tmp/lab-status.log
 touch /tmp/.lab_ready

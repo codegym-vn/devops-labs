@@ -1,13 +1,37 @@
 #!/bin/bash
+clear
+echo "================================================================"
+echo " 🚀 DevOps Labs: Khởi tạo môi trường Cloud (ALB + ASG)"
+echo "================================================================"
 echo ""
-echo "⏳ Đang khởi động LocalStack (ALB & Auto Scaling) và chuẩn bị mạng đa phân vùng (Multi-AZ)..."
+
+STATUS_FILE="/tmp/lab-status.log"
+spinner=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
+i=0
+
 while [ ! -f /tmp/.lab_ready ]; do
-  sleep 1
+  if [ -f "$STATUS_FILE" ]; then
+    STATUS=$(cat "$STATUS_FILE")
+  else
+    STATUS="Đang chuẩn bị hệ thống..."
+  fi
+  idx=$((i % ${#spinner[@]}))
+  printf "\r\033[K %s %s" "${spinner[$idx]}" "$STATUS"
+  sleep 0.5
+  i=$((i + 1))
 done
 
+printf "\r\033[K ✅ Môi trường Cloud & AWS CLI đã sẵn sàng!\n\n"
+echo "----------------------------------------------------------------"
+echo "💡 Thông tin môi trường:"
+echo "   - AWS Endpoint : http://localhost:4566 (LocalStack)"
+echo "   - Default Region: us-east-1"
+echo "   - Lệnh sử dụng : aws [command] hoặc awslocal [command]"
+echo "   - Hạ tầng mẫu  : VPC và 2 Subnet (2 AZ) đã được khởi tạo sẵn"
+echo "----------------------------------------------------------------"
 echo ""
-echo "✅ Môi trường LocalStack đã sẵn sàng!"
-echo "💡 VPC và 2 Subnet ở 2 Availability Zones (us-east-1a, us-east-1b) đã được khởi tạo sẵn."
-echo ""
-aws --version
+
+if command -v aws >/dev/null 2>&1; then
+  aws --version 2>/dev/null || true
+fi
 echo ""
