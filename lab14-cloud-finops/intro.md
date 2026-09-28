@@ -42,11 +42,11 @@ ls /opt/lab-data/
 # find-idle-resources.py    ← script phát hiện server idle
 ```
 
-## Mục Tiêu Học Tập (Chuẩn Thang Đo Bloom)
+## Mục Tiêu Học Tập
 
 Sau khi hoàn thành bài thực hành, bạn sẽ đạt được các năng lực sau:
 
-* **[Hiểu - Understand]**: Giải thích được 3 giai đoạn của vòng đời FinOps (*Inform ➔ Optimize ➔ Operate*), phân biệt cơ chế cảnh báo theo thực chi (`ACTUAL`) và theo dự báo (`FORECASTED`) của AWS Budgets.
-* **[Vận dụng - Apply]**: Sử dụng **AWS CLI** để gắn bộ nhãn chuẩn Cost Allocation Tags lên các máy ảo EC2 và thiết lập cấu hình ngân sách AWS Budgets JSON đa tầng.
-* **[Phân tích - Analyze]**: Khai phá tập dữ liệu Cost & Usage Report (CUR) để phân tích chi phí theo từng phòng ban/dự án, nhận diện các ngày chi phí đột biến (Cost Spikes) và quét các máy chủ lãng phí (CPU < 30%).
-* **[Đánh giá & Tạo lập - Evaluate & Create]**: Thẩm định và đề xuất các chiến lược tối ưu phù hợp (*Right-Sizing*, *Schedule Stop*, *Reserved Instances*), lập bản báo cáo FinOps Report tổng thể và trực tiếp thực thi lệnh AWS CLI `terminate-instances` để cắt giảm chi phí lãng phí.
+* **Làm chủ văn hóa FinOps:** Nắm vững 3 giai đoạn của vòng đời FinOps (*Inform ➔ Optimize ➔ Operate*), phân biệt cơ chế cảnh báo theo thực chi (`ACTUAL`) và theo dự báo (`FORECASTED`) của AWS Budgets.
+* **Quản trị nhãn & Ngân sách:** Sử dụng AWS CLI để gắn bộ nhãn chuẩn Cost Allocation Tags lên các máy ảo EC2 và thiết lập cấu hình ngân sách AWS Budgets JSON đa tầng.
+* **Phân tích báo cáo chi phí:** Khai phá tập dữ liệu Cost & Usage Report (CUR) để phân tích chi phí theo từng phòng ban/dự án, nhận diện các ngày chi phí đột biến (Cost Spikes) và quét các máy chủ lãng phí (CPU < 30%).
+* **Tối ưu hóa & Thực thi hành động:** Thẩm định và đề xuất các chiến lược tối ưu phù hợp (*Right-Sizing*, *Schedule Stop*, *Reserved Instances*), lập bản báo cáo FinOps Report tổng thể và trực tiếp thực thi lệnh AWS CLI `terminate-instances` để cắt giảm chi phí lãng phí.
