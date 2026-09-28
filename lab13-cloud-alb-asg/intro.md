@@ -49,14 +49,12 @@ Trong thực tế sản xuất, một máy chủ đơn lẻ (Single Instance) lu
 4. **Target Group & Health Check (`aws elbv2 create-target-group`):**  
    Tập hợp các instance nhận lưu lượng. ALB liên tục gửi tín hiệu kiểm tra sức khỏe (**Health Check**). Nếu một máy ảo bị treo hoặc sập, ALB sẽ **ngừng chuyển tiếp lưu lượng** đến máy đó và thông báo cho ASG thay thế bằng máy ảo mới.
 
-## 3. Mục Tiêu Học Tập
+## 3. Mục Tiêu
 
-Sau khi hoàn thành bài thực hành, bạn sẽ đạt được các năng lực sau:
-
-* **Hiểu cơ chế sẵn sàng cao (HA):** Nắm vững cơ chế kiểm tra sức khỏe (Health Check), vòng đời tự phục hồi (Self-Healing) khi instance bị lỗi và nguyên lý hoạt động của kiến trúc High Availability đa vùng.
-* **Triển khai hạ tầng co giãn tự động:** Sử dụng thành thạo AWS CLI để tạo Launch Template, kích hoạt Auto Scaling Group đa vùng (Multi-AZ), cấu hình Application Load Balancer và thiết lập Listener chuyển tiếp lưu lượng.
-* **Kiểm chứng phân tải và co giãn:** Phân tích và kiểm chứng thuật toán cân bằng tải `round_robin` của Target Group, so sánh hiệu quả giữa mở rộng theo chiều dọc (Vertical Scaling) và mở rộng theo chiều ngang (Horizontal Scaling).
-* **Xây dựng & Vận hành hệ thống Zero-SPOF:** Xây dựng hoàn chỉnh một hệ thống co giãn tự động không có điểm chết duy nhất, kích hoạt sự kiện Scale-out khi tải tăng và thực thi quy trình dọn dẹp tài nguyên an toàn với `--force-delete`.
+- Hiểu cơ chế sẵn sàng cao (High Availability) và tự phục hồi (Self-Healing)
+- Triển khai Launch Template và Auto Scaling Group đa vùng (Multi-AZ)
+- Cấu hình Application Load Balancer và phân phối tải Round-Robin
+- Thực hành mở rộng quy mô tự động (Scale-Out) và dọn dẹp tài nguyên Cloud
 
 ---
 

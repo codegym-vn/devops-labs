@@ -64,11 +64,9 @@ aws   <service>   <action>   [--parameters]
 
 ---
 
-## 3. Mục Tiêu Học Tập
+## 3. Mục Tiêu
 
-Sau khi hoàn thành bài thực hành, bạn sẽ đạt được các năng lực sau:
-
-* **Hiểu bản chất kiến trúc mạng:** Giải thích được cơ chế hoạt động của mạng riêng ảo VPC, phân biệt được vai trò của Public Subnet vs Private Subnet và đặc tính *Stateful* của Security Group.
-* **Làm chủ công cụ AWS CLI:** Sử dụng thành thạo các câu lệnh để khởi tạo VPC (`10.0.0.0/16`), Public/Private Subnets, Internet Gateway, cấu hình Route Table và triển khai các máy ảo EC2 (`run-instances`) vào đúng phân vùng mạng.
-* **Chẩn đoán luồng lưu lượng:** Phân tích luồng traffic từ Internet đi qua Route Table tới Security Group, và chẩn đoán cơ chế bảo vệ cô lập của Private Subnet.
-* **Thiết kế & Bảo mật chuẩn DevSecOps:** Thiết kế và triển khai kiến trúc mạng an toàn 2 tầng (Multi-tier), áp dụng kỹ thuật *Security Group Chaining* (`--source-group`) theo nguyên tắc Least Privilege và thực thi quy trình dọn dẹp tài nguyên (Cleanup) chuẩn DevOps.
+- Hiểu bản chất kiến trúc mạng VPC, Subnet và Security Group
+- Sử dụng AWS CLI để khởi tạo và quản lý hạ tầng Cloud
+- Phân tích và kiểm soát luồng traffic mạng vào/ra instance
+- Thiết kế hệ thống mạng an toàn nhiều tầng theo nguyên tắc Least Privilege
