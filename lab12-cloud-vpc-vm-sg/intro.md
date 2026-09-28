@@ -64,9 +64,11 @@ aws   <service>   <action>   [--parameters]
 
 ---
 
-## 3. Mục Tiêu Bạn Cần Đạt Được
+## 3. Mục Tiêu Học Tập (Chuẩn Thang Đo Bloom)
 
-1. **Bước 1:** Dùng AWS CLI tạo VPC (`10.0.0.0/16`), Public Subnet, Private Subnet, Internet Gateway và bảng định tuyến Route Table.
-2. **Bước 2:** Tạo các Security Group (`web-sg`, `db-sg`) và cấu hình cơ chế liên kết bảo mật (Chaining Security Groups) theo chuẩn DevSecOps Least Privilege.
-3. **Bước 3:** Khởi tạo SSH Key Pair và triển khai các máy ảo EC2 vào đúng Subnet quy định.
-4. **Bước 4:** Kiểm thử toàn bộ kiến trúc, phân tích trạng thái tài nguyên và thực hành quy trình dọn dẹp (Cleanup) theo thứ tự phụ thuộc.
+Sau khi hoàn thành bài thực hành, bạn sẽ đạt được các năng lực sau:
+
+* **[Hiểu - Understand]**: Giải thích được cơ chế hoạt động của mạng riêng ảo VPC, phân biệt được vai trò của Public Subnet vs Private Subnet và đặc tính *Stateful* của Security Group.
+* **[Vận dụng - Apply]**: Sử dụng thành thạo **AWS CLI** để khởi tạo VPC (`10.0.0.0/16`), Public/Private Subnets, Internet Gateway, cấu hình Route Table và triển khai các máy ảo EC2 (`run-instances`) vào đúng phân vùng mạng.
+* **[Phân tích - Analyze]**: Phân tích luồng traffic từ Internet đi qua Route Table tới Security Group, và chẩn đoán cơ chế bảo vệ cô lập của Private Subnet.
+* **[Tạo lập & Đánh giá - Create & Evaluate]**: Thiết kế và triển khai kiến trúc mạng an toàn 2 tầng (Multi-tier), áp dụng kỹ thuật *Security Group Chaining* (`--source-group`) theo nguyên tắc Least Privilege và thực thi quy trình dọn dẹp tài nguyên (Cleanup) chuẩn DevOps.

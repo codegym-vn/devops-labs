@@ -42,9 +42,11 @@ ls /opt/lab-data/
 # find-idle-resources.py    ← script phát hiện server idle
 ```
 
-## Mục tiêu
+## Mục Tiêu Học Tập (Chuẩn Thang Đo Bloom)
 
-- Hiểu và áp dụng chiến lược tagging để phân bổ chi phí
-- Thiết lập ngân sách và cơ chế cảnh báo tự động
-- Phân tích Cost Report để tìm điểm tối ưu
-- Phát hiện tài nguyên idle và đề xuất right-sizing
+Sau khi hoàn thành bài thực hành, bạn sẽ đạt được các năng lực sau:
+
+* **[Hiểu - Understand]**: Giải thích được 3 giai đoạn của vòng đời FinOps (*Inform ➔ Optimize ➔ Operate*), phân biệt cơ chế cảnh báo theo thực chi (`ACTUAL`) và theo dự báo (`FORECASTED`) của AWS Budgets.
+* **[Vận dụng - Apply]**: Sử dụng **AWS CLI** để gắn bộ nhãn chuẩn Cost Allocation Tags lên các máy ảo EC2 và thiết lập cấu hình ngân sách AWS Budgets JSON đa tầng.
+* **[Phân tích - Analyze]**: Khai phá tập dữ liệu Cost & Usage Report (CUR) để phân tích chi phí theo từng phòng ban/dự án, nhận diện các ngày chi phí đột biến (Cost Spikes) và quét các máy chủ lãng phí (CPU < 30%).
+* **[Đánh giá & Tạo lập - Evaluate & Create]**: Thẩm định và đề xuất các chiến lược tối ưu phù hợp (*Right-Sizing*, *Schedule Stop*, *Reserved Instances*), lập bản báo cáo FinOps Report tổng thể và trực tiếp thực thi lệnh AWS CLI `terminate-instances` để cắt giảm chi phí lãng phí.
