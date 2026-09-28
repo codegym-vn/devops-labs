@@ -1,132 +1,108 @@
-# Bước 4: Phát hiện tài nguyên idle và lập báo cáo
+# Bước 4: Phát Hiện Tài Nguyên Idle, Đề Xuất Tối Ưu & Thực Thi Bằng AWS CLI
 
-## Lý thuyết: Right-sizing
-
-Điều chỉnh instance type cho phù hợp workload thực tế:
-
-```
-t3.xlarge ($0.166/giờ, CPU avg 3%) → t3.micro ($0.010/giờ)
-Tiết kiệm: $111/tháng
-```
-
-| Chiến lược | Tiết kiệm | Ghi chú |
-|-----------|-----------|---------|
-| Right-sizing | 20–50% | Cần test trước |
-| Schedule stop (ngoài giờ) | 60–70% | Chỉ non-prod |
-| Reserved Instance (1 năm) | ~30% | Cam kết dài hạn |
-| Spot Instance | 60–90% | Có thể bị interrupt |
+Trong bước cuối cùng, bạn sẽ học cách phân tích dữ liệu hiệu năng thực tế (**Utilization Metrics**) để phát hiện các tài nguyên chạy ngầm lãng phí (**Idle Resources**), tính toán chi phí tiết kiệm và trực tiếp ra lệnh hủy tài nguyên bằng **AWS CLI**.
 
 ---
 
-## Thực hành
+## 1. Lý Thuyết: Chiến Lược Right-Sizing & Vòng Lặp FinOps
 
-### 4.1 — Phát hiện instances idle (CPU < 30%)
+* **Right-Sizing:** Điều chỉnh cấu hình máy ảo (Instance Type) về đúng nhu cầu tải thực tế:
+  * Ví dụ: Máy ảo `t3.xlarge` ($119.81/tháng) nhưng CPU trung bình chỉ 3.1% $\rightarrow$ Hạ xuống `t3.small` ($15/tháng) giúp tiết kiệm ngay ~87%!
+* **Terminate Idle Resources:** Hủy ngay lập tức các máy chủ thử nghiệm cũ (`old-test-server`) bị bỏ quên nhưng vẫn âm thầm đốt tiền hàng tháng.
+
+| Chiến lược FinOps | Mức tiết kiệm ước tính | Khuyến nghị áp dụng |
+|---|---|---|
+| **Terminate Idle** | **100%** | Máy chủ dev/test cũ, CPU < 2%, không có traffic |
+| **Right-sizing** | **30% – 60%** | Máy chủ thừa vCPU/RAM (CPU < 20%) |
+| **Schedule Stop ngoài giờ** | **65% – 70%** | Tự động tắt máy staging/dev từ 19h đến 7h sáng hôm sau |
+| **Reserved Instances / Savings Plans** | **30% – 50%** | Máy chủ production chạy liên tục 24/7 (cam kết 1-3 năm) |
+
+---
+
+## 2. Thực Hành
+
+### 4.1 — Phát Hiện Máy Chủ Lãng Phí (CPU < 30%)
+
+Chạy công cụ phân tích hiệu năng để quét toàn bộ 5 máy chủ trong hệ thống:
 
 ```bash
 python3 /opt/lab-data/find-idle-resources.py \
   --metrics /opt/lab-data/resource-utilization.json \
   --cpu-threshold 30
-```
+```{{exec}}
 
-### 4.2 — Tính chi phí tiết kiệm
+Quan sát terminal: Công cụ sẽ chỉ ra 3 máy chủ có mức tải CPU rất thấp:
+1. `worker-prod`: CPU 8.3%
+2. `reporting-server`: CPU 3.1%
+3. `old-test-server`: CPU 1.2% (Rất lãng phí!)
 
-```bash
-python3 << 'EOF'
-import json
+---
 
-PRICING = {
-    "t3.micro": 0.0104, "t3.small": 0.0208,
-    "t3.medium": 0.0416, "t3.large": 0.0832, "t3.xlarge": 0.1664
-}
+### 4.2 — Lập Báo Cáo Khuyến Nghị Tối Ưu Chi Phí
 
-with open("/opt/lab-data/resource-utilization.json") as f:
-    instances = json.load(f)
-
-recommendations = {
-    "api-server-prod":   (None,       "Giữ nguyên"),
-    "web-server-prod":   (None,       "Reserved Instance 1 năm → -30%"),
-    "worker-prod":       ("t3.micro", "Downgrade: CPU avg 8.3%"),
-    "reporting-server":  ("t3.micro", "Downgrade + schedule stop 18h/ngày"),
-    "old-test-server":   ("TERMINATE","Terminate: CPU avg 1.2%"),
-}
-
-total_before, total_after = 0, 0
-for inst in instances:
-    current = inst["monthly_cost_usd"]
-    total_before += current
-    new_type, action = recommendations.get(inst["name"], (None, ""))
-    if new_type == "TERMINATE":    new_cost = 0
-    elif new_type:                 new_cost = PRICING[new_type] * 24 * 30
-    elif "Reserved" in action:     new_cost = current * 0.7
-    else:                          new_cost = current
-    total_after += new_cost
-    flag = "" if new_type == "TERMINATE" else ("" if new_type else "")
-    print(f"{flag} {inst['name']:20s} {inst['type']:12s} CPU:{inst['avg_cpu']:5.1f}%  ${current:.2f} → ${new_cost:.2f}  {action}")
-
-print(f"\nTổng trước : ${total_before:.2f}/tháng")
-print(f"Tổng sau   : ${total_after:.2f}/tháng")
-print(f"Tiết kiệm  : ${total_before-total_after:.2f}/tháng ({(total_before-total_after)/total_before*100:.0f}%)")
-EOF
-```
-
-### 4.3 — Viết báo cáo tối ưu
+Tạo báo cáo FinOps tổng hợp gửi ban quản trị tại `/tmp/finops-report.md`:
 
 ```bash
-cat > /tmp/finops-report.md << 'EOF'
-# Báo cáo Tối ưu Chi phí Cloud
+cat << 'EOF' > /tmp/finops-report.md
+# BÁO CÁO TỐI ƯU HÓA CHI PHÍ ĐÁM MÂY (FINOPS REPORT)
 
-## Tóm tắt
-- Chi phí hiện tại: ~$150/tháng
-- Tiết kiệm đề xuất: ~$70/tháng (47%)
+## 1. Đánh giá hiện trạng
+- Tổng số máy chủ theo dõi: 5 EC2 instances
+- Tổng chi phí hiện tại: ~$290/tháng
+- Tỷ lệ tài nguyên lãng phí (CPU < 30%): 3/5 instances (60%)
 
-## Hành động ưu tiên cao
+## 2. Hành động ưu tiên cao (Khắc phục ngay)
+| Tên Instance | Cấu hình | Tải CPU | Hành động đề xuất | Tiết kiệm/tháng |
+|---|---|---|---|---|
+| **old-test-server** | t3.medium | 1.2% | **TERMINATE (Hủy máy ảo)** | ~$29.95 |
+| **reporting-server**| t3.xlarge | 3.1% | Right-size xuống t3.small + Lập lịch Stop ngoài giờ | ~$95.00 |
+| **worker-prod**     | t3.large  | 8.3% | Right-size xuống t3.medium | ~$29.95 |
 
-| Tài nguyên | Hành động | Tiết kiệm/tháng |
-|-----------|-----------|----------------|
-| old-test-server (t3.medium) | Terminate | $30 |
-| reporting-server (t3.xlarge) | Downgrade + schedule stop | $35 |
-| worker-prod (t3.large) | Downgrade → t3.micro | $18 |
-
-## Hành động trung hạn
-- web-server-prod: Reserved Instance 1 năm → -30%
-- Thiết lập Auto Scaling để scale-in ngoài giờ cao điểm
+👉 **Tổng mức tiết kiệm ước tính:** ~$154.90/tháng (~53% ngân sách compute).
 EOF
 
-echo " Báo cáo: /tmp/finops-report.md"
 cat /tmp/finops-report.md
-```
+```{{exec}}
 
 ---
 
-## Câu hỏi
+### 4.3 — Thực Thi Hành Động FinOps Bằng AWS CLI: Hủy Máy Chủ Idle
 
-1. Trước khi terminate `old-test-server`, quy trình cần làm là gì?
-2. Reserved Instance và Savings Plans khác nhau thế nào?
-3. Làm sao tự động hóa việc phát hiện idle resources trong production?
+Sau khi có khuyến nghị từ báo cáo, kỹ sư FinOps phối hợp với DevOps thực thi ngay lệnh hủy máy chủ `old-test-server` trên AWS:
+
+```bash
+source /tmp/lab-env.sh
+
+echo "Đang gửi lệnh hủy máy ảo old-test-server: $SRV_TEST..."
+aws ec2 terminate-instances --instance-ids $SRV_TEST
+
+echo "✅ Đã hủy máy ảo old-test-server thành công để chấm dứt lãng phí chi phí!"
+```{{exec}}
+
+Kiểm tra trạng thái để xác nhận máy ảo đã chuyển sang `shutting-down` hoặc `terminated`:
+
+```bash
+aws ec2 describe-instances --instance-ids $SRV_TEST --query 'Reservations[0].Instances[0].[InstanceId, State.Name]' --output table
+```{{exec}}
 
 ---
 
-##  Bài tập
+## 3. Bài Tập Thử Thách
 
-> Hoàn thành phần thực hành trên trước khi làm bài tập này.
+**Yêu cầu:** Máy chủ `api-server-prod` có mức sử dụng CPU trung bình **78.2%** (đang chịu tải rất cao). Hãy bổ sung vào cuối file `/tmp/finops-report.md` đề xuất tối ưu phù hợp cho máy chủ này (chọn giải pháp cam kết dài hạn **Reserved Instances** để giảm 30% chi phí thay vì hạ cấu hình).
 
-**Yêu cầu:** `api-server-prod` có CPU trung bình 78.2% — đây là server **đang dùng cao**, không nên downsize. Thay vào đó, đề xuất tối ưu chi phí theo hướng khác.
+Chạy lệnh bổ sung sau:
 
-Thêm vào `/tmp/finops-report.md` một section mới:
+```bash
+cat << 'EOF' >> /tmp/finops-report.md
 
-```
-## Đề xuất bổ sung: api-server-prod
+## 3. Đề xuất bổ sung: api-server-prod
+- Instance type: t3.large (CPU avg: 78.2% - đang chịu tải cao, KHÔNG hạ cấu hình).
+- Đề xuất: Mua Reserved Instance cam kết 1 năm trả trước để giảm 30% chi phí.
+- Tiết kiệm ước tính: ~$17.97/tháng mà không ảnh hưởng hiệu năng hệ thống.
+EOF
 
-- Instance type hiện tại: t3.large (CPU avg: 78.2%)
-- Không nên downsize — đang chịu tải cao
-- Đề xuất: [Chọn 1 trong: Reserved Instance 1 năm / Savings Plans / Schedule scale-down off-peak]
-- Tiết kiệm ước tính: [tính toán % tiết kiệm tương ứng]
-- Rủi ro: [mô tả rủi ro của đề xuất đã chọn]
-```
+echo "✅ Đã cập nhật đề xuất cho api-server-prod vào báo cáo!"
+```{{exec}}
 
-**Gợi ý khi bí:**
-- Reserved Instance 1 năm → tiết kiệm ~30% (nhưng cần cam kết 1 năm)
-- Savings Plans → linh hoạt hơn RI, tiết kiệm ~20-28%
-- `api-server-prod` monthly cost: $59.90 → tính tiết kiệm từ đây
-
-> Nhấn **Check** khi hoàn thành.
+> Nhấn nút **Check** ở góc dưới để hệ thống kiểm tra và hoàn thành toàn bộ bài lab!

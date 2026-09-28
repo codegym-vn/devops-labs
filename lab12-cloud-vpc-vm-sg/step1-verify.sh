@@ -1,5 +1,5 @@
 #!/bin/bash
-# step1-verify.sh — Lab 12: Kiểm tra VPC + Subnet
+# step1-verify.sh — Lab 12: Kiểm tra VPC, Subnet, IGW & Route Table với AWS CLI
 
 PASS=0; FAIL=0
 
@@ -13,79 +13,82 @@ check() {
   fi
 }
 
-echo "=== Bước 1: VPC + Subnet ==="
+echo "=== Bước 1: Kiểm Tra VPC & Hạ Tầng Mạng Cơ Bản ==="
 echo ""
 
-# 1. Network public-subnet tồn tại với subnet đúng
-PUBLIC_SUBNET=$(docker network inspect public-subnet \
-  --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}' 2>/dev/null)
-check "Network 'public-subnet' tồn tại với CIDR 10.0.1.0/24" \
-  "$PUBLIC_SUBNET" "10.0.1.0/24" \
-  "Chạy: docker network create --subnet 10.0.1.0/24 --gateway 10.0.1.1 public-subnet"
+# 1. Kiểm tra VPC devops-vpc tồn tại và có CIDR 10.0.0.0/16
+VPC_CIDR=$(aws ec2 describe-vpcs \
+  --filters "Name=tag:Name,Values=devops-vpc" \
+  --query "Vpcs[0].CidrBlock" --output text 2>/dev/null)
 
-# 2. Network private-subnet tồn tại
-PRIVATE_SUBNET=$(docker network inspect private-subnet \
-  --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}' 2>/dev/null)
-check "Network 'private-subnet' tồn tại với CIDR 10.0.2.0/24" \
-  "$PRIVATE_SUBNET" "10.0.2.0/24" \
-  "Chạy: docker network create --subnet 10.0.2.0/24 --gateway 10.0.2.1 private-subnet"
+check "VPC 'devops-vpc' tồn tại với CIDR 10.0.0.0/16" \
+  "$VPC_CIDR" "10.0.0.0/16" \
+  "Chạy mục 1.1: aws ec2 create-vpc --cidr-block 10.0.0.0/16 --tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=devops-vpc}]'"
 
-# 3. web-server container đang chạy trong public-subnet
-WEB_NET=$(docker inspect web-server \
-  --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}' 2>/dev/null)
-check "Container 'web-server' chạy trong public-subnet" \
-  "$WEB_NET" "public-subnet" \
-  "Chạy: docker run -d --name web-server --network public-subnet --ip 10.0.1.10 ..."
+VPC_ID=$(aws ec2 describe-vpcs \
+  --filters "Name=tag:Name,Values=devops-vpc" \
+  --query "Vpcs[0].VpcId" --output text 2>/dev/null)
 
-# 4. web-server có IP 10.0.1.10
-WEB_IP=$(docker inspect web-server \
-  --format '{{.NetworkSettings.Networks.public-subnet.IPAddress}}' 2>/dev/null)
-check "web-server có IP 10.0.1.10" "$WEB_IP" "10.0.1.10" \
-  "Thêm --ip 10.0.1.10 vào lệnh docker run"
+# 2. Kiểm tra Public Subnet tồn tại (10.0.1.0/24)
+PUB_CIDR=$(aws ec2 describe-subnets \
+  --filters "Name=tag:Name,Values=public-subnet" \
+  --query "Subnet.CidrBlock" --output text 2>/dev/null)
+if [ -z "$PUB_CIDR" ] || [ "$PUB_CIDR" = "None" ]; then
+  PUB_CIDR=$(aws ec2 describe-subnets \
+    --filters "Name=tag:Name,Values=public-subnet" \
+    --query "Subnets[0].CidrBlock" --output text 2>/dev/null)
+fi
 
-# 5. db-server chạy trong private-subnet (KHÔNG expose port ra ngoài)
-DB_PORTS=$(docker inspect db-server \
-  --format '{{.HostConfig.PortBindings}}' 2>/dev/null)
-check "db-server không có port public (Private Subnet)" \
-  "$DB_PORTS" "map[]" \
-  "Tạo db-server với --network private-subnet và KHÔNG dùng -p"
+check "Subnet 'public-subnet' tồn tại với CIDR 10.0.1.0/24" \
+  "$PUB_CIDR" "10.0.1.0/24" \
+  "Chạy mục 1.2: aws ec2 create-subnet --vpc-id \$VPC_ID --cidr-block 10.0.1.0/24 ..."
 
-# 6. /tmp/lab-env.sh tồn tại
-check "File /tmp/lab-env.sh đã lưu biến môi trường" \
-  "$(test -f /tmp/lab-env.sh && echo ok)" "ok" \
-  "Chạy phần 1.5 trong hướng dẫn để lưu biến"
+# 3. Kiểm tra Private Subnet tồn tại (10.0.2.0/24)
+PRIV_CIDR=$(aws ec2 describe-subnets \
+  --filters "Name=tag:Name,Values=private-subnet" \
+  --query "Subnet.CidrBlock" --output text 2>/dev/null)
+if [ -z "$PRIV_CIDR" ] || [ "$PRIV_CIDR" = "None" ]; then
+  PRIV_CIDR=$(aws ec2 describe-subnets \
+    --filters "Name=tag:Name,Values=private-subnet" \
+    --query "Subnets[0].CidrBlock" --output text 2>/dev/null)
+fi
+
+check "Subnet 'private-subnet' tồn tại với CIDR 10.0.2.0/24" \
+  "$PRIV_CIDR" "10.0.2.0/24" \
+  "Chạy mục 1.2: aws ec2 create-subnet --vpc-id \$VPC_ID --cidr-block 10.0.2.0/24 ..."
+
+# 4. Kiểm tra Internet Gateway đã gắn vào VPC
+IGW_ATTACHED=$(aws ec2 describe-internet-gateways \
+  --filters "Name=attachment.vpc-id,Values=$VPC_ID" \
+  --query "InternetGateways[0].Attachments[0].State" --output text 2>/dev/null)
+
+check "Internet Gateway đã gắn (attached) vào VPC" \
+  "$IGW_ATTACHED" "available" \
+  "Chạy mục 1.3: aws ec2 attach-internet-gateway --vpc-id \$VPC_ID --internet-gateway-id \$IGW_ID"
+
+# 5. Kiểm tra Route Table cho Public Subnet có route 0.0.0.0/0
+HAS_IGW_ROUTE=$(aws ec2 describe-route-tables \
+  --filters "Name=tag:Name,Values=public-rt" \
+  --query "RouteTables[0].Routes[?DestinationCidrBlock=='0.0.0.0/0'].GatewayId" --output text 2>/dev/null)
+
+check "Route Table 'public-rt' có route 0.0.0.0/0 trỏ tới IGW" \
+  "nonempty" "$HAS_IGW_ROUTE" \
+  "Chạy mục 1.4: aws ec2 create-route --route-table-id \$RT_ID --destination-cidr-block 0.0.0.0/0 --gateway-id \$IGW_ID"
+
+# 6. Kiểm tra bài tập: db-subnet (10.0.3.0/24)
+DB_CIDR=$(aws ec2 describe-subnets \
+  --filters "Name=tag:Name,Values=db-subnet" \
+  --query "Subnets[0].CidrBlock" --output text 2>/dev/null)
+
+check "Bài tập: Subnet 'db-subnet' tồn tại với CIDR 10.0.3.0/24" \
+  "$DB_CIDR" "10.0.3.0/24" \
+  "Tạo subnet mới với --cidr-block 10.0.3.0/24 và tag Name=db-subnet"
 
 echo ""
-echo "===  Bài tập ==="
-echo ""
-
-# Challenge: tạo db-subnet (10.0.3.0/24) và container db-replica
-DB_SUBNET=$(docker network inspect db-subnet \
-  --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}' 2>/dev/null)
-check "[Bài tập] Network 'db-subnet' tồn tại với CIDR 10.0.3.0/24" \
-  "$(echo $DB_SUBNET | grep -c '10.0.3')" "1" \
-  "docker network create --subnet 10.0.3.0/24 --gateway 10.0.3.1 \\
-         --label subnet=database --label vpc=devops-vpc db-subnet"
-
-DB_SUBNET_LABEL=$(docker network inspect db-subnet \
-  --format '{{index .Labels "subnet"}}' 2>/dev/null)
-check "[Bài tập] Network 'db-subnet' có label subnet=database" \
-  "$DB_SUBNET_LABEL" "database" \
-  "Thêm --label subnet=database vào lệnh docker network create"
-
-DB_REPLICA_IP=$(docker inspect db-replica \
-  --format '{{.NetworkSettings.Networks.db-subnet.IPAddress}}' 2>/dev/null)
-check "[Bài tập] Container 'db-replica' chạy trong db-subnet với IP 10.0.3.10" \
-  "$DB_REPLICA_IP" "10.0.3.10" \
-  "docker run -d --name db-replica --network db-subnet --ip 10.0.3.10 alpine sleep infinity"
-
-DB_REPLICA_PORTS=$(docker inspect db-replica \
-  --format '{{.HostConfig.PortBindings}}' 2>/dev/null)
-check "[Bài tập] db-replica không expose port ra ngoài" \
-  "$DB_REPLICA_PORTS" "map[]" \
-  "Xóa flag -p khi tạo db-replica"
-
-echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
-[ $FAIL -eq 0 ] && echo " Hoàn thành Bước 1!" && exit 0 || exit 1
+if [ $FAIL -eq 0 ]; then
+  echo " Hoàn thành Bước 1! Bạn đã xây dựng xong hạ tầng mạng VPC vững chắc."
+  exit 0
+else
+  echo " Có $FAIL tiêu chí chưa đạt. Hãy xem các gợi ý ở trên để hoàn thiện."
+  exit 1
+fi

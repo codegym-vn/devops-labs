@@ -1,5 +1,5 @@
 #!/bin/bash
-# step2-verify.sh — Lab 14: Kiểm tra Budget setup
+# step2-verify.sh — Lab 14: Kiểm tra cấu hình AWS Budgets
 
 PASS=0; FAIL=0
 
@@ -13,101 +13,44 @@ check() {
   fi
 }
 
-echo "=== Bước 2: Budget Alerts ==="
+echo "=== Bước 2: Kiểm Tra Cấu Hình AWS Budgets ==="
 echo ""
 
-# 1. File budget config tồn tại
-check "File /opt/lab-data/budgets/config.json đã tạo" \
-  "$(test -f /opt/lab-data/budgets/config.json && echo ok)" "ok" \
-  "Chạy phần 2.1 để tạo file config.json"
+CONFIG_FILE="/opt/lab-data/budgets/config.json"
 
-# 2. Config JSON hợp lệ
-JSON_VALID=$(python3 -c "import json; json.load(open('/opt/lab-data/budgets/config.json'))" 2>/dev/null && echo ok)
-check "config.json là JSON hợp lệ" "$JSON_VALID" "ok" \
-  "Kiểm tra cú pháp JSON: python3 -m json.tool /opt/lab-data/budgets/config.json"
+check "File cấu hình /opt/lab-data/budgets/config.json tồn tại" \
+  "$(test -f $CONFIG_FILE && echo ok)" "ok" \
+  "Tạo file theo hướng dẫn mục 2.1"
 
-# 3. Có ít nhất 3 budget (total + 2 project)
-if [ "$JSON_VALID" = "ok" ]; then
-  BUDGET_COUNT=$(python3 -c "
-import json
-data = json.load(open('/opt/lab-data/budgets/config.json'))
-print(len(data.get('budgets', [])))
-" 2>/dev/null)
-  check "Có ít nhất 3 budget entries (total + projects)" \
-    "$([ ${BUDGET_COUNT:-0} -ge 3 ] && echo ok)" "ok" \
-    "Thêm budget entries cho total, e-commerce, data-platform, internal-tools"
+# Kiểm tra budget tổng thể
+TOTAL_LIMIT=$(jq -r '.budgets[] | select(.name=="total-monthly-budget") | .limit_usd' $CONFIG_FILE 2>/dev/null)
+check "Budget 'total-monthly-budget' có limit_usd = 300" \
+  "$TOTAL_LIMIT" "300" \
+  "Cấu hình total-monthly-budget với limit_usd: 300"
 
-  # 4. Budget total-monthly có limit $300
-  TOTAL_LIMIT=$(python3 -c "
-import json
-data = json.load(open('/opt/lab-data/budgets/config.json'))
-b = next((x for x in data['budgets'] if x['name']=='total-monthly'), None)
-print(b['limit_usd'] if b else 0)
-" 2>/dev/null)
-  check "Budget 'total-monthly' có limit \$300" \
-    "$([ ${TOTAL_LIMIT:-0} -eq 300 ] && echo ok)" "ok" \
-    "Đặt limit_usd: 300 trong budget total-monthly"
+# Kiểm tra e-commerce budget
+ECOM_LIMIT=$(jq -r '.budgets[] | select(.name=="project-e-commerce") | .limit_usd' $CONFIG_FILE 2>/dev/null)
+check "Budget 'project-e-commerce' có limit_usd = 150" \
+  "$ECOM_LIMIT" "150" \
+  "Cấu hình project-e-commerce với limit_usd: 150"
 
-  # 5. Có alert 80% ACTUAL
-  HAS_80=$(python3 -c "
-import json
-data = json.load(open('/opt/lab-data/budgets/config.json'))
-for b in data['budgets']:
-  for a in b.get('alerts',[]):
-    if a.get('threshold_pct')==80 and a.get('type')=='ACTUAL':
-      print('ok'); exit()
-" 2>/dev/null)
-  check "Có alert ACTUAL tại 80% trong ít nhất 1 budget" \
-    "$HAS_80" "ok" \
-    "Thêm alert với threshold_pct: 80, type: ACTUAL"
+# Kiểm tra data-platform budget
+DATA_LIMIT=$(jq -r '.budgets[] | select(.name=="project-data-platform") | .limit_usd' $CONFIG_FILE 2>/dev/null)
+check "Budget 'project-data-platform' có limit_usd = 80" \
+  "$DATA_LIMIT" "80" \
+  "Cấu hình project-data-platform với limit_usd: 80"
+
+# Kiểm tra bài tập: project-internal-tools
+INTERNAL_LIMIT=$(jq -r '.budgets[] | select(.name=="project-internal-tools") | .limit_usd' $CONFIG_FILE 2>/dev/null)
+check "Bài tập: Budget 'project-internal-tools' có limit_usd = 50" \
+  "$INTERNAL_LIMIT" "50" \
+  "Thêm budget cho project-internal-tools với limit_usd: 50 theo yêu cầu bài tập"
+
+echo ""
+if [ $FAIL -eq 0 ]; then
+  echo " Hoàn thành Bước 2! Cấu hình cảnh báo ngân sách AWS Budgets đã đạt chuẩn."
+  exit 0
+else
+  echo " Có $FAIL tiêu chí chưa đạt. Hãy xem các gợi ý ở trên để hoàn thiện."
+  exit 1
 fi
-
-# 6. Script check-budget.py tồn tại và chạy được
-check "Script /opt/lab-data/budgets/check-budget.py đã tạo" \
-  "$(test -f /opt/lab-data/budgets/check-budget.py && echo ok)" "ok" \
-  "Chạy phần 2.2 để tạo check-budget.py"
-
-# 7. Cron job đã thiết lập
-CRON_SET=$(cat /etc/cron.d/budget-check 2>/dev/null | grep -c "check-budget.py")
-check "Cron job kiểm tra budget đã thiết lập" \
-  "$([ ${CRON_SET:-0} -ge 1 ] && echo ok)" "ok" \
-  "Chạy phần 2.3 để tạo /etc/cron.d/budget-check"
-
-echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
-[ $FAIL -eq 0 ] && echo " Budget alerts đã cấu hình đúng!" && exit 0 || exit 1
-
-echo ""
-echo "===  Bài tập ==="
-echo ""
-
-HAS_SEC_BUDGET=$(python3 -c "
-import json
-data = json.load(open('/opt/lab-data/budgets/config.json'))
-b = next((x for x in data['budgets'] if x['name']=='project-security-tools'), None)
-print('ok' if b else '')
-" 2>/dev/null)
-check "[Bài tập] Budget 'project-security-tools' đã thêm" "$HAS_SEC_BUDGET" "ok" \
-  "Thêm entry {\"name\": \"project-security-tools\", ...} vào mảng budgets"
-
-SEC_LIMIT=$(python3 -c "
-import json
-data = json.load(open('/opt/lab-data/budgets/config.json'))
-b = next((x for x in data['budgets'] if x['name']=='project-security-tools'), None)
-print(b['limit_usd'] if b else 0)
-" 2>/dev/null)
-check "[Bài tập] Limit của security-tools budget là \$25" \
-  "$([ ${SEC_LIMIT:-0} -eq 25 ] && echo ok)" "ok" \
-  "Đặt limit_usd: 25"
-
-HAS_90=$(python3 -c "
-import json
-data = json.load(open('/opt/lab-data/budgets/config.json'))
-b = next((x for x in data['budgets'] if x['name']=='project-security-tools'), None)
-if b:
-  for a in b.get('alerts',[]):
-    if a.get('threshold_pct')==90: print('ok'); exit()
-" 2>/dev/null)
-check "[Bài tập] Alert tại 90% trong security-tools budget" "$HAS_90" "ok" \
-  "Thêm alert với threshold_pct: 90"

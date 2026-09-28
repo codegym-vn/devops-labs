@@ -1,184 +1,121 @@
-# Bước 1: Tagging — Phân bổ chi phí theo nhóm
+# Bước 1: Gắn Cost Allocation Tags Lên Tài Nguyên Cloud Bằng AWS CLI
 
-## Lý thuyết
-
-**Tag** (AWS) / **Label** (GCP) / **Tag** (Azure) — metadata gắn lên tài nguyên để trả lời câu hỏi:
-*"Chi phí $10,000 tháng này đến từ đâu?"*
-
-Chuẩn tagging phổ biến:
-
-| Tag | Ý nghĩa | Ví dụ |
-|-----|---------|-------|
-| `Name` | Tên tài nguyên | `web-server-prod` |
-| `Project` | Dự án/sản phẩm | `e-commerce` |
-| `Environment` | Môi trường | `production`, `staging`, `dev` |
-| `Owner` | Team chịu trách nhiệm | `team-backend` |
-| `CostCenter` | Mã trung tâm chi phí | `CC-001` |
-
-Không có tag → không biết tài nguyên đó phục vụ mục đích gì → không thể phân bổ chi phí.
-
-Trong Docker, tag = `--label` khi chạy container.
+Trong bước đầu tiên, bạn sẽ sử dụng **AWS CLI** để áp dụng chiến lược gắn nhãn định danh chi phí (**Cost Allocation Tags**) lên các máy ảo EC2 trong công ty, giải quyết bài toán: *"Chi phí đám mây tháng này thuộc về ai và dùng cho mục đích gì?"*
 
 ---
 
-## Thực hành
+## 1. Lý Thuyết: Chiến Lược Gắn Tag Phân Bổ Chi Phí (FinOps Tagging)
 
-### 1.1 — Khởi động 5 servers với tagging đúng chuẩn
+Một máy ảo EC2 không gắn tag sẽ trở thành một **"hố đen chi phí"**: Không ai dám tắt vì sợ ảnh hưởng hệ thống, nhưng cũng không team nào chịu thanh toán tiền.
 
-```bash
-# Hàm tạo server với labels (tags) đúng chuẩn
-create_server() {
-  local NAME=$1 PROJECT=$2 ENV=$3 OWNER=$4 COST_CENTER=$5
+Chuẩn bộ Tag phân bổ chi phí bắt buộc trong doanh nghiệp:
 
-  docker run -d \
-    --name "$NAME" \
-    -p 0:80 \
-    --label Name="$NAME" \
-    --label Project="$PROJECT" \
-    --label Environment="$ENV" \
-    --label Owner="$OWNER" \
-    --label CostCenter="$COST_CENTER" \
-    nginx:alpine \
-    sh -c "echo '$NAME' > /usr/share/nginx/html/index.html; nginx -g 'daemon off;'"
-
-  echo " $NAME [Project=$PROJECT, Env=$ENV, Owner=$OWNER]"
-}
-
-create_server "api-server-prod"   "e-commerce"     "production"  "team-backend"  "CC-001"
-create_server "web-server-prod"   "e-commerce"     "production"  "team-frontend" "CC-001"
-create_server "worker-prod"       "data-platform"  "production"  "team-data"     "CC-002"
-create_server "reporting-server"  "internal-tools" "staging"     "team-devops"   "CC-003"
-create_server "old-test-server"   "internal-tools" "development" "team-devops"   "CC-003"
-```
-
-### 1.2 — Kiểm tra tag compliance
-
-```bash
-echo "=== Kiểm tra tất cả containers có đủ 5 tags chuẩn ==="
-REQUIRED_TAGS="Name Project Environment Owner CostCenter"
-FAIL=0
-
-for C in api-server-prod web-server-prod worker-prod reporting-server old-test-server; do
-  MISSING=""
-  for TAG in $REQUIRED_TAGS; do
-    VALUE=$(docker inspect $C --format "{{index .Config.Labels \"$TAG\"}}")
-    [ -z "$VALUE" ] && MISSING="$MISSING $TAG"
-  done
-
-  if [ -z "$MISSING" ]; then
-    echo "   $C — đủ tags"
-  else
-    echo "   $C — thiếu:$MISSING"
-    FAIL=$((FAIL+1))
-  fi
-done
-
-echo ""
-[ $FAIL -eq 0 ] && echo "Tag compliance: 100% " || echo "Tag compliance: $FAIL servers thiếu tag "
-```
-
-### 1.3 — Query tài nguyên theo tag (như Cloud console)
-
-```bash
-echo "=== Servers thuộc Project 'e-commerce' ==="
-docker ps --filter "label=Project=e-commerce" \
-  --format "table {{.Names}}\t{{.Status}}"
-
-echo ""
-echo "=== Servers môi trường 'production' ==="
-docker ps --filter "label=Environment=production" \
-  --format "table {{.Names}}"
-
-echo ""
-echo "=== Servers của team-data ==="
-docker ps --filter "label=Owner=team-data" \
-  --format "table {{.Names}}\t{{.Status}}"
-```
-
-### 1.4 — Tạo bản đồ chi phí theo tag
-
-```bash
-python3 << 'EOF'
-import subprocess, json
-
-# Lấy danh sách containers và labels
-result = subprocess.run(
-    ["docker", "inspect",
-     "api-server-prod", "web-server-prod", "worker-prod",
-     "reporting-server", "old-test-server"],
-    capture_output=True, text=True
-)
-containers = json.loads(result.stdout)
-
-# Chi phí giả định theo instance type (giờ/tháng)
-COST_MAP = {
-    "api-server-prod":   59.90,
-    "web-server-prod":   29.95,
-    "worker-prod":       59.90,
-    "reporting-server": 119.81,
-    "old-test-server":   29.95,
-}
-
-# Phân bổ theo Project
-from collections import defaultdict
-by_project = defaultdict(float)
-by_env = defaultdict(float)
-
-for c in containers:
-    name = c["Name"].strip("/")
-    labels = c["Config"]["Labels"]
-    cost = COST_MAP.get(name, 0)
-    by_project[labels.get("Project", "unknown")] += cost
-    by_env[labels.get("Environment", "unknown")] += cost
-
-print("=== Chi phí theo Project ===")
-for proj, cost in sorted(by_project.items(), key=lambda x: -x[1]):
-    print(f"  {proj:20s}: ${cost:.2f}/tháng")
-
-print("\n=== Chi phí theo Environment ===")
-for env, cost in sorted(by_env.items(), key=lambda x: -x[1]):
-    print(f"  {env:15s}: ${cost:.2f}/tháng")
-
-print(f"\n  Tổng: ${sum(by_project.values()):.2f}/tháng")
-EOF
-```
+| Tag Key | Ý nghĩa FinOps | Ví dụ giá trị |
+|---|---|---|
+| **`Project`** | Tên sản phẩm / Dự án kinh doanh | `e-commerce`, `data-platform`, `internal-tools` |
+| **`Environment`** | Môi trường triển khai | `production`, `staging`, `development` |
+| **`Owner`** | Đội ngũ kỹ thuật chịu trách nhiệm | `team-backend`, `team-frontend`, `team-data` |
+| **`CostCenter`** | Mã trung tâm chi phí để kế toán khấu trừ | `CC-001`, `CC-002`, `CC-003` |
 
 ---
 
-## Tương đương trên Cloud
+## 2. Thực Hành
 
-| Lab (Docker labels) | AWS | GCP | Azure |
-|--------------------|-----|-----|-------|
-| `--label Project=e-commerce` | Tag: `Project=e-commerce` | Label: `project=e-commerce` | Tag: `Project=e-commerce` |
-| `docker ps --filter label=Project=X` | Cost Explorer → filter by tag | Billing → label filter | Cost Analysis → tag filter |
-| Tag compliance check | AWS Config Rules | Organization Policy | Azure Policy |
+Tải danh sách các Instance ID đã được khởi tạo sẵn trong LocalStack:
 
----
-
-## Câu hỏi
-
-1. Điều gì xảy ra với chi phí nếu một team không gắn tag đúng chuẩn?
-2. Chiến lược nào đảm bảo **tag consistency** khi team scale lên 50 engineers?
-3. Nếu dùng Terraform/Ansible, làm sao tự động gắn tag cho mọi resource?
+```bash
+source /tmp/lab-env.sh
+echo "API Server ID: $SRV_API"
+echo "Web Server ID: $SRV_WEB"
+echo "Worker Server ID: $SRV_WORKER"
+echo "Reporting Server ID: $SRV_REPORT"
+echo "Old Test Server ID: $SRV_TEST"
+```{{exec}}
 
 ---
 
-##  Bài tập
+### 1.1 — Gắn Cost Allocation Tags Cho Cụm Dự Án E-Commerce
 
-> Hoàn thành phần thực hành trên trước khi làm bài tập này.
+Sử dụng lệnh `aws ec2 create-tags` để gắn đồng thời 4 nhãn chuẩn cho 2 máy chủ của dự án `e-commerce`:
 
-**Yêu cầu:** Team bảo mật vừa được thành lập và cần tracking chi phí riêng.
+```bash
+# 1. Gắn Tags cho API Server
+aws ec2 create-tags \
+  --resources $SRV_API \
+  --tags \
+    Key=Project,Value=e-commerce \
+    Key=Environment,Value=production \
+    Key=Owner,Value=team-backend \
+    Key=CostCenter,Value=CC-001
 
-Tạo container `security-scanner` với đầy đủ 5 tags chuẩn:
-- `Name=security-scanner`
-- `Project=security-tools`
-- `Environment=production`
-- `Owner=team-security`
-- `CostCenter=CC-004`
+# 2. Gắn Tags cho Web Server
+aws ec2 create-tags \
+  --resources $SRV_WEB \
+  --tags \
+    Key=Project,Value=e-commerce \
+    Key=Environment,Value=production \
+    Key=Owner,Value=team-frontend \
+    Key=CostCenter,Value=CC-001
 
-Sau đó chạy lệnh kiểm tra: danh sách containers thuộc `Owner=team-security` phải hiển thị đúng 1 container.
+echo "✅ Đã gắn Tags thành công cho cụm dự án e-commerce!"
+```{{exec}}
 
-**Gợi ý khi bí:**
-- Xem hàm `create_server` đã viết ở phần 1.1
+---
 
-> Nhấn **Check** khi hoàn thành.
+### 1.2 — Gắn Tags Cho Cụm Data Platform & Reporting
+
+Tiếp tục gắn nhãn cho các máy chủ xử lý dữ liệu và báo cáo nội bộ:
+
+```bash
+# 1. Gắn Tags cho Worker Server
+aws ec2 create-tags \
+  --resources $SRV_WORKER \
+  --tags \
+    Key=Project,Value=data-platform \
+    Key=Environment,Value=production \
+    Key=Owner,Value=team-data \
+    Key=CostCenter,Value=CC-002
+
+# 2. Gắn Tags cho Reporting Server
+aws ec2 create-tags \
+  --resources $SRV_REPORT \
+  --tags \
+    Key=Project,Value=internal-tools \
+    Key=Environment,Value=staging \
+    Key=Owner,Value=team-devops \
+    Key=CostCenter,Value=CC-003
+
+echo "✅ Đã gắn Tags cho Data Platform và Reporting Server!"
+```{{exec}}
+
+---
+
+### 1.3 — Kiểm Tra Tính Tuân Thủ (Tag Compliance) Bằng AWS CLI Filters
+
+Sử dụng cờ `--filters` để lọc và nhóm các máy chủ theo từng dự án:
+
+```bash
+echo "=== Danh sách máy chủ thuộc Project: e-commerce ==="
+aws ec2 describe-instances \
+  --filters "Name=tag:Project,Values=e-commerce" \
+  --query "Reservations[].Instances[].[Tags[?Key=='Name'].Value | [0], InstanceId, Tags[?Key=='Owner'].Value | [0], Tags[?Key=='CostCenter'].Value | [0]]" \
+  --output table
+```{{exec}}
+
+---
+
+## 3. Bài Tập Thử Thách
+
+> [!TIP]
+> Máy chủ `old-test-server` (`$SRV_TEST`) hiện đang thiếu nhãn định danh và có nguy cơ bị cảnh báo vi phạm chính sách Tagging!
+
+**Yêu cầu:** Hãy dùng lệnh `aws ec2 create-tags` để gắn đầy đủ 4 tag chuẩn cho máy chủ `$SRV_TEST`:
+* `Project`: `internal-tools`
+* `Environment`: `development`
+* `Owner`: `team-devops`
+* `CostCenter`: `CC-003`
+
+**Gợi ý lệnh:**
+* Tham khảo cú pháp ở mục **1.2**, thay đổi `--resources $SRV_TEST`.
+
+> Nhấn nút **Check** ở góc dưới để hệ thống kiểm tra và chấm điểm tự động.

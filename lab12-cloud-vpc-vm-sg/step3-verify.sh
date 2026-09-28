@@ -1,5 +1,5 @@
 #!/bin/bash
-# step3-verify.sh — Lab 12: Kiểm tra Compute Instances
+# step3-verify.sh — Lab 12: Kiểm tra EC2 Instances & Key Pair với AWS CLI
 
 PASS=0; FAIL=0
 
@@ -13,80 +13,90 @@ check() {
   fi
 }
 
-echo "=== Bước 3: Compute Instances ==="
+echo "=== Bước 3: Kiểm Tra Máy Ảo EC2 & SSH Key Pair ==="
 echo ""
 
-# 1. SSH key pair đã được tạo
-check "SSH Key Pair /tmp/lab-keypair đã tạo" \
-  "$(test -f /tmp/lab-keypair && echo ok)" "ok" \
-  "Chạy: ssh-keygen -t ed25519 -f /tmp/lab-keypair -N \"\""
+# 1. Kiểm tra Key Pair devops-key tồn tại trên AWS
+KEY_NAME=$(aws ec2 describe-key-pairs \
+  --key-names devops-key \
+  --query "KeyPairs[0].KeyName" --output text 2>/dev/null)
 
-# 2. web-server-1 đang chạy
-WEB1_STATUS=$(docker inspect web-server-1 \
-  --format '{{.State.Status}}' 2>/dev/null)
-check "Container 'web-server-1' đang running" "$WEB1_STATUS" "running" \
-  "Chạy lại phần 3.2 trong hướng dẫn"
+check "SSH Key Pair 'devops-key' đã được tạo trên AWS" \
+  "$KEY_NAME" "devops-key" \
+  "Chạy mục 3.1: aws ec2 create-key-pair --key-name devops-key ..."
 
-# 3. web-server-1 có label Role=web
-WEB1_ROLE=$(docker inspect web-server-1 \
-  --format '{{index .Config.Labels "Role"}}' 2>/dev/null)
-check "web-server-1 có label Role=web" "$WEB1_ROLE" "web" \
-  "Thêm --label Role=web vào lệnh docker run"
+# 2. Kiểm tra file private key đã lưu tại /tmp/devops-key.pem
+check "File private key /tmp/devops-key.pem tồn tại cục bộ" \
+  "$(test -f /tmp/devops-key.pem && echo ok)" "ok" \
+  "Lưu output của create-key-pair vào file /tmp/devops-key.pem"
 
-# 4. db-server-1 đang chạy trong private-subnet
-DB1_SUBNET=$(docker inspect db-server-1 \
-  --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}' 2>/dev/null \
-  | tr ',' '\n' | grep private-subnet | head -1)
-check "db-server-1 chạy trong private-subnet" \
-  "$(echo $DB1_SUBNET | grep -c private-subnet)" "1" \
-  "Tạo db-server-1 với --network private-subnet"
+# 3. Lấy Subnet IDs và SG IDs để kiểm tra
+source /tmp/lab-env.sh 2>/dev/null
 
-# 5. HTTP trả về 200
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081 2>/dev/null)
-check "Web server phản hồi HTTP 200 tại port 8081" "$HTTP_CODE" "200" \
-  "Kiểm tra docker ps | grep web-server-1 và đúng port mapping -p 8081:80"
+PUB_SUBNET_ID=$(aws ec2 describe-subnets \
+  --filters "Name=tag:Name,Values=public-subnet" \
+  --query "Subnets[0].SubnetId" --output text 2>/dev/null)
 
-# 6. Health endpoint hoạt động
-HEALTH=$(curl -s http://localhost:8081/health 2>/dev/null | tr -d '\n')
-check "Endpoint /health phản hồi 'healthy'" \
-  "$(echo $HEALTH | grep -ic healthy)" "1" \
-  "Đảm bảo nginx config có location /health { return 200 \"healthy\"; }"
+PRIV_SUBNET_ID=$(aws ec2 describe-subnets \
+  --filters "Name=tag:Name,Values=private-subnet" \
+  --query "Subnets[0].SubnetId" --output text 2>/dev/null)
 
-# 7. DB không có port public (private subnet isolation)
-DB_PORTS=$(docker inspect db-server-1 \
-  --format '{{.HostConfig.PortBindings}}' 2>/dev/null)
-check "db-server-1 không expose port ra ngoài Internet" \
-  "$DB_PORTS" "map[]" \
-  "Xóa -p flag khi tạo db-server-1"
+WEB_SG_ID=$(aws ec2 describe-security-groups \
+  --filters "Name=group-name,Values=web-sg" \
+  --query "SecurityGroups[0].GroupId" --output text 2>/dev/null)
+
+DB_SG_ID=$(aws ec2 describe-security-groups \
+  --filters "Name=group-name,Values=db-sg" \
+  --query "SecurityGroups[0].GroupId" --output text 2>/dev/null)
+
+# 4. Kiểm tra web-server-1 trong Public Subnet với web-sg
+WEB1_SUBNET=$(aws ec2 describe-instances \
+  --filters "Name=tag:Name,Values=web-server-1" "Name=instance-state-name,Values=running,pending" \
+  --query "Reservations[0].Instances[0].SubnetId" --output text 2>/dev/null)
+
+check "Instance 'web-server-1' đang chạy trong Public Subnet" \
+  "$WEB1_SUBNET" "$PUB_SUBNET_ID" \
+  "Chạy mục 3.2: aws ec2 run-instances --subnet-id \$PUB_SUBNET_ID ..."
+
+WEB1_SG=$(aws ec2 describe-instances \
+  --filters "Name=tag:Name,Values=web-server-1" "Name=instance-state-name,Values=running,pending" \
+  --query "Reservations[0].Instances[0].SecurityGroups[0].GroupId" --output text 2>/dev/null)
+
+check "Instance 'web-server-1' được bảo vệ bởi 'web-sg'" \
+  "$WEB1_SG" "$WEB_SG_ID" \
+  "Gán --security-group-ids \$WEB_SG_ID khi khởi tạo web-server-1"
+
+# 5. Kiểm tra db-server-1 trong Private Subnet với db-sg
+DB1_SUBNET=$(aws ec2 describe-instances \
+  --filters "Name=tag:Name,Values=db-server-1" "Name=instance-state-name,Values=running,pending" \
+  --query "Reservations[0].Instances[0].SubnetId" --output text 2>/dev/null)
+
+check "Instance 'db-server-1' đang chạy trong Private Subnet" \
+  "$DB1_SUBNET" "$PRIV_SUBNET_ID" \
+  "Chạy mục 3.3: aws ec2 run-instances --subnet-id \$PRIV_SUBNET_ID ..."
+
+DB1_SG=$(aws ec2 describe-instances \
+  --filters "Name=tag:Name,Values=db-server-1" "Name=instance-state-name,Values=running,pending" \
+  --query "Reservations[0].Instances[0].SecurityGroups[0].GroupId" --output text 2>/dev/null)
+
+check "Instance 'db-server-1' được bảo vệ bởi 'db-sg'" \
+  "$DB1_SG" "$DB_SG_ID" \
+  "Gán --security-group-ids \$DB_SG_ID khi khởi tạo db-server-1"
+
+# 6. Kiểm tra bài tập: web-server-2 tồn tại trong Public Subnet
+WEB2_SUBNET=$(aws ec2 describe-instances \
+  --filters "Name=tag:Name,Values=web-server-2" "Name=instance-state-name,Values=running,pending" \
+  --query "Reservations[0].Instances[0].SubnetId" --output text 2>/dev/null)
+
+check "Bài tập: Instance 'web-server-2' đã chạy trong Public Subnet" \
+  "$WEB2_SUBNET" "$PUB_SUBNET_ID" \
+  "Khởi tạo instance thứ hai với tag Name=web-server-2 trong Public Subnet"
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
-[ $FAIL -eq 0 ] && echo " Instances triển khai đúng!" && exit 0 || exit 1
-
-echo ""
-echo "===  Bài tập ==="
-echo ""
-
-# Challenge: api-server tại 10.0.1.11, port 8082
-API_STATUS=$(docker inspect api-server --format '{{.State.Status}}' 2>/dev/null)
-check "[Bài tập] Container 'api-server' đang running" "$API_STATUS" "running" \
-  "docker run -d --name api-server --network public-subnet --ip 10.0.1.11 -p 8082:80 ..."
-
-API_IP=$(docker inspect api-server \
-  --format '{{.NetworkSettings.Networks.public-subnet.IPAddress}}' 2>/dev/null)
-check "[Bài tập] api-server có IP 10.0.1.11" "$API_IP" "10.0.1.11" \
-  "Thêm --ip 10.0.1.11 vào lệnh docker run"
-
-API_HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/api/status 2>/dev/null)
-check "[Bài tập] Endpoint /api/status trả về HTTP 200" "$API_HTTP" "200" \
-  "Tạo nginx config với location /api/status { return 200 '{...}'; }"
-
-API_BODY=$(curl -s http://localhost:8082/api/status 2>/dev/null)
-check "[Bài tập] Response chứa 'status' và 'api'" \
-  "$(echo $API_BODY | grep -c '"status"' && echo $API_BODY | grep -c 'api')" "1" \
-  "Trả về JSON: {\"status\": \"ok\", \"service\": \"api\"}"
-
-API_ROLE=$(docker inspect api-server --format '{{index .Config.Labels "Role"}}' 2>/dev/null)
-check "[Bài tập] api-server có label Role=api" "$API_ROLE" "api" \
-  "Thêm --label Role=api vào lệnh docker run"
+if [ $FAIL -eq 0 ]; then
+  echo " Hoàn thành Bước 3! Bạn đã triển khai thành công cụm máy ảo EC2 vào các phân vùng mạng."
+  exit 0
+else
+  echo " Có $FAIL tiêu chí chưa đạt. Hãy xem các gợi ý ở trên để hoàn thiện."
+  exit 1
+fi

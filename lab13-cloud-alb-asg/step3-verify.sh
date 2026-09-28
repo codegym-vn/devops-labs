@@ -1,5 +1,5 @@
 #!/bin/bash
-# step3-verify.sh — Lab 13: Kiểm tra phân phối traffic
+# step3-verify.sh — Lab 13: Kiểm tra Target Health & Đăng ký mục tiêu
 
 PASS=0; FAIL=0
 
@@ -13,66 +13,39 @@ check() {
   fi
 }
 
-echo "=== Bước 3: Phân phối traffic + Health Check ==="
+echo "=== Bước 3: Kiểm Tra Target Health & Đăng Ký Mục Tiêu ==="
 echo ""
 
-# 1. LB đang phân phối đến nhiều backend
-echo "  Đang gửi 20 request để kiểm tra phân phối..."
-declare -A COUNT
-for i in $(seq 1 20); do
-  SRV=$(curl -s http://localhost/server-id 2>/dev/null | grep -oE 'app-[0-9]+' | head -1)
-  [ -n "$SRV" ] && COUNT[$SRV]=$((${COUNT[$SRV]:-0}+1))
-done
+source /tmp/lab-env.sh 2>/dev/null
 
-BACKENDS_HIT=$(echo ${!COUNT[@]} | wc -w)
-check "LB phân phối đến ≥2 backend khác nhau (trong 20 request)" \
-  "$([ $BACKENDS_HIT -ge 2 ] && echo ok)" "ok" \
-  "Kiểm tra upstream config có đủ 2 server đang healthy"
+# 1. Kiểm tra Target Group ARN tồn tại
+check "Target Group ARN đã được lưu trong môi trường" \
+  "nonempty" "$TG_ARN" \
+  "Biến \$TG_ARN không tìm thấy trong /tmp/lab-env.sh"
 
-# 2. app-1 nhận ít nhất 1 request
-check "app-1 nhận ít nhất 1 request" \
-  "$([ ${COUNT[app-1]:-0} -ge 1 ] && echo ok)" "ok" \
-  "Kiểm tra app-1 đang chạy: docker ps | grep app-1"
+# 2. Kiểm tra Target Group có mục tiêu đăng ký
+TARGET_COUNT=$(aws elbv2 describe-target-health \
+  --target-group-arn "$TG_ARN" \
+  --query "length(TargetHealthDescriptions)" --output text 2>/dev/null)
 
-# 3. app-2 nhận ít nhất 1 request
-check "app-2 nhận ít nhất 1 request" \
-  "$([ ${COUNT[app-2]:-0} -ge 1 ] && echo ok)" "ok" \
-  "Kiểm tra app-2 đang chạy: docker ps | grep app-2"
+check "Target Group đã nhận diện mục tiêu từ Auto Scaling Group" \
+  "$( [ "$TARGET_COUNT" -ge 1 ] && echo ok || echo fail )" "ok" \
+  "Chờ 10-15s để ASG tự động đăng ký các instances vào Target Group"
 
-echo "  Phân phối: $(for k in "${!COUNT[@]}"; do echo "$k:${COUNT[$k]}"; done | tr '\n' ' ')"
+# 3. Kiểm tra thuộc tính thuật toán của Target Group
+ALGO=$(aws elbv2 describe-target-group-attributes \
+  --target-group-arn "$TG_ARN" \
+  --query "Attributes[?Key=='load_balancing.algorithm.type'].Value | [0]" --output text 2>/dev/null)
 
-# 4. /health endpoint phản hồi healthy
-HEALTH_RESP=$(curl -s http://localhost/health 2>/dev/null | grep -ic "healthy")
-check "/health qua LB trả về 'healthy'" \
-  "$([ $HEALTH_RESP -ge 1 ] && echo ok)" "ok" \
-  "Kiểm tra nginx config có: location /health { proxy_pass http://backend/health; }"
-
-# 5. File benchmark /tmp/bench-2.txt tồn tại (learner đã chạy wrk)
-check "Benchmark baseline đã chạy (/tmp/bench-2.txt)" \
-  "$(test -f /tmp/bench-2.txt && grep -q 'Requests' /tmp/bench-2.txt && echo ok)" "ok" \
-  "Chạy: wrk -t2 -c20 -d15s http://localhost/server-id | tee /tmp/bench-2.txt"
+check "Target Group sử dụng thuật toán phân tải 'round_robin'" \
+  "$ALGO" "round_robin" \
+  "Chạy mục 3.2: aws elbv2 describe-target-group-attributes ..."
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
-[ $FAIL -eq 0 ] && echo " Load Balancer phân phối đúng!" && exit 0 || exit 1
-
-echo ""
-echo "===  Bài tập ==="
-echo ""
-
-check "[Bài tập] Script /tmp/health-check-all.sh đã tạo và executable" \
-  "$(test -x /tmp/health-check-all.sh && echo ok)" "ok" \
-  "Tạo file và: chmod +x /tmp/health-check-all.sh"
-
-# Chạy script và kiểm tra exit code khi tất cả healthy
-/tmp/health-check-all.sh > /tmp/hc-output.txt 2>&1
-HC_EXIT=$?
-HAS_OUTPUT=$(grep -ic "healthy\|app-" /tmp/hc-output.txt 2>/dev/null)
-check "[Bài tập] health-check-all.sh in ra trạng thái từng backend" \
-  "$([ $HAS_OUTPUT -ge 1 ] && echo ok)" "ok" \
-  "Script phải in ra / cho mỗi app-*"
-
-check "[Bài tập] health-check-all.sh exit 0 khi tất cả healthy" \
-  "$HC_EXIT" "0" \
-  "Script phải thoát với exit code 0 nếu tất cả backends healthy"
+if [ $FAIL -eq 0 ]; then
+  echo " Hoàn thành Bước 3! Các mục tiêu đã được đăng ký và sẵn sàng phân tải."
+  exit 0
+else
+  echo " Có $FAIL tiêu chí chưa đạt. Hãy xem các gợi ý ở trên để hoàn thiện."
+  exit 1
+fi

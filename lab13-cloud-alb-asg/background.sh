@@ -1,13 +1,80 @@
 #!/bin/bash
-# background.sh — Lab 13: Load Balancer & Auto Scaling
+# background.sh — Lab 13: AWS CLI & LocalStack (ALB + ASG)
 
+# 1. Cài đặt các công cụ cần thiết
 apt-get update -y > /dev/null 2>&1
-apt-get install -y nginx netcat-openbsd curl > /dev/null 2>&1
+apt-get install -y awscli jq curl netcat-openbsd > /dev/null 2>&1
 
-systemctl enable nginx > /dev/null 2>&1
-systemctl start nginx > /dev/null 2>&1
+# 2. Khởi động LocalStack hỗ trợ dịch vụ ec2, elbv2, autoscaling
+docker run -d \
+  --name localstack \
+  --restart unless-stopped \
+  -p 4566:4566 \
+  -e SERVICES=ec2,elbv2,autoscaling \
+  -e DEFAULT_REGION=us-east-1 \
+  localstack/localstack:latest > /dev/null 2>&1
 
-# Kéo sẵn image
-docker pull nginx:alpine > /dev/null 2>&1 &
+# 3. Cấu hình AWS CLI mặc định
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
+export AWS_DEFAULT_REGION=us-east-1
+
+aws configure set aws_access_key_id test
+aws configure set aws_secret_access_key test
+aws configure set default.region us-east-1
+aws configure set default.output json
+
+# 4. Tạo wrapper script cho aws và awslocal
+cat << 'EOF' > /usr/local/bin/awslocal
+#!/bin/bash
+/usr/bin/aws --endpoint-url=http://localhost:4566 "$@"
+EOF
+chmod +x /usr/local/bin/awslocal
+
+cat << 'EOF' > /usr/local/bin/aws
+#!/bin/bash
+/usr/bin/aws --endpoint-url=http://localhost:4566 "$@"
+EOF
+chmod +x /usr/local/bin/aws
+
+cat << 'EOF' >> /etc/profile.d/aws.sh
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
+export AWS_DEFAULT_REGION=us-east-1
+export AWS_ENDPOINT_URL=http://localhost:4566
+alias awslocal="aws --endpoint-url=http://localhost:4566"
+EOF
+
+# 5. Chờ LocalStack sẵn sàng
+MAX_RETRY=30
+RETRY=0
+while [ $RETRY -lt $MAX_RETRY ]; do
+  if curl -s http://localhost:4566/_localstack/health | grep -q '"ec2": "available"\|"ec2": "running"'; then
+    break
+  fi
+  sleep 2
+  RETRY=$((RETRY+1))
+done
+
+# 6. Khởi tạo sẵn VPC và 2 Subnet ở 2 Availability Zones khác nhau (bắt buộc cho ALB)
+VPC_ID=$(/usr/local/bin/aws ec2 create-vpc --cidr-block 10.1.0.0/16 --tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=alb-asg-vpc}]' --query 'Vpc.VpcId' --output text)
+SUBNET_1=$(/usr/local/bin/aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.1.1.0/24 --availability-zone us-east-1a --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=alb-subnet-1a}]' --query 'Subnet.SubnetId' --output text)
+SUBNET_2=$(/usr/local/bin/aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.1.2.0/24 --availability-zone us-east-1b --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=alb-subnet-1b}]' --query 'Subnet.SubnetId' --output text)
+
+IGW_ID=$(/usr/local/bin/aws ec2 create-internet-gateway --tag-specifications 'ResourceType=internet-gateway,Tags=[{Key=Name,Value=alb-igw}]' --query 'InternetGateway.InternetGatewayId' --output text)
+/usr/local/bin/aws ec2 attach-internet-gateway --vpc-id $VPC_ID --internet-gateway-id $IGW_ID
+
+RT_ID=$(/usr/local/bin/aws ec2 create-route-table --vpc-id $VPC_ID --tag-specifications 'ResourceType=route-table,Tags=[{Key=Name,Value=alb-rt}]' --query 'RouteTable.RouteTableId' --output text)
+/usr/local/bin/aws ec2 create-route --route-table-id $RT_ID --destination-cidr-block 0.0.0.0/0 --gateway-id $IGW_ID > /dev/null 2>&1
+/usr/local/bin/aws ec2 associate-route-table --subnet-id $SUBNET_1 --route-table-id $RT_ID > /dev/null 2>&1
+/usr/local/bin/aws ec2 associate-route-table --subnet-id $SUBNET_2 --route-table-id $RT_ID > /dev/null 2>&1
+
+cat << EOF > /tmp/lab-env.sh
+export VPC_ID=$VPC_ID
+export SUBNET_1=$SUBNET_1
+export SUBNET_2=$SUBNET_2
+export IGW_ID=$IGW_ID
+export RT_ID=$RT_ID
+EOF
 
 touch /tmp/.lab_ready

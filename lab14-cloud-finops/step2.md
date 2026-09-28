@@ -1,44 +1,43 @@
-# Bước 2: Budget Alerts — Cảnh báo ngân sách
+# Bước 2: Thiết Lập AWS Budgets & Cơ Chế Cảnh Báo Ngân Sách
 
-## Lý thuyết
-
-**Budget Alert** là cơ chế cảnh báo trước khi vượt ngân sách:
-
-```
-Budget: $100/tháng
-  ├── 80% ($80) → Cảnh báo sớm → team trưởng
-  ├── 100% ($100) → Vượt ngân sách → CTO
-  └── Forecast 120% → Dự báo sẽ vượt → Alert tự động
-```
-
-Hai loại alert:
-- **ACTUAL**: dựa trên chi phí đã phát sinh
-- **FORECASTED**: dự báo chi phí cuối tháng dựa trên trend hiện tại
-
-Budget tốt nên phân loại theo nhiều cấp:
-- Budget tổng thể (toàn công ty)
-- Budget theo Project
-- Budget theo Team/CostCenter
+Trong bước này, bạn sẽ tìm hiểu cơ chế hoạt động của **AWS Budgets**, cấu hình các quy tắc cảnh báo ngân sách đa tầng và kích hoạt hệ thống phát hiện nguy cơ vượt ngân sách (Cost Overrun).
 
 ---
 
-## Thực hành
+## 1. Lý Thuyết: Chiến Lược Cảnh Báo Ngân Sách Trên Cloud
 
-### 2.1 — Tạo cấu hình Budget
+**AWS Budgets** cho phép bạn đặt trần chi phí theo tháng/quý và tự động bắn cảnh báo qua Email/Slack:
+
+```
+Ngân Sách Được Giao: $300 / tháng
+  ├── Mức 80% ($240)   ──► Cảnh báo sớm (Warning) ──► Gửi tới Trưởng nhóm DevOps
+  ├── Mức 100% ($300)  ──► Chạm trần ngân sách    ──► Gửi tới CTO & Quản lý dự án
+  └── Forecast 110%    ──► Dự báo sẽ vượt trần   ──► Cảnh báo khẩn cấp (Critical)
+```
+
+Hai cơ chế kích hoạt cảnh báo:
+* **`ACTUAL` (Thực chi):** Kích hoạt khi số tiền thực tế đã tiêu đạt đến ngưỡng phần trăm quy định.
+* **`FORECASTED` (Dự báo xu hướng):** Sử dụng máy học phân tích tốc độ tiêu tiền trong tuần đầu tiên; nếu tốc độ này tiếp diễn sẽ làm vỡ ngân sách cuối tháng $\rightarrow$ Lập tức gửi cảnh báo sớm để can thiệp kịp thời!
+
+---
+
+## 2. Thực Hành
+
+### 2.1 — Tạo File Cấu Hình AWS Budgets Đa Tầng
+
+Tạo file cấu hình ngân sách tại `/opt/lab-data/budgets/config.json`, phân tầng từ cấp toàn công ty đến từng dự án:
 
 ```bash
-mkdir -p /opt/lab-data/budgets
-
-cat > /opt/lab-data/budgets/config.json << 'EOF'
+cat << 'EOF' > /opt/lab-data/budgets/config.json
 {
   "budgets": [
     {
-      "name": "total-monthly",
+      "name": "total-monthly-budget",
       "limit_usd": 300,
       "alerts": [
-        {"threshold_pct": 80, "type": "ACTUAL",    "notify": "devops-team@company.com"},
-        {"threshold_pct": 100, "type": "ACTUAL",   "notify": "cto@company.com"},
-        {"threshold_pct": 110, "type": "FORECAST", "notify": "cto@company.com"}
+        {"threshold_pct": 80,  "type": "ACTUAL",    "notify": "devops-lead@company.com"},
+        {"threshold_pct": 100, "type": "ACTUAL",    "notify": "cto@company.com"},
+        {"threshold_pct": 110, "type": "FORECAST",  "notify": "cto@company.com"}
       ]
     },
     {
@@ -46,7 +45,7 @@ cat > /opt/lab-data/budgets/config.json << 'EOF'
       "limit_usd": 150,
       "filter": {"Project": "e-commerce"},
       "alerts": [
-        {"threshold_pct": 80, "type": "ACTUAL", "notify": "team-backend@company.com"}
+        {"threshold_pct": 80, "type": "ACTUAL", "notify": "pm-ecommerce@company.com"}
       ]
     },
     {
@@ -54,140 +53,53 @@ cat > /opt/lab-data/budgets/config.json << 'EOF'
       "limit_usd": 80,
       "filter": {"Project": "data-platform"},
       "alerts": [
-        {"threshold_pct": 80, "type": "ACTUAL", "notify": "team-data@company.com"}
-      ]
-    },
-    {
-      "name": "project-internal-tools",
-      "limit_usd": 70,
-      "filter": {"Project": "internal-tools"},
-      "alerts": [
-        {"threshold_pct": 80, "type": "ACTUAL", "notify": "team-devops@company.com"}
+        {"threshold_pct": 80, "type": "ACTUAL", "notify": "data-lead@company.com"}
       ]
     }
   ]
 }
 EOF
 
-echo " Budget config: /opt/lab-data/budgets/config.json"
-cat /opt/lab-data/budgets/config.json | python3 -m json.tool | head -20
-```
+echo "✅ Đã tạo cấu hình AWS Budgets thành công!"
+```{{exec}}
 
-### 2.2 — Script kiểm tra budget và gửi alert
+---
+
+### 2.2 — Cú Pháp Lệnh AWS CLI Chuẩn Để Tạo Budget Trên AWS
+
+> [!NOTE]
+> Trong môi trường AWS thật, bạn sử dụng lệnh `aws budgets create-budget` để đẩy cấu hình này lên:
 
 ```bash
-cat > /opt/lab-data/budgets/check-budget.py << 'EOF'
-#!/usr/bin/env python3
-"""
-Budget checker — chạy hàng ngày (cron job)
-Tương đương AWS Budgets / GCP Budget Alerts / Azure Cost Alerts
-"""
-import json, csv
-from collections import defaultdict
-from datetime import datetime
-
-# Đọc config
-with open("/opt/lab-data/budgets/config.json") as f:
-    config = json.load(f)
-
-# Đọc chi phí thực tế từ CUR
-actual_costs = defaultdict(float)
-project_costs = defaultdict(float)
-
-with open("/opt/lab-data/cost-usage-report.csv") as f:
-    for row in csv.DictReader(f):
-        cost = float(row["Cost"])
-        actual_costs["total"] += cost
-        project_costs[row.get("Project", "unknown")] += cost
-
-print(f"=== Budget Alert Report — {datetime.now().strftime('%Y-%m-%d')} ===\n")
-
-for budget in config["budgets"]:
-    name = budget["name"]
-    limit = budget["limit_usd"]
-
-    # Lấy chi phí thực tế tương ứng
-    if "filter" in budget:
-        proj = budget["filter"].get("Project")
-        actual = project_costs.get(proj, 0)
-    else:
-        actual = actual_costs["total"]
-
-    pct = (actual / limit) * 100
-
-    print(f"Budget: {name}")
-    print(f"  Giới hạn: ${limit:.0f}/tháng")
-    print(f"  Thực tế : ${actual:.2f} ({pct:.0f}%)")
-    print(f"  Thanh:   [{'█' * int(pct/5):<20}] {pct:.0f}%")
-
-    for alert in budget["alerts"]:
-        threshold = alert["threshold_pct"]
-        alert_type = alert["type"]
-        notify = alert["notify"]
-
-        if pct >= threshold and alert_type == "ACTUAL":
-            print(f"   ALERT {threshold}%: Gửi email → {notify}")
-        elif pct >= threshold * 0.9 and alert_type == "FORECAST":
-            print(f"   FORECAST ALERT: Dự báo vượt {threshold}% → {notify}")
-        else:
-            print(f"   Alert {threshold}% ({alert_type}): chưa kích hoạt")
-    print()
-EOF
-
-python3 /opt/lab-data/budgets/check-budget.py
+# Cú pháp tham khảo khi vận hành trên AWS thật:
+# aws budgets create-budget \
+#   --account-id 123456789012 \
+#   --budget file:///opt/lab-data/budgets/budget-spec.json \
+#   --notifications-with-subscribers file:///opt/lab-data/budgets/notifications.json
 ```
 
-### 2.3 — Thiết lập cron job kiểm tra budget hàng ngày
+---
+
+### 2.3 — Đánh Giá Nguy Cơ Vượt Ngân Sách (Budget Alert Evaluation)
+
+Chạy script đánh giá để đối chiếu dữ liệu chi phí thực tế 30 ngày vừa qua với các ngưỡng ngân sách bạn đã đặt:
 
 ```bash
-# Tương đương AWS Budget scheduled check
-echo "0 9 * * * root python3 /opt/lab-data/budgets/check-budget.py >> /var/log/budget-check.log 2>&1" \
-  > /etc/cron.d/budget-check
+/opt/lab-data/budgets/eval-budgets.py
+```{{exec}}
 
-echo " Cron job: budget check mỗi ngày lúc 9:00"
-cat /etc/cron.d/budget-check
-
-echo ""
-echo "Chạy thử ngay:"
-python3 /opt/lab-data/budgets/check-budget.py
-```
+Quan sát terminal: Bạn sẽ thấy hệ thống đánh giá từng rule, tính toán tỷ lệ thực chi (%) và tự động phát hiện những rule bị **🚨 KÍCH HOẠT CẢNH BÁO**!
 
 ---
 
-## Tương đương trên Cloud
+## 3. Bài Tập Thử Thách
 
-| Lab (Python + Cron) | AWS | GCP | Azure |
-|--------------------|-----|-----|-------|
-| `config.json` budgets | AWS Budgets | Cloud Billing Budgets | Azure Budgets |
-| Email alert | SNS notification | Pub/Sub notification | Action Group |
-| Cron job check | Scheduled Lambda | Cloud Scheduler | Logic Apps |
-| Forecast alert | Forecasted budget | Forecasted budget | Forecasted budget |
+**Yêu cầu:** Bổ sung thêm một cấu hình Budget mới cho dự án nội bộ `internal-tools`:
+* Tên: `"project-internal-tools"`
+* Hạn mức chi phí: `"limit_usd": 50`
+* Bộ lọc: `"filter": {"Project": "internal-tools"}`
+* Quy tắc cảnh báo: Ngưỡng `80%`, loại `ACTUAL`, gửi tới `"devops-team@company.com"`.
 
----
+Thêm đoạn cấu hình trên vào mảng `"budgets"` trong file `/opt/lab-data/budgets/config.json`, sau đó chạy lại `/opt/lab-data/budgets/eval-budgets.py`.
 
-## Câu hỏi
-
-1. Khi nào cần ACTUAL alert, khi nào cần FORECASTED alert?
-2. Budget nên đặt ở mức nào — bằng đúng mức dự báo hay thấp hơn?
-3. Nếu budget vượt — ngoài email, hành động tự động nào nên kích hoạt?
-
----
-
-##  Bài tập
-
-> Hoàn thành phần thực hành trên trước khi làm bài tập này.
-
-**Yêu cầu:** Thêm budget cho team security vừa thành lập vào file `config.json`.
-
-Budget cần có:
-- `name`: `"project-security-tools"`
-- `limit_usd`: `25`
-- Filter theo `Project=security-tools`
-- Alert tại 90% (ACTUAL), gửi đến `team-security@company.com`
-
-**Gợi ý khi bí:**
-- Mở `/opt/lab-data/budgets/config.json` và thêm entry mới vào mảng `budgets`
-- Xem format của entry `project-internal-tools` làm mẫu
-- Validate: `python3 -m json.tool /opt/lab-data/budgets/config.json`
-
-> Nhấn **Check** khi hoàn thành.
+> Nhấn nút **Check** ở góc dưới để hệ thống kiểm tra và chấm điểm tự động.

@@ -1,48 +1,59 @@
-# Lab 13: High Availability — Load Balancer & Auto Scaling
+# Lab 13: Cân Bằng Tải Ứng Dụng (ALB) & Tự Động Mở Rộng (Auto Scaling)
 
-## Vấn đề cần giải quyết
+Chào mừng bạn đến với bài thực hành nâng cao về tính sẵn sàng cao (**High Availability - HA**) và khả năng co giãn linh hoạt (**Elasticity**) trên Cloud bằng **AWS CLI** và **LocalStack**.
 
-Web server đơn từ Lab 12 có **single point of failure**: server down → toàn bộ service sập. Giải pháp:
+---
+
+## 1. Kiến Trúc Cân Bằng Tải & Co Giãn Tự Động (ALB + ASG)
+
+Trong thực tế sản xuất, một máy chủ đơn lẻ (Single Instance) luôn tiềm ẩn nguy cơ sập toàn bộ hệ thống (Single Point of Failure - SPOF). Để đạt chuẩn sẵn sàng cao, các kỹ sư DevOps kết hợp **Application Load Balancer (ALB)** và **Auto Scaling Group (ASG)**:
 
 ```
-Trước (Lab 12)           Sau (Lab 13)
-                         
-  [Client]                   [Client]
-      │                          │
-  [Server]            ┌──────────▼──────────┐
-  ← down →          │   Load Balancer      │
-                      └──────────┬──────────┘
-                         ┌───────┼───────┐
-                         ▼       ▼       ▼
-                      [app-1] [app-2] [app-3]
-                      ← 1 down → 2 còn lại → 
+                            Internet (Người dùng)
+                                     │
+                                     ▼ (Port 80 HTTP)
+           ┌───────────────────────────────────────────────────┐
+           │      Application Load Balancer (web-alb)          │
+           │      (Phân bổ tải đa vùng us-east-1a / 1b)        │
+           └─────────────────────────┬─────────────────────────┘
+                                     │
+                                     ▼ (Chuyển tiếp qua Listener)
+           ┌───────────────────────────────────────────────────┐
+           │            Target Group (web-tg)                  │
+           │            (Health Check: /health)                │
+           └─────────────────────────┬─────────────────────────┘
+                                     │
+                                     ▼ (Tự động đăng ký mục tiêu)
+    ┌─────────────────────────────────────────────────────────────────┐
+    │                 Auto Scaling Group (web-asg)                    │
+    │                 • Min: 1  |  Desired: 2  |  Max: 4              │
+    │                 • Sử dụng: Launch Template (web-template)       │
+    │                                                                 │
+    │    ┌──────────────────────────┐    ┌──────────────────────────┐ │
+    │    │ EC2 Instance 1 (1a)      │    │ EC2 Instance 2 (1b)      │ │
+    │    │ [ Nginx Web App ]        │    │ [ Nginx Web App ]        │ │
+    │    └──────────────────────────┘    └──────────────────────────┘ │
+    └─────────────────────────────────────────────────────────────────┘
 ```
 
-## Khái niệm
+---
 
-**Load Balancer**: phân phối traffic đến nhiều server — không có single point of failure.
+## 2. Các Thành Phần Cốt Lõi Cần Làm Chủ
 
-**Auto Scaling**: tự động thêm/bớt server dựa trên tải:
-- Tải tăng → scale-out (thêm instance)
-- Tải giảm → scale-in (bớt instance)
-- Giữ min/max để kiểm soát chi phí
+1. **Launch Template (`aws ec2 create-launch-template`):**  
+   Bản thiết kế khuôn mẫu quy định: AMI nào, cấu hình instance nào (`t2.micro`), Security Group nào, và User Data script nào để khởi động app khi máy vừa bật.
+2. **Auto Scaling Group (`aws autoscaling create-auto-scaling-group`):**  
+   Bộ điều phối tự động duy trì số lượng máy ảo mong muốn (`desired-capacity`). Khi tải tăng, ASG tự động sinh thêm máy ảo (Scale-out); khi tải giảm, ASG tự động tắt bớt để tiết kiệm chi phí (Scale-in).
+3. **Application Load Balancer (`aws elbv2 create-load-balancer`):**  
+   Bộ cân bằng tải Layer 7 (HTTP/HTTPS), tiếp nhận kết nối của người dùng và điều hướng thông minh theo thuật toán Round-Robin hoặc Least Outstanding Requests.
+4. **Target Group & Health Check (`aws elbv2 create-target-group`):**  
+   Tập hợp các instance nhận lưu lượng. ALB liên tục gửi tín hiệu kiểm tra sức khỏe (**Health Check**). Nếu một máy ảo bị treo hoặc sập, ALB sẽ **ngừng chuyển tiếp lưu lượng** đến máy đó và thông báo cho ASG thay thế bằng máy ảo mới.
 
-**Health Check**: Load Balancer định kỳ kiểm tra sức khỏe backend — instance fail → tự động loại khỏi rotation.
+---
 
-## Tương đương trên Cloud
+## 3. Lộ Trình Thực Hành
 
-| Khái niệm | Lab (Docker + Nginx) | AWS | GCP | Azure |
-|-----------|---------------------|-----|-----|-------|
-| Load Balancer | Nginx upstream | ALB | Cloud Load Balancing | Azure Load Balancer |
-| Instance template | Docker image + config | Launch Template | Instance Template | VM Scale Set |
-| Auto Scaling | `docker compose scale` / script | Auto Scaling Group | Managed Instance Group | VMSS |
-| Health Check | Nginx passive / script | ALB Health Check | Health Check | Load Balancer Probe |
-| Scale trigger | Bash script monitoring | CloudWatch Alarm | Cloud Monitoring | Azure Monitor |
-
-## Mục tiêu
-
-- Cấu hình Nginx làm Load Balancer với thuật toán least_conn
-- Khởi động nhiều backend containers (Compute Instances)
-- Quan sát phân phối traffic và Health Check
-- Mô phỏng scale-out: tăng số instance khi tải cao
-- Đo throughput trước/sau scale-out bằng `wrk`
+* **Bước 1:** Tạo Security Groups, Launch Template và kích hoạt Auto Scaling Group (`desired=2`).
+* **Bước 2:** Tạo Target Group, Application Load Balancer, Listener và liên kết với ASG.
+* **Bước 3:** Kiểm tra trạng thái Target Health và quan sát cơ chế phân tải Round-Robin.
+* **Bước 4:** Giả lập sự kiện mở rộng quy mô (Scale-out lên 4 máy ảo) và thực hành quy trình dọn dẹp tài nguyên.

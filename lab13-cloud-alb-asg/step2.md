@@ -1,172 +1,114 @@
-# Bước 2: Cấu hình Load Balancer và Health Check
+# Bước 2: Tạo Application Load Balancer & Target Group
 
-## Lý thuyết
-
-**Load Balancer** nhận traffic từ client và phân phối đến các backend instances. Các thuật toán phổ biến:
-
-| Thuật toán | Cách hoạt động | Phù hợp khi |
-|-----------|---------------|-------------|
-| Round Robin | Lần lượt từng server | Request có thời gian xử lý tương đương |
-| Least Connections | Server ít kết nối nhất | Request có thời gian xử lý khác nhau |
-| IP Hash | Cùng IP → cùng server | Cần session persistence |
-
-**Health Check**: Load Balancer định kỳ gọi `GET /health` → phải nhận HTTP 200:
-- Pass: instance ở trong rotation
-- Fail (N lần liên tiếp): tạm loại khỏi rotation
-- Phục hồi: tự động thêm lại
-
-**Connection Draining**: khi instance bị xóa, Load Balancer chờ request hiện tại hoàn thành trước khi ngắt.
-
-Trong lab: Nginx đóng vai Load Balancer (đã học Lab 4).
+Trong bước này, bạn sẽ sử dụng **AWS CLI** để tạo một bộ cân bằng tải ứng dụng (**Application Load Balancer - ALB**), thiết lập nhóm mục tiêu (**Target Group**) kèm cơ chế kiểm tra sức khỏe (**Health Check**), và kết nối trực tiếp với Auto Scaling Group.
 
 ---
 
-## Thực hành
+## 1. Lý Thuyết: Cơ Chế Hoạt Động Của ALB & Target Group
+
+1. **Target Group (TG):** Nhóm các máy chủ nhận lưu lượng. Bạn khai báo cổng (`80`), giao thức (`HTTP`), và đường dẫn kiểm tra sức khỏe (ví dụ `/health`). ALB sẽ định kỳ gửi request tới đường dẫn này; nếu server trả về HTTP 200, server được đánh dấu là `healthy`.
+2. **Application Load Balancer (ALB):** Tiếp nhận lưu lượng Internet tại mặt tiền, phân phối đều sang các máy chủ trong Target Group. ALB yêu cầu tối thiểu **2 Subnets thuộc 2 Availability Zones khác nhau** để đảm bảo khả năng chịu lỗi khi 1 trung tâm dữ liệu gặp sự cố.
+3. **Listener:** Quy tắc lắng nghe lưu lượng trên ALB (ví dụ: đón ở cổng 80 và chuyển tiếp `forward` sang Target Group).
+4. **Cơ chế tự động đăng ký (Auto-Registration):** Khi bạn gắn Target Group vào ASG, bất cứ khi nào ASG tạo thêm máy ảo mới, máy ảo đó sẽ **tự động đăng ký IP** vào Target Group mà không cần can thiệp thủ công!
+
+---
+
+## 2. Thực Hành
+
+Tải lại các biến môi trường:
 
 ```bash
 source /tmp/lab-env.sh
-```
-
-### 2.1 — Cấu hình Nginx Load Balancer
-
-```bash
-cat > /etc/nginx/conf.d/lb.conf << 'EOF'
-upstream backend {
-    least_conn;
-    server localhost:8081 max_fails=3 fail_timeout=10s;
-    server localhost:8082 max_fails=3 fail_timeout=10s;
-    keepalive 32;
-}
-
-server {
-    listen 80 default_server;
-
-    # Phân tải traffic đến backend
-    location / {
-        proxy_pass         http://backend;
-        proxy_http_version 1.1;
-        proxy_set_header   Connection "";
-        proxy_set_header   Host $host;
-        add_header         X-Served-By $upstream_addr always;
-    }
-
-    # Health check endpoint của LB
-    location /lb-health {
-        return 200 "Load Balancer OK\n";
-        add_header Content-Type text/plain;
-    }
-
-    location /health    { proxy_pass http://backend/health; }
-    location /server-id { proxy_pass http://backend/server-id; }
-}
-EOF
-
-rm -f /etc/nginx/sites-enabled/default
-nginx -t && nginx -s reload
-echo " Load Balancer sẵn sàng tại port 80"
-```
-
-### 2.2 — Kiểm tra LB hoạt động
-
-```bash
-# LB health
-curl http://localhost/lb-health
-
-# Request đến backend qua LB
-echo "=== 5 request — xem được phân phối thế nào ==="
-for i in $(seq 1 5); do
-  RESPONSE=$(curl -s http://localhost/server-id)
-  BACKEND=$(curl -s -I http://localhost/server-id | grep -i "x-served-by" | awk '{print $2}')
-  echo "  Request $i → $RESPONSE (backend: $BACKEND)"
-done
-```
-
-### 2.3 — Tạo script Health Check monitoring
-
-```bash
-cat > /tmp/health-monitor.sh << 'EOF'
-#!/bin/bash
-# Script monitoring health của tất cả instances
-# Tương đương CloudWatch Health Check trong AWS
-
-BACKENDS=("localhost:8081" "localhost:8082")
-echo "=== Health Check Report $(date) ==="
-
-for BACKEND in "${BACKENDS[@]}"; do
-  STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://${BACKEND}/health)
-  LATENCY=$(curl -s -o /dev/null -w "%{time_total}" http://${BACKEND}/health)
-  if [ "$STATUS" = "200" ]; then
-    echo "   $BACKEND — HTTP $STATUS (${LATENCY}s)"
-  else
-    echo "   $BACKEND — HTTP $STATUS UNHEALTHY"
-  fi
-done
-EOF
-
-chmod +x /tmp/health-monitor.sh
-/tmp/health-monitor.sh
-```
-
-### 2.4 — Giả lập instance unhealthy
-
-```bash
-echo "=== Mô phỏng app-2 bị lỗi ==="
-docker exec app-2 sh -c "echo 'error' > /usr/share/nginx/html/health"
-
-echo "Health check sau khi app-2 lỗi:"
-/tmp/health-monitor.sh
-
-echo ""
-echo "10 request — LB nên ngừng gửi vào app-2 (sau max_fails=3):"
-for i in $(seq 1 10); do
-  curl -s http://localhost/server-id
-  echo ""
-done
-
-# Phục hồi app-2
-docker exec app-2 sh -c "echo 'healthy' > /usr/share/nginx/html/health"
-echo " app-2 đã phục hồi"
-```
+```{{exec}}
 
 ---
 
-## Tương đương trên Cloud
+### 2.1 — Khởi Tạo Target Group (`web-tg`)
 
-| Lab (Nginx) | AWS ALB | GCP Load Balancing | Azure LB |
-|-------------|---------|-------------------|----------|
-| `least_conn` | Round Robin (mặc định) | Round Robin | Hash |
-| `max_fails=3 fail_timeout=10s` | Healthy threshold: 2, Unhealthy: 3 | Health check | Probe |
-| `keepalive 32` | Connection reuse | - | - |
-| `/health` endpoint | Health check path | Health check path | Health probe path |
+Tạo nhóm mục tiêu HTTP cổng 80 gắn với VPC và thiết lập đường dẫn kiểm tra sức khỏe `/health`:
+
+```bash
+TG_ARN=$(aws elbv2 create-target-group \
+  --name "web-tg" \
+  --protocol HTTP \
+  --port 80 \
+  --vpc-id $VPC_ID \
+  --health-check-protocol HTTP \
+  --health-check-path "/health" \
+  --query 'TargetGroups[0].TargetGroupArn' \
+  --output text)
+
+echo "✅ Đã tạo Target Group thành công!"
+echo "TG_ARN=$TG_ARN" >> /tmp/lab-env.sh
+```{{exec}}
 
 ---
 
-## Câu hỏi
+### 2.2 — Khởi Tạo Application Load Balancer (`web-alb`)
 
-1. Tại sao Health Check dùng `/health` thay vì `/`?
-2. Connection Draining giải quyết vấn đề gì khi xóa instance đang có traffic?
-3. LB có thể định tuyến theo path (`/api/*` vs `/static/*`) không? Loại LB nào hỗ trợ điều này?
+Tạo Load Balancer công khai (`internet-facing`), gắn vào 2 Subnets đa vùng (`$SUBNET_1,$SUBNET_2`) và bảo vệ bằng nhóm bảo mật `$ALB_SG_ID`:
+
+```bash
+ALB_ARN=$(aws elbv2 create-load-balancer \
+  --name "web-alb" \
+  --subnets $SUBNET_1 $SUBNET_2 \
+  --security-groups $ALB_SG_ID \
+  --scheme internet-facing \
+  --type application \
+  --query 'LoadBalancers[0].LoadBalancerArn' \
+  --output text)
+
+echo "✅ Đã tạo Application Load Balancer thành công!"
+echo "ALB_ARN=$ALB_ARN" >> /tmp/lab-env.sh
+```{{exec}}
 
 ---
 
-##  Bài tập
+### 2.3 — Tạo Listener Chuyển Tiếp Lưu Lượng Port 80
 
-> Hoàn thành phần thực hành trên trước khi làm bài tập này.
+Cấu hình Listener đón lưu lượng HTTP trên cổng 80 của ALB và chuyển tiếp (forward) vào Target Group:
 
-**Yêu cầu:** Thêm endpoint `/metrics` vào Nginx Load Balancer. Endpoint này trả về thống kê đơn giản:
+```bash
+LISTENER_ARN=$(aws elbv2 create-listener \
+  --load-balancer-arn $ALB_ARN \
+  --protocol HTTP \
+  --port 80 \
+  --default-actions Type=forward,TargetGroupArn=$TG_ARN \
+  --query 'Listeners[0].ListenerArn' \
+  --output text)
 
-```
-upstream: backend
-algorithm: least_conn
-servers: 2
-status: active
-```
+echo "✅ Đã tạo Listener thành công: $LISTENER_ARN"
+echo "LISTENER_ARN=$LISTENER_ARN" >> /tmp/lab-env.sh
+```{{exec}}
 
-Endpoint phải trả về `Content-Type: text/plain` và HTTP 200.
+---
 
-**Gợi ý khi bí:**
-- Thêm một location block tên  vào block  trong file 
-- Dùng  trả về text — xem cách viết ở phần 2.1
-- Đừng quên chạy  sau khi sửa config
+### 2.4 — Gắn Target Group Vào Auto Scaling Group
 
-> Nhấn **Check** khi hoàn thành.
+Đây là bước kết nối mấu chốt: Ra lệnh cho ASG tự động đăng ký mọi máy ảo nó quản lý vào Target Group:
+
+```bash
+aws autoscaling attach-load-balancer-target-groups \
+  --auto-scaling-group-name "web-asg" \
+  --target-group-arns $TG_ARN
+
+echo "✅ Đã liên kết thành công: Auto Scaling Group ➔ Target Group ➔ ALB!"
+```{{exec}}
+
+---
+
+## 3. Bài Tập Thử Thách
+
+> [!TIP]
+> Mỗi Load Balancer trên Cloud luôn được cấp phát một tên miền DNS công khai duy nhất (DNS Name).
+
+**Yêu cầu:** Hãy dùng lệnh `aws elbv2 describe-load-balancers` để tìm tên miền `DNSName` của bộ cân bằng tải `web-alb`:
+
+```bash
+aws elbv2 describe-load-balancers \
+  --load-balancer-arns $ALB_ARN \
+  --query 'LoadBalancers[0].[LoadBalancerName, DNSName, State.Code]' \
+  --output table
+```{{exec}}
+
+> Nhấn nút **Check** ở góc dưới để hệ thống kiểm tra và chấm điểm tự động.

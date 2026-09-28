@@ -1,146 +1,151 @@
-# Bước 1: Tạo VPC và Subnet
+# Bước 1: Tạo VPC, Subnet và Internet Gateway với AWS CLI
 
-## Lý thuyết
-
-**VPC** là mạng ảo riêng — tất cả servers bên trong cùng VPC có thể nói chuyện với nhau qua IP nội bộ, nhưng tách biệt hoàn toàn với VPC khác.
-
-**Subnet** chia VPC thành các vùng nhỏ hơn:
-- **Public Subnet**: có đường ra Internet (các web server, load balancer)
-- **Private Subnet**: không có đường ra Internet trực tiếp (database, internal services)
-
-```
-VPC: 10.0.0.0/16
-  ├── Public Subnet:  10.0.1.0/24  → Web servers
-  └── Private Subnet: 10.0.2.0/24  → Databases
-```
-
-Trong Docker, VPC = **Docker network** với custom subnet.
+Trong bước này, bạn sẽ sử dụng **AWS CLI** để khởi tạo nền móng hạ tầng mạng: một VPC cô lập, phân vùng thành Public/Private Subnet và kích hoạt đường ra Internet qua Internet Gateway.
 
 ---
 
-## Thực hành
+## 1. Lý Thuyết: Hạ Tầng Mạng Ảo (AWS VPC & Subnet)
 
-### 1.1 — Tạo VPC (Docker network)
-
-```bash
-# Tạo VPC: mạng ảo riêng với CIDR 10.0.0.0/16
-docker network create \
-  --driver bridge \
-  --subnet 10.0.0.0/16 \
-  --gateway 10.0.0.1 \
-  --label vpc=devops-vpc \
-  devops-vpc
-
-echo " VPC 'devops-vpc' đã tạo"
-docker network ls | grep devops-vpc
-```
-
-### 1.2 — Tạo Public Subnet
-
-```bash
-# Subnet public: 10.0.1.0/24 — cho web servers
-docker network create \
-  --driver bridge \
-  --subnet 10.0.1.0/24 \
-  --gateway 10.0.1.1 \
-  --label subnet=public \
-  --label vpc=devops-vpc \
-  public-subnet
-
-echo " Public Subnet 10.0.1.0/24"
-```
-
-### 1.3 — Tạo Private Subnet
-
-```bash
-# Subnet private: 10.0.2.0/24 — cho database, internal services
-docker network create \
-  --driver bridge \
-  --subnet 10.0.2.0/24 \
-  --gateway 10.0.2.1 \
-  --label subnet=private \
-  --label vpc=devops-vpc \
-  private-subnet
-
-echo " Private Subnet 10.0.2.0/24"
-docker network ls | grep subnet
-```
-
-### 1.4 — Triển khai server vào từng Subnet
-
-```bash
-# Web server → Public Subnet (có port ra ngoài = có Internet Gateway)
-docker run -d \
-  --name web-server \
-  --network public-subnet \
-  --ip 10.0.1.10 \
-  -p 8080:80 \
-  --label role=web \
-  --label environment=production \
-  nginx:alpine
-
-# Database → Private Subnet (KHÔNG có port ra ngoài)
-docker run -d \
-  --name db-server \
-  --network private-subnet \
-  --ip 10.0.2.10 \
-  --label role=database \
-  --label environment=production \
-  alpine sleep infinity
-
-echo " Web server: 10.0.1.10 (port 8080 ra ngoài)"
-echo " DB server:  10.0.2.10 (chỉ nội bộ)"
-docker ps --format "table {{.Names}}\t{{.Networks}}\t{{.Ports}}"
-```
-
-### 1.5 — Kiểm tra isolation
-
-```bash
-# Web server CÓ THỂ truy cập ra ngoài (public)
-echo "=== Web server ping ra ngoài ==="
-docker exec web-server wget -q -O- http://httpbin.org/ip 2>/dev/null | head -3 || echo "(không có internet trong lab — OK)"
-
-# DB server KHÔNG có port ra ngoài — chỉ internal
-echo "=== DB server: không có port public ==="
-docker inspect db-server --format '{{.NetworkSettings.Ports}}' 
-# Kết quả: map[] = không có port nào expose ra ngoài
-
-# Lưu biến môi trường
-cat > /tmp/lab-env.sh << 'EOF'
-export VPC_NETWORK=devops-vpc
-export PUBLIC_SUBNET=public-subnet
-export PRIVATE_SUBNET=private-subnet
-export WEB_SERVER_IP=10.0.1.10
-export DB_SERVER_IP=10.0.2.10
-EOF
-echo " Lưu vào /tmp/lab-env.sh"
-```
+* **VPC (Virtual Private Cloud):** Một mạng riêng ảo độc lập trên hạ tầng đám mây. Bạn toàn quyền kiểm soát dải địa chỉ IP (CIDR block, ví dụ `10.0.0.0/16` cung cấp 65,536 địa chỉ IP).
+* **Subnet:** Phân chia dải IP của VPC thành các mạng con nhỏ hơn:
+  * **Public Subnet:** Chứa các dịch vụ cần giao tiếp với người dùng bên ngoài Internet (Web server, Load Balancer).
+  * **Private Subnet:** Cô lập hoàn toàn với Internet, chỉ giao tiếp nội bộ bên trong VPC (Database, Redis Cache).
+* **Internet Gateway (IGW) & Route Table:** Một Subnet **chỉ trở thành Public** khi bảng định tuyến (Route Table) gắn với nó có một quy tắc (route): `0.0.0.0/0` trỏ tới Internet Gateway!
 
 ---
 
-## Câu hỏi
+## 2. Thực Hành
 
-1. Tại sao database nên nằm ở **Private Subnet** thay vì Public Subnet?
-2. Trong bài lab, điều gì đóng vai trò **Internet Gateway** (cổng ra Internet)?
-3. Nếu VPC có CIDR `10.0.0.0/16`, có thể tạo tối đa bao nhiêu Subnet `/24`?
+### 1.1 — Khởi tạo VPC (`devops-vpc`)
+
+Tạo một VPC mới với dải địa chỉ `10.0.0.0/16` và gắn thẻ tag định danh `Name=devops-vpc`:
+
+```bash
+VPC_ID=$(aws ec2 create-vpc \
+  --cidr-block 10.0.0.0/16 \
+  --tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=devops-vpc}]' \
+  --query 'Vpc.VpcId' \
+  --output text)
+
+echo "✅ Đã tạo VPC thành công với ID: $VPC_ID"
+echo "VPC_ID=$VPC_ID" > /tmp/lab-env.sh
+```{{exec}}
+
+Kiểm tra lại thông tin VPC vừa tạo:
+
+```bash
+aws ec2 describe-vpcs --vpc-ids $VPC_ID --output table
+```{{exec}}
 
 ---
 
-##  Bài tập
+### 1.2 — Tạo Public Subnet và Private Subnet
 
-> Hoàn thành phần thực hành trên trước khi làm bài tập này.
+Chia nhỏ VPC thành 2 mạng con:
 
-**Yêu cầu:** Hệ thống cần thêm một Subnet chuyên dụng cho database layer.
+* **Public Subnet:** `10.0.1.0/24` (Dành cho Web Server).
+* **Private Subnet:** `10.0.2.0/24` (Dành cho Database Server).
 
-Tạo một Docker network mới với các thuộc tính sau:
-- Tên: `db-subnet`
-- CIDR: `10.0.3.0/24`, gateway: `10.0.3.1`
-- Label: `subnet=database` và `vpc=devops-vpc`
+Tạo **Public Subnet**:
 
-Sau khi tạo xong, khởi động container `db-replica` vào network này với IP `10.0.3.10`, không expose port ra ngoài.
+```bash
+PUB_SUBNET_ID=$(aws ec2 create-subnet \
+  --vpc-id $VPC_ID \
+  --cidr-block 10.0.1.0/24 \
+  --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=public-subnet}]' \
+  --query 'Subnet.SubnetId' \
+  --output text)
 
-**Gợi ý khi bí:**
-- Xem lại lệnh ở phần 1.3 và 1.4 — cú pháp tương tự
-- `docker network inspect db-subnet` để kiểm tra kết quả
+echo "✅ Đã tạo Public Subnet: $PUB_SUBNET_ID"
+echo "PUB_SUBNET_ID=$PUB_SUBNET_ID" >> /tmp/lab-env.sh
+```{{exec}}
 
-> Nhấn **Check** khi hoàn thành.
+Tạo **Private Subnet**:
+
+```bash
+PRIV_SUBNET_ID=$(aws ec2 create-subnet \
+  --vpc-id $VPC_ID \
+  --cidr-block 10.0.2.0/24 \
+  --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=private-subnet}]' \
+  --query 'Subnet.SubnetId' \
+  --output text)
+
+echo "✅ Đã tạo Private Subnet: $PRIV_SUBNET_ID"
+echo "PRIV_SUBNET_ID=$PRIV_SUBNET_ID" >> /tmp/lab-env.sh
+```{{exec}}
+
+---
+
+### 1.3 — Tạo Internet Gateway (IGW) & Gắn vào VPC
+
+Mặc định, VPC mới hoàn toàn cách ly với thế giới bên ngoài. Để Public Subnet có thể kết nối Internet, ta cần gắn một cổng **Internet Gateway**:
+
+```bash
+# 1. Tạo Internet Gateway
+IGW_ID=$(aws ec2 create-internet-gateway \
+  --tag-specifications 'ResourceType=internet-gateway,Tags=[{Key=Name,Value=devops-igw}]' \
+  --query 'InternetGateway.InternetGatewayId' \
+  --output text)
+
+echo "✅ Đã tạo Internet Gateway: $IGW_ID"
+echo "IGW_ID=$IGW_ID" >> /tmp/lab-env.sh
+
+# 2. Gắn (Attach) IGW vào VPC
+aws ec2 attach-internet-gateway \
+  --vpc-id $VPC_ID \
+  --internet-gateway-id $IGW_ID
+
+echo "✅ Đã gắn IGW $IGW_ID vào VPC $VPC_ID"
+```{{exec}}
+
+---
+
+### 1.4 — Tạo Route Table & Định Tuyến Ra Internet Cho Public Subnet
+
+Để biến `public-subnet` thành subnet công khai thực thụ:
+1. Tạo một Route Table tùy chỉnh.
+2. Thêm tuyến đường (Route) dẫn mọi lưu lượng đi ra ngoài (`0.0.0.0/0`) hướng tới IGW.
+3. Liên kết (Associate) Route Table này với `public-subnet`.
+
+```bash
+# 1. Tạo Route Table
+RT_ID=$(aws ec2 create-route-table \
+  --vpc-id $VPC_ID \
+  --tag-specifications 'ResourceType=route-table,Tags=[{Key=Name,Value=public-rt}]' \
+  --query 'RouteTable.RouteTableId' \
+  --output text)
+
+echo "✅ Đã tạo Route Table: $RT_ID"
+echo "RT_ID=$RT_ID" >> /tmp/lab-env.sh
+
+# 2. Thêm route dẫn 0.0.0.0/0 ra Internet Gateway
+aws ec2 create-route \
+  --route-table-id $RT_ID \
+  --destination-cidr-block 0.0.0.0/0 \
+  --gateway-id $IGW_ID
+
+# 3. Liên kết Route Table với Public Subnet
+aws ec2 associate-route-table \
+  --subnet-id $PUB_SUBNET_ID \
+  --route-table-id $RT_ID
+
+echo "✅ Đã cấu hình Public Subnet định tuyến ra Internet thành công!"
+```{{exec}}
+
+---
+
+## 3. Bài Tập Thử Thách
+
+> [!TIP]
+> Hãy hoàn thành các thao tác trên trước khi làm bài tập này.
+
+**Yêu cầu:** Kiến trúc cần bổ sung thêm một Subnet chuyên dụng cho cụm sao lưu cơ sở dữ liệu:
+1. Tạo một Subnet mới trong VPC `$VPC_ID` với:
+   * CIDR Block: `10.0.3.0/24`
+   * Tag: `Key=Name,Value=db-subnet`
+2. Lưu `SubnetId` của subnet này vào biến và kiểm tra lại bằng lệnh `aws ec2 describe-subnets`.
+
+**Gợi ý:**
+* Tương tự lệnh ở mục **1.2**, chỉ cần thay đổi giá trị CIDR và Tag Name.
+
+> Nhấn nút **Check** ở góc dưới để hệ thống kiểm tra và chấm điểm tự động.

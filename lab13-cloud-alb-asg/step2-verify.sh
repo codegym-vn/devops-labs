@@ -1,5 +1,5 @@
 #!/bin/bash
-# step2-verify.sh — Lab 13: Kiểm tra Load Balancer + Health Check
+# step2-verify.sh — Lab 13: Kiểm tra Target Group, ALB & Listener
 
 PASS=0; FAIL=0
 
@@ -13,69 +13,50 @@ check() {
   fi
 }
 
-echo "=== Bước 2: Load Balancer + Health Check ==="
+echo "=== Bước 2: Kiểm Tra ALB, Target Group & Listener ==="
 echo ""
 
-# 1. File config LB tồn tại
-check "Nginx LB config /etc/nginx/conf.d/lb.conf đã tạo" \
-  "$(test -f /etc/nginx/conf.d/lb.conf && echo ok)" "ok" \
-  "Chạy phần 2.1 để tạo /etc/nginx/conf.d/lb.conf"
+# 1. Kiểm tra Target Group web-tg tồn tại
+TG_ARN=$(aws elbv2 describe-target-groups \
+  --names "web-tg" \
+  --query "TargetGroups[0].TargetGroupArn" --output text 2>/dev/null)
 
-# 2. Config chứa upstream backend
-UPSTREAM=$(grep -c "upstream backend" /etc/nginx/conf.d/lb.conf 2>/dev/null)
-check "Config có 'upstream backend' block" \
-  "$([ $UPSTREAM -ge 1 ] && echo ok)" "ok" \
-  "Đảm bảo file lb.conf có block 'upstream backend { ... }'"
+check "Target Group 'web-tg' đã được tạo" \
+  "nonempty" "$TG_ARN" \
+  "Chạy mục 2.1: aws elbv2 create-target-group --name web-tg ..."
 
-# 3. Config dùng least_conn
-LEASTCONN=$(grep -c "least_conn" /etc/nginx/conf.d/lb.conf 2>/dev/null)
-check "Load Balancer dùng thuật toán least_conn" \
-  "$([ $LEASTCONN -ge 1 ] && echo ok)" "ok" \
-  "Thêm 'least_conn;' vào upstream block"
+# 2. Kiểm tra Load Balancer web-alb tồn tại
+ALB_ARN=$(aws elbv2 describe-load-balancers \
+  --names "web-alb" \
+  --query "LoadBalancers[0].LoadBalancerArn" --output text 2>/dev/null)
 
-# 4. max_fails được cấu hình (passive health check)
-MAX_FAILS=$(grep -c "max_fails" /etc/nginx/conf.d/lb.conf 2>/dev/null)
-check "Passive health check (max_fails) đã cấu hình" \
-  "$([ $MAX_FAILS -ge 1 ] && echo ok)" "ok" \
-  "Thêm 'max_fails=3 fail_timeout=10s' vào từng server trong upstream"
+check "Application Load Balancer 'web-alb' đã được tạo" \
+  "nonempty" "$ALB_ARN" \
+  "Chạy mục 2.2: aws elbv2 create-load-balancer --name web-alb ..."
 
-# 5. Nginx đang chạy với config mới
-NGINX_OK=$(nginx -t 2>&1 | grep -c "ok")
-check "Nginx config hợp lệ (nginx -t)" \
-  "$([ $NGINX_OK -ge 1 ] && echo ok)" "ok" \
-  "Chạy: nginx -t để xem lỗi"
+# 3. Kiểm tra Listener tồn tại trên cổng 80
+LISTENER_PORT=$(aws elbv2 describe-listeners \
+  --load-balancer-arn "$ALB_ARN" \
+  --query "Listeners[0].Port" --output text 2>/dev/null)
 
-# 6. LB phản hồi tại port 80
-LB_HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/lb-health 2>/dev/null)
-check "Load Balancer phản hồi HTTP 200 tại port 80" "$LB_HTTP" "200" \
-  "Kiểm tra: systemctl status nginx | nginx -s reload"
+check "Listener cổng 80 đã được cấu hình trên ALB" \
+  "$LISTENER_PORT" "80" \
+  "Chạy mục 2.3: aws elbv2 create-listener --load-balancer-arn \$ALB_ARN --port 80 ..."
 
-# 7. LB phân phối đến đúng backend (kiểm tra header X-Served-By)
-SERVED_BY=$(curl -s -I http://localhost/server-id 2>/dev/null \
-  | grep -i "x-served-by" | head -1)
-check "Header X-Served-By có trong response (proxy hoạt động)" \
-  "$([ -n "$SERVED_BY" ] && echo ok)" "ok" \
-  "Đảm bảo config có: add_header X-Served-By \$upstream_addr always;"
+# 4. Kiểm tra Target Group đã gắn vào ASG web-asg
+ATTACHED_TG=$(aws autoscaling describe-auto-scaling-groups \
+  --auto-scaling-group-names "web-asg" \
+  --query "AutoScalingGroups[0].TargetGroupARNs[0]" --output text 2>/dev/null)
 
-# 8. Health script tồn tại và chạy được
-check "Script /tmp/health-monitor.sh đã tạo" \
-  "$(test -x /tmp/health-monitor.sh && echo ok)" "ok" \
-  "Chạy phần 2.3 để tạo health-monitor.sh"
+check "Target Group đã được gắn (attached) vào Auto Scaling Group" \
+  "nonempty" "$ATTACHED_TG" \
+  "Chạy mục 2.4: aws autoscaling attach-load-balancer-target-groups --auto-scaling-group-name web-asg ..."
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
-[ $FAIL -eq 0 ] && echo " Load Balancer hoạt động đúng!" && exit 0 || exit 1
-
-echo ""
-echo "===  Bài tập ==="
-echo ""
-
-METRICS_HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/metrics 2>/dev/null)
-check "[Bài tập] Endpoint /metrics trả về HTTP 200" "$METRICS_HTTP" "200" \
-  "Thêm: location /metrics { return 200 'upstream: backend\nalgorithm: least_conn\n...'; } vào lb.conf"
-
-METRICS_BODY=$(curl -s http://localhost/metrics 2>/dev/null)
-check "[Bài tập] /metrics có chứa 'upstream' hoặc 'algorithm'" \
-  "$(echo $METRICS_BODY | grep -ic 'upstream\|algorithm')" "1" \
-  "Response phải chứa thông tin về upstream backend"
+if [ $FAIL -eq 0 ]; then
+  echo " Hoàn thành Bước 2! Hệ thống cân bằng tải ALB và Target Group đã được đấu nối chuẩn xác."
+  exit 0
+else
+  echo " Có $FAIL tiêu chí chưa đạt. Hãy xem các gợi ý ở trên để hoàn thiện."
+  exit 1
+fi

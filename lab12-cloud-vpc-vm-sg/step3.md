@@ -1,196 +1,129 @@
-# Bước 3: Triển khai máy ảo (Compute Instance)
+# Bước 3: Triển Khai Máy Ảo EC2 & Quản Lý SSH Key Pair
 
-## Lý thuyết
-
-**Compute Instance** (EC2 trên AWS, Compute Engine trên GCP, Virtual Machine trên Azure) là server ảo chạy trong Cloud. Mỗi instance:
-- Được khởi tạo từ một **Image** (snapshot OS + phần mềm)
-- Có **IP nội bộ** trong Subnet
-- Được bảo vệ bởi **Security Group**
-- Có thể **SSH** vào để quản lý
-
-Vòng đời một Compute Instance:
-```
-Tạo (run) → pending → running → stopping → stopped → terminated
-```
-
-**SSH Key Pair** — xác thực không dùng mật khẩu:
-```
-Private key (.pem) → bạn giữ
-Public key         → copy vào server (authorized_keys)
-```
-
-Trong lab: Docker container đóng vai Compute Instance.
+Trong bước này, bạn sẽ sử dụng **AWS CLI** để tạo cặp khóa xác thực **SSH Key Pair**, sau đó khởi chạy các máy ảo **EC2 (Elastic Compute Cloud)** vào đúng các Subnet và gắn Security Group tương ứng.
 
 ---
 
-## Thực hành
+## 1. Lý Thuyết: Khởi Chạy Máy Ảo EC2 Chuẩn Doanh Nghiệp
+
+Để khởi tạo một máy ảo EC2 trên AWS, bạn cần xác định 5 thông số cốt lõi:
+1. **AMI (Amazon Machine Image):** Bản đóng gói hệ điều hành (Ubuntu, Amazon Linux, RedHat...). Trong LocalStack, bất kỳ ID nào dạng `ami-xxxx` đều hợp lệ.
+2. **Instance Type:** Cấu hình phần cứng vCPU và RAM (ví dụ: `t2.micro` với 1 vCPU, 1GB RAM).
+3. **Key Pair:** Cặp khóa SSH (Public Key nạp vào máy ảo, Private Key người dùng giữ). Tuyệt đối không dùng mật khẩu tĩnh để quản trị server Cloud.
+4. **Subnet ID:** Vị trí đặt máy ảo:
+   * Máy Web $\rightarrow$ Nằm trong `public-subnet`.
+   * Máy DB $\rightarrow$ Nằm trong `private-subnet`.
+5. **Security Group ID:** Gắn tường lửa tương ứng đã tạo ở Bước 2.
+
+```
+                  ┌────────────────────────────────────────┐
+                  │          LỆNH RUN-INSTANCES            │
+                  └──────────────────┬─────────────────────┘
+                                     │
+         ┌───────────────────────────┼───────────────────────────┐
+         ▼                           ▼                           ▼
+[ --image-id ami-xxx ]    [ --subnet-id subnet-xxx ]    [ --security-group-ids sg-xxx ]
+   (Hệ điều hành)               (Vị trí mạng)                 (Tường lửa bảo vệ)
+```
+
+---
+
+## 2. Thực Hành
+
+Trước tiên, hãy tải lại các biến môi trường:
 
 ```bash
 source /tmp/lab-env.sh
-```
+```{{exec}}
+
+---
 
 ### 3.1 — Tạo SSH Key Pair
 
-```bash
-# Tạo key Ed25519 (thuật toán an toàn hơn RSA)
-ssh-keygen -t ed25519 -f /tmp/lab-keypair -N "" -C "lab-instance-key"
-
-echo " Key Pair đã tạo:"
-ls -la /tmp/lab-keypair*
-cat /tmp/lab-keypair.pub
-```
-
-### 3.2 — Triển khai web server (Compute Instance)
+Tạo một Key Pair mới có tên `devops-key`, trích xuất Private Key (`KeyMaterial`) và lưu vào file `/tmp/devops-key.pem`:
 
 ```bash
-# Tạo cấu hình Nginx cho web server
-cat > /tmp/web-server.conf << 'EOF'
-server {
-    listen 80;
-    location / {
-        return 200 "Server: web-server-1\nSubnet: public (10.0.1.0/24)\nIP: 10.0.1.10\n";
-        add_header Content-Type text/plain;
-    }
-    location /health {
-        return 200 "healthy\n";
-        add_header Content-Type text/plain;
-    }
-    location /info {
-        return 200 "Instance info:\n  Role: web\n  Environment: production\n";
-        add_header Content-Type text/plain;
-    }
-}
-EOF
+aws ec2 create-key-pair \
+  --key-name devops-key \
+  --query 'KeyMaterial' \
+  --output text > /tmp/devops-key.pem
 
-# Khởi động instance (container đóng vai EC2/VM)
-docker run -d \
-  --name web-server-1 \
-  --network public-subnet \
-  --ip 10.0.1.10 \
-  -p 8081:80 \
-  -v /tmp/web-server.conf:/etc/nginx/conf.d/default.conf:ro \
-  --label Name=web-server-1 \
-  --label Role=web \
-  --label Environment=production \
-  --label Subnet=public \
-  nginx:alpine
+# Khóa quyền file private key (600 hoặc 400 - chỉ owner được đọc)
+chmod 400 /tmp/devops-key.pem
 
-echo " web-server-1 đang chạy:"
-docker ps --filter "name=web-server-1" --format "table {{.Names}}\t{{.Status}}\t{{.Networks}}\t{{.Ports}}"
-```
-
-### 3.3 — Triển khai database server (Private Subnet)
-
-```bash
-# Database chỉ ở Private Subnet — không có port ra ngoài
-docker run -d \
-  --name db-server-1 \
-  --network private-subnet \
-  --ip 10.0.2.10 \
-  --label Name=db-server-1 \
-  --label Role=database \
-  --label Environment=production \
-  --label Subnet=private \
-  alpine sh -c "
-    while true; do
-      echo 'DB Server running on 10.0.2.10'
-      sleep 30
-    done
-  "
-
-echo " db-server-1 đang chạy trong Private Subnet (không có port public)"
-```
-
-### 3.4 — SSH vào Instance
-
-```bash
-# AWS thật: ssh -i keypair.pem ubuntu@<PUBLIC_IP>
-# GCP:     gcloud compute ssh <INSTANCE_NAME>
-# Lab:     docker exec (tương đương SSH vào container)
-
-echo "=== SSH vào web-server-1 ==="
-docker exec -it web-server-1 sh -c "
-  echo 'Đang ở trong instance web-server-1'
-  echo 'IP: \$(hostname -i)'
-  echo 'OS: \$(cat /etc/alpine-release)'
-  echo 'Running processes:'
-  ps aux | grep nginx | head -3
-"
-```
-
-### 3.5 — Kiểm thử HTTP từ ngoài vào
-
-```bash
-echo "=== Test từ Internet vào Web Server ==="
-curl http://localhost:8081
-echo ""
-
-curl http://localhost:8081/health
-echo ""
-
-curl -w "Response time: %{time_total}s\n" -o /dev/null -s http://localhost:8081
-
-echo ""
-echo "=== DB Server KHÔNG accessible từ ngoài ==="
-nc -z -w2 localhost 5432 2>/dev/null && echo "OPEN " || echo "BLOCKED  (đúng thiết kế)"
-```
-
-### 3.6 — Kiểm tra kết nối giữa các Subnet
-
-```bash
-# Trong Cloud: các server cùng VPC nói chuyện được qua IP nội bộ
-# Cần kết nối 2 network bằng thêm network alias
-
-docker network connect public-subnet db-server-1 2>/dev/null || true
-
-echo "=== Web Server gọi DB Server (internal VPC traffic) ==="
-docker exec web-server-1 sh -c "
-  wget -q -O/dev/null http://10.0.2.10 2>&1 || echo '(DB không có HTTP — OK, chỉ test connectivity)'
-  ping -c 2 10.0.2.10 2>/dev/null || echo 'ping: 10.0.2.10 reachable qua VPC'
-"
-
-cat >> /tmp/lab-env.sh << 'EOF'
-export WEB_CONTAINER=web-server-1
-export DB_CONTAINER=db-server-1
-EOF
-```
+echo "✅ Đã tạo SSH Key Pair và lưu tại /tmp/devops-key.pem"
+ls -la /tmp/devops-key.pem
+```{{exec}}
 
 ---
 
-## Tương đương trên Cloud
+### 3.2 — Triển Khai Web Server Vào Public Subnet
 
-| Lab (Docker) | AWS | GCP | Azure |
-|-------------|-----|-----|-------|
-| `docker run --network public-subnet` | `aws ec2 run-instances --subnet-id <public>` | `gcloud compute instances create --network <vpc>` | `az vm create --vnet-name` |
-| `--label Name=web-server-1` | Tag: `Key=Name,Value=web-server-1` | Label: `name=web-server-1` | Tag: `Name=web-server-1` |
-| `docker exec` | SSH với keypair | `gcloud compute ssh` | `az ssh vm` |
-| Port mapping `-p 8081:80` | Elastic IP + Security Group | External IP + Firewall rule | Public IP + NSG |
+Khởi chạy máy ảo `web-server-1` gắn với `$PUB_SUBNET_ID` và nhóm bảo mật `$WEB_SG_ID`:
+
+```bash
+WEB_INST_ID=$(aws ec2 run-instances \
+  --image-id ami-0c55b159cbfafe1f0 \
+  --instance-type t2.micro \
+  --key-name devops-key \
+  --security-group-ids $WEB_SG_ID \
+  --subnet-id $PUB_SUBNET_ID \
+  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=web-server-1}]' \
+  --query 'Instances[0].InstanceId' \
+  --output text)
+
+echo "✅ Web Server đã khởi chạy với Instance ID: $WEB_INST_ID"
+echo "WEB_INST_ID=$WEB_INST_ID" >> /tmp/lab-env.sh
+```{{exec}}
 
 ---
 
-## Câu hỏi
+### 3.3 — Triển Khai Database Server Vào Private Subnet
 
-1. Tại sao phải `chmod 400` file private key `.pem`?
-2. Sự khác biệt giữa `stop` và `terminate` một Compute Instance?
-3. Tại sao Public IP của instance thay đổi sau mỗi lần restart (nếu không dùng Elastic/Static IP)?
+Khởi chạy máy ảo `db-server-1` gắn với `$PRIV_SUBNET_ID` và nhóm bảo mật `$DB_SG_ID`:
+
+```bash
+DB_INST_ID=$(aws ec2 run-instances \
+  --image-id ami-0c55b159cbfafe1f0 \
+  --instance-type t2.micro \
+  --key-name devops-key \
+  --security-group-ids $DB_SG_ID \
+  --subnet-id $PRIV_SUBNET_ID \
+  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=db-server-1}]' \
+  --query 'Instances[0].InstanceId' \
+  --output text)
+
+echo "✅ Database Server đã khởi chạy với Instance ID: $DB_INST_ID"
+echo "DB_INST_ID=$DB_INST_ID" >> /tmp/lab-env.sh
+```{{exec}}
 
 ---
 
-##  Bài tập
+### 3.4 — Truy Vấn Thông Tin & Giám Sát Trạng Thái Máy Ảo
 
-> Hoàn thành phần thực hành trên trước khi làm bài tập này.
+Sử dụng cờ `--query` để lọc các thông số quan trọng (Tên, Trạng thái, IP nội bộ, Subnet):
 
-**Yêu cầu:** Deploy một API server tách biệt với web server hiện tại.
+```bash
+aws ec2 describe-instances \
+  --filters "Name=vpc-id,Values=$VPC_ID" \
+  --query "Reservations[].Instances[].[Tags[?Key=='Name'].Value | [0], InstanceId, State.Name, PrivateIpAddress, SubnetId]" \
+  --output table
+```{{exec}}
 
-Tạo container `api-server` với các yêu cầu sau:
-- Network: `public-subnet`, IP: `10.0.1.11`
-- Expose ra ngoài tại port `8082`
-- Endpoint `/api/status` phải trả về JSON text với hai field: `status` (giá trị "ok") và `service` (giá trị "api")
-- Có labels: `Role=api`, `Environment=production`
+Quan sát bảng kết quả: Bạn sẽ thấy hai máy ảo đã được cấp phát địa chỉ IP nội bộ tương ứng với từng dải CIDR (`10.0.1.x` cho Web và `10.0.2.x` cho DB).
 
-**Gợi ý khi bí:**
-- Xem cách tạo `web-server.conf` ở phần 3.2 — tạo Nginx config tương tự
-- Dùng `return 200` trả về JSON string trong Nginx — xem cú pháp tại phần 3.2
-- `add_header Content-Type application/json;`
+---
 
-> Nhấn **Check** khi hoàn thành.
+## 3. Bài Tập Thử Thách
+
+> [!TIP]
+> Hoàn thành các thao tác trên trước khi làm bài tập này.
+
+**Yêu cầu:** Nhằm đáp ứng lưu lượng truy cập tăng đột biến, hệ thống cần bổ sung thêm một máy ảo Web Server thứ hai:
+* Khởi chạy instance có tag `Name=web-server-2` vào **Public Subnet** (`$PUB_SUBNET_ID`).
+* Sử dụng cùng cấu hình: AMI `ami-0c55b159cbfafe1f0`, instance type `t2.micro`, key `devops-key` và bảo vệ bằng Security Group `web-sg` (`$WEB_SG_ID`).
+
+**Gợi ý lệnh:**
+* Thực hiện tương tự lệnh ở mục **3.2**, chỉ cần đổi giá trị thẻ tag `Value=web-server-2`.
+
+> Nhấn nút **Check** ở góc dưới để hệ thống kiểm tra và chấm điểm tự động.

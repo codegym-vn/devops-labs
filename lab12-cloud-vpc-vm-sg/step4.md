@@ -1,135 +1,112 @@
-# Bước 4: Kiểm thử hạ tầng và dọn dẹp
+# Bước 4: Kiểm Thử Toàn Bộ Hạ Tầng & Quy Trình Dọn Dẹp (Cleanup)
 
-## Lý thuyết
-
-**Cleanup là kỹ năng bắt buộc** — tài nguyên Cloud không dùng vẫn tính phí theo giờ:
-
-| Tài nguyên quên xóa | Chi phí ước tính |
-|--------------------|--------------------|
-| VM (t3.medium) idle | ~$30/tháng |
-| Load Balancer | ~$20/tháng |
-| Static IP chưa gắn | ~$3.6/tháng |
-
-Trong lab: dọn dẹp bằng `docker stop/rm` và `docker network rm`.
+Trong bước cuối cùng, bạn sẽ kiểm tra bức tranh tổng thể của hạ tầng Cloud đã xây dựng, thực hành quản lý trạng thái vòng đời máy ảo và làm chủ **quy trình dọn dẹp tài nguyên (Resource Cleanup)** — kỹ năng sống còn của kỹ sư Cloud/DevOps để tránh lãng phí ngân sách.
 
 ---
 
-## Thực hành
+## 1. Lý Thuyết: Phân Tích Luồng Traffic & Thứ Tự Phụ Thuộc Tài Nguyên
+
+### 1.1 — Luồng gói tin (Traffic Flow)
+* **Từ ngoài Internet vào Web Server:**
+  $$\text{User} \longrightarrow \text{IGW} \longrightarrow \text{Route Table (0.0.0.0/0)} \longrightarrow \text{Public Subnet} \longrightarrow \text{web-sg (Port 80/443)} \longrightarrow \text{web-server-1}$$
+* **Từ ngoài Internet vào Database Server:**
+  $$\text{Hacker / Scanner} \longrightarrow \text{Không thể tìm thấy đường dẫn (Private Subnet không có route ra IGW)} \mathrel{\mathbf{\times}} \text{Bị chặn}$$
+* **Từ Web Server sang Database Server:**
+  $$\text{web-server-1} \longrightarrow \text{Giao tiếp nội bộ VPC} \longrightarrow \text{db-sg (Kiểm tra source-group: đúng là web-sg)} \longrightarrow \text{Cho phép kết nối port 5432!}$$
+
+### 1.2 — Thứ tự phụ thuộc khi dọn dẹp tài nguyên (Dependency Order)
+Trên Cloud, bạn **không thể** xóa bừa bãi một tài nguyên cha nếu các tài nguyên con bên trong nó vẫn còn tồn tại. Thứ tự dọn dẹp chuẩn:
+1. **Hủy máy ảo (Terminate Instances):** Giải phóng IP và card mạng gắn với Subnet.
+2. **Xóa Security Groups:** Chỉ xóa được khi không còn instance nào gán vào nó.
+3. **Tháo rời & Xóa Internet Gateway (Detach & Delete IGW).**
+4. **Xóa các Subnets.**
+5. **Xóa VPC.**
+
+---
+
+## 2. Thực Hành
+
+Tải lại các biến môi trường:
 
 ```bash
 source /tmp/lab-env.sh
-```
-
-### 4.1 — Kiểm thử end-to-end
-
-```bash
-echo "=== Kiểm thử toàn bộ hạ tầng ==="
-
-# 1. VPC (networks)
-echo "1. Networks (VPCs):"
-docker network ls | grep -E "public-subnet|private-subnet|devops-vpc"
-
-# 2. Instances (containers)
-echo "2. Instances (Containers):"
-docker ps --filter "label=Environment=production" \
-  --format "table {{.Names}}\t{{.Status}}\t{{.Networks}}"
-
-# 3. Security rules (UFW)
-echo "3. Security rules:"
-ufw status | grep -E "80|8080|8081|22|ALLOW"
-
-# 4. HTTP test
-echo "4. HTTP test:"
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081)
-echo "   Web server port 8081: HTTP $HTTP_CODE $([ $HTTP_CODE = "200" ] && echo  || echo )"
-
-# 5. Isolation test (private subnet không public)
-echo "5. DB isolation:"
-nc -z -w2 localhost 5432 2>/dev/null && echo "   Port 5432: OPEN " || echo "   Port 5432: BLOCKED "
-```
-
-### 4.2 — Tổng kết kiến trúc
-
-```bash
-cat << 'EOF'
-╔══════════════════════════════════════════════════════╗
-║         HẠ TẦNG MẠNG CLOUD — LAB 12                ║
-╠══════════════════════════════════════════════════════╣
-║  VPC (devops-vpc): 10.0.0.0/16                       ║
-║    ├── Public Subnet: 10.0.1.0/24                    ║
-║    │     └── web-server-1 (10.0.1.10)                ║
-║    │           SG: port 80   port 22 (VPC)       ║
-║    │           Internet: port 8081 public             ║
-║    └── Private Subnet: 10.0.2.0/24                   ║
-║          └── db-server-1 (10.0.2.10)                 ║
-║                SG: port 5432 (VPC only)            ║
-║                Internet: BLOCKED                   ║
-╚══════════════════════════════════════════════════════╝
-EOF
-```
-
-### 4.3 — Dọn dẹp
-
-```bash
-echo "=== Dọn dẹp tài nguyên ==="
-
-# Xóa Compute Instances (containers)
-for C in web-server-1 db-server-1 web-server; do
-  docker stop $C 2>/dev/null && docker rm $C 2>/dev/null && echo " Xóa container $C"
-done
-
-# Xóa Networks (VPC + Subnets)
-for N in public-subnet private-subnet devops-vpc; do
-  docker network rm $N 2>/dev/null && echo " Xóa network $N"
-done
-
-# Reset Security rules
-ufw delete allow 80/tcp 2>/dev/null
-ufw delete allow 8080/tcp 2>/dev/null
-ufw delete allow 8081/tcp 2>/dev/null
-ufw --force disable 2>/dev/null
-
-echo ""
-echo "Xác nhận không còn gì:"
-docker ps -a | grep -E "web-server|db-server" || echo " Không còn container nào"
-docker network ls | grep -E "public-subnet|private-subnet|devops-vpc" || echo " Không còn network nào"
-```
+```{{exec}}
 
 ---
 
-## Tổng kết
+### 4.1 — Kiểm Tra Toàn Diện Bức Tranh Hạ Tầng
 
-```
-Bước 1: VPC (docker network) → Public Subnet + Private Subnet
-Bước 2: Security Group (UFW) → port 80 public, port 5432 VPC only
-Bước 3: Compute Instance (container) → web server + db server
-Bước 4: End-to-end test + Cleanup
+Chạy đoạn script tổng hợp để trích xuất báo cáo hiện trạng tài nguyên:
 
-Trên Cloud thật: thay docker → aws/gcloud/az CLI
-Concepts giống nhau 100%
-```
+```bash
+echo "=========================================================="
+echo "           BÁO CÁO TỔNG QUAN HẠ TẦNG CLOUD LAB 12        "
+echo "=========================================================="
+
+echo "1. VPC:"
+aws ec2 describe-vpcs --vpc-ids $VPC_ID --query 'Vpcs[].[VpcId,CidrBlock,Tags[?Key==`Name`].Value | [0]]' --output table
+
+echo "2. Subnets:"
+aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" --query 'Subnets[].[SubnetId,CidrBlock,Tags[?Key==`Name`].Value | [0]]' --output table
+
+echo "3. Security Groups & Quy tắc Inbound:"
+aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" --query 'SecurityGroups[].[GroupName,GroupId]' --output table
+
+echo "4. Các Máy Ảo EC2 Đang Chạy:"
+aws ec2 describe-instances --filters "Name=vpc-id,Values=$VPC_ID" --query 'Reservations[].Instances[].[InstanceId,Tags[?Key==`Name`].Value | [0],State.Name,PrivateIpAddress]' --output table
+```{{exec}}
 
 ---
 
-##  Bài tập
+### 4.2 — Quản Lý Vòng Đời Máy Ảo: Stop và Start Instance
 
-> Hoàn thành cleanup trên trước khi làm bài tập này.
+Trong thực tế (FinOps), các máy ảo thuộc môi trường Development hoặc Staging nên được tắt ngoài giờ hành chính để tiết kiệm ~60% chi phí.
 
-**Yêu cầu:** Trước khi tắt lab, kỹ sư Cloud thường lưu lại trạng thái hạ tầng để audit.
+1. **Tạm dừng máy ảo Web Server:**
+   ```bash
+   aws ec2 stop-instances --instance-ids $WEB_INST_ID
+   echo "⏳ Đang chuyển trạng thái sang stopped..."
+   aws ec2 wait instance-stopped --instance-ids $WEB_INST_ID
+   echo "✅ Instance $WEB_INST_ID đã dừng (stopped) thành công!"
+   ```{{exec}}
 
-Viết lệnh (hoặc script ngắn) tạo file `/tmp/infra-snapshot.json` chứa:
-```json
-{
-  "timestamp": "<thời gian hiện tại>",
-  "containers": ["<danh sách tên containers đã xóa>"],
-  "networks": ["<danh sách networks đã xóa>"],
-  "status": "cleaned"
-}
-```
+2. **Khởi động lại máy ảo:**
+   ```bash
+   aws ec2 start-instances --instance-ids $WEB_INST_ID
+   echo "⏳ Đang khởi động lại..."
+   aws ec2 wait instance-running --instance-ids $WEB_INST_ID
+   echo "✅ Instance $WEB_INST_ID đã hoạt động (running) trở lại!"
+   ```{{exec}}
 
-**Gợi ý khi bí:**
-- `date -u +"%Y-%m-%dT%H:%M:%SZ"` lấy timestamp
-- `python3 -c "import json; ..."` để tạo JSON
-- File phải hợp lệ JSON: `python3 -m json.tool /tmp/infra-snapshot.json`
+---
 
-> Nhấn **Check** khi hoàn thành.
+## 3. Bài Tập Thử Thách: Dọn Dẹp Tài Nguyên
+
+> [!WARNING]
+> Trên môi trường Cloud thật (AWS/GCP/Azure), nếu bạn quên xóa máy ảo hoặc tài nguyên không sử dụng, hóa đơn tính phí hàng tháng sẽ tiếp tục tăng ngay cả khi bạn không truy cập vào server!
+
+**Yêu cầu:** Hãy thực hiện dọn dẹp cụm máy ảo EC2 trong VPC để hoàn thành bài lab:
+1. Lấy danh sách toàn bộ `InstanceId` đang chạy trong VPC `$VPC_ID`.
+2. Gửi lệnh hủy (`terminate-instances`) cho tất cả các máy ảo vừa tạo (`web-server-1`, `db-server-1`, và `web-server-2`).
+
+```bash
+# Lấy danh sách toàn bộ Instance IDs trong VPC và thực hiện Terminate
+ALL_INSTANCES=$(aws ec2 describe-instances \
+  --filters "Name=vpc-id,Values=$VPC_ID" "Name=instance-state-name,Values=running,stopped,pending" \
+  --query "Reservations[].Instances[].InstanceId" \
+  --output text)
+
+echo "Đang hủy các instances: $ALL_INSTANCES"
+aws ec2 terminate-instances --instance-ids $ALL_INSTANCES
+```{{exec}}
+
+Kiểm tra lại trạng thái để thấy các máy ảo chuyển sang `shutting-down` hoặc `terminated`:
+
+```bash
+aws ec2 describe-instances \
+  --filters "Name=vpc-id,Values=$VPC_ID" \
+  --query "Reservations[].Instances[].[InstanceId,State.Name]" \
+  --output table
+```{{exec}}
+
+> Nhấn nút **Check** ở góc dưới để hệ thống kiểm tra và xác nhận hoàn thành bài lab!

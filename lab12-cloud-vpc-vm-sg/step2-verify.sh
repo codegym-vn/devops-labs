@@ -1,5 +1,5 @@
 #!/bin/bash
-# step2-verify.sh — Lab 12: Kiểm tra Security Groups (UFW)
+# step2-verify.sh — Lab 12: Kiểm tra Security Groups với AWS CLI
 
 PASS=0; FAIL=0
 
@@ -13,66 +13,72 @@ check() {
   fi
 }
 
-echo "=== Bước 2: Security Groups (UFW) ==="
+echo "=== Bước 2: Kiểm Tra Security Groups & Quy Tắc Tường Lửa ==="
 echo ""
 
-# 1. UFW đang bật
-UFW_STATUS=$(ufw status | grep "Status:" | awk '{print $2}')
-check "UFW đang hoạt động (active)" "$UFW_STATUS" "active" \
-  "Chạy: echo 'y' | ufw enable"
+# 1. Kiểm tra web-sg tồn tại
+WEB_SG_ID=$(aws ec2 describe-security-groups \
+  --filters "Name=group-name,Values=web-sg" \
+  --query "SecurityGroups[0].GroupId" --output text 2>/dev/null)
 
-# 2. Port 80 được phép
-PORT_80=$(ufw status | grep "^80/tcp" | grep "ALLOW" | head -1)
-check "Port 80 (HTTP) đã được phép" \
-  "$([ -n "$PORT_80" ] && echo ok)" "ok" \
-  "Chạy: ufw allow 80/tcp"
+check "Security Group 'web-sg' tồn tại" \
+  "nonempty" "$WEB_SG_ID" \
+  "Chạy mục 2.1: aws ec2 create-security-group --group-name web-sg ..."
 
-# 3. Port 8080 được phép
-PORT_8080=$(ufw status | grep "^8080/tcp\|^8080 " | grep "ALLOW" | head -1)
-check "Port 8080 (HTTP alt) đã được phép" \
-  "$([ -n "$PORT_8080" ] && echo ok)" "ok" \
-  "Chạy: ufw allow 8080/tcp"
+# 2. Kiểm tra web-sg có port 80 từ 0.0.0.0/0
+HAS_PORT_80=$(aws ec2 describe-security-groups \
+  --group-ids "$WEB_SG_ID" \
+  --query "SecurityGroups[0].IpPermissions[?FromPort==\`80\` && contains(IpRanges[].CidrIp, '0.0.0.0/0')].FromPort" \
+  --output text 2>/dev/null)
 
-# 4. SSH chỉ mở cho VPC (10.0.0.0/16), không mở 0.0.0.0/0
-SSH_PUBLIC=$(ufw status | grep "^22" | grep "0.0.0.0/0" | grep "ALLOW IN" | head -1)
-SSH_VPC=$(ufw status | grep "22" | grep "10.0.0.0/16" | head -1)
-check "Port 22 KHÔNG mở cho 0.0.0.0/0 (nguyên tắc Least Privilege)" \
-  "$([ -z "$SSH_PUBLIC" ] && echo ok)" "ok" \
-  "Xóa: ufw delete allow 22/tcp | Thêm: ufw allow from 10.0.0.0/16 to any port 22"
+check "web-sg có Inbound rule mở Port 80 cho 0.0.0.0/0" \
+  "nonempty" "$HAS_PORT_80" \
+  "Chạy mục 2.2: aws ec2 authorize-security-group-ingress --group-id \$WEB_SG_ID --protocol tcp --port 80 --cidr 0.0.0.0/0"
 
-# 5. Port 8443 không được mở (đã revoke)
-PORT_8443=$(ufw status | grep "8443" | grep "ALLOW" | head -1)
-check "Port 8443 đã bị thu hồi (rule không cần thiết)" \
-  "$([ -z "$PORT_8443" ] && echo ok)" "ok" \
-  "Chạy: ufw delete allow 8443/tcp"
+# 3. Kiểm tra web-sg có port 22 từ 10.0.0.0/16
+HAS_PORT_22=$(aws ec2 describe-security-groups \
+  --group-ids "$WEB_SG_ID" \
+  --query "SecurityGroups[0].IpPermissions[?FromPort==\`22\` && contains(IpRanges[].CidrIp, '10.0.0.0/16')].FromPort" \
+  --output text 2>/dev/null)
 
-# 6. Default policy: deny incoming
-DEFAULT_IN=$(ufw status verbose | grep "Default:" | grep "deny (incoming)")
-check "Default policy: deny incoming" \
-  "$([ -n "$DEFAULT_IN" ] && echo ok)" "ok" \
-  "Chạy: ufw default deny incoming"
+check "web-sg có Inbound rule mở Port 22 cho 10.0.0.0/16" \
+  "nonempty" "$HAS_PORT_22" \
+  "Chạy mục 2.2: aws ec2 authorize-security-group-ingress --group-id \$WEB_SG_ID --protocol tcp --port 22 --cidr 10.0.0.0/16"
+
+# 4. Kiểm tra db-sg tồn tại
+DB_SG_ID=$(aws ec2 describe-security-groups \
+  --filters "Name=group-name,Values=db-sg" \
+  --query "SecurityGroups[0].GroupId" --output text 2>/dev/null)
+
+check "Security Group 'db-sg' tồn tại" \
+  "nonempty" "$DB_SG_ID" \
+  "Chạy mục 2.3: aws ec2 create-security-group --group-name db-sg ..."
+
+# 5. Kiểm tra db-sg có port 5432 nhận nguồn từ web-sg
+HAS_PORT_5432=$(aws ec2 describe-security-groups \
+  --group-ids "$DB_SG_ID" \
+  --query "SecurityGroups[0].IpPermissions[?FromPort==\`5432\` && contains(UserIdGroupPairs[].GroupId, '$WEB_SG_ID')].FromPort" \
+  --output text 2>/dev/null)
+
+check "db-sg mở Port 5432 CHỈ từ source-group web-sg" \
+  "nonempty" "$HAS_PORT_5432" \
+  "Chạy mục 2.4: aws ec2 authorize-security-group-ingress --group-id \$DB_SG_ID --protocol tcp --port 5432 --source-group \$WEB_SG_ID"
+
+# 6. Kiểm tra bài tập: web-sg mở port 443 từ 0.0.0.0/0
+HAS_PORT_443=$(aws ec2 describe-security-groups \
+  --group-ids "$WEB_SG_ID" \
+  --query "SecurityGroups[0].IpPermissions[?FromPort==\`443\` && contains(IpRanges[].CidrIp, '0.0.0.0/0')].FromPort" \
+  --output text 2>/dev/null)
+
+check "Bài tập: web-sg mở thêm Port 443 (HTTPS) cho 0.0.0.0/0" \
+  "nonempty" "$HAS_PORT_443" \
+  "Chạy bài tập: aws ec2 authorize-security-group-ingress --group-id \$WEB_SG_ID --protocol tcp --port 443 --cidr 0.0.0.0/0"
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
-[ $FAIL -eq 0 ] && echo " Security Group cấu hình đúng!" && exit 0 || exit 1
-
-echo ""
-echo "===  Bài tập ==="
-echo ""
-
-# Challenge: port 443 chỉ từ 10.0.0.0/8, port 8443 từ 172.16.0.0/12
-PORT_443_RESTRICTED=$(ufw status | grep "443" | grep "10.0.0.0/8" | head -1)
-check "[Bài tập] Port 443 chỉ cho phép từ 10.0.0.0/8" \
-  "$([ -n "$PORT_443_RESTRICTED" ] && echo ok)" "ok" \
-  "ufw allow from 10.0.0.0/8 to any port 443 comment 'HTTPS internal'"
-
-PORT_443_PUBLIC=$(ufw status | grep "^443" | grep "0.0.0.0/0" | grep "ALLOW IN" | head -1)
-check "[Bài tập] Port 443 KHÔNG mở cho 0.0.0.0/0 (phải restricted)" \
-  "$([ -z "$PORT_443_PUBLIC" ] && echo ok)" "ok" \
-  "Xóa: ufw delete allow 443/tcp | Dùng: ufw allow from 10.0.0.0/8 to any port 443"
-
-PORT_8443_CORP=$(ufw status | grep "8443" | grep "172.16.0.0/12" | head -1)
-check "[Bài tập] Port 8443 chỉ cho phép từ 172.16.0.0/12" \
-  "$([ -n "$PORT_8443_CORP" ] && echo ok)" "ok" \
-  "ufw allow from 172.16.0.0/12 to any port 8443 comment 'API corporate'"
+if [ $FAIL -eq 0 ]; then
+  echo " Hoàn thành Bước 2! Hệ thống tường lửa Security Group đã được gia cố chuẩn bảo mật."
+  exit 0
+else
+  echo " Có $FAIL tiêu chí chưa đạt. Hãy xem các gợi ý ở trên để hoàn thiện."
+  exit 1
+fi

@@ -1,10 +1,10 @@
 #!/bin/bash
-# step4-verify.sh — Lab 12: Kiểm tra Cleanup
+# step4-verify.sh — Lab 12: Kiểm tra dọn dẹp tài nguyên với AWS CLI
 
 PASS=0; FAIL=0
 
 check() {
-  if [ "$2" = "$3" ]; then
+  if [ "$2" = "$3" ] || ([ "$3" = "nonempty" ] && [ -n "$2" ]); then
     echo "   $1"; PASS=$((PASS+1))
   else
     echo "   $1"
@@ -13,70 +13,31 @@ check() {
   fi
 }
 
-echo "=== Bước 4: Cleanup ==="
+echo "=== Bước 4: Kiểm Tra Quy Trình Dọn Dẹp Tài Nguyên ==="
 echo ""
 
-# 1. Không còn container web-server-1
-WEB_EXISTS=$(docker ps -a --filter "name=web-server-1" -q | wc -l)
-check "Container 'web-server-1' đã xóa" "$WEB_EXISTS" "0" \
-  "Chạy: docker stop web-server-1 && docker rm web-server-1"
+source /tmp/lab-env.sh 2>/dev/null
 
-# 2. Không còn container db-server-1
-DB_EXISTS=$(docker ps -a --filter "name=db-server-1" -q | wc -l)
-check "Container 'db-server-1' đã xóa" "$DB_EXISTS" "0" \
-  "Chạy: docker stop db-server-1 && docker rm db-server-1"
+# 1. Kiểm tra VPC vẫn tồn tại để xác minh phiên làm việc
+check "Hạ tầng VPC 'devops-vpc' đã được xây dựng thành công" \
+  "nonempty" "$VPC_ID" \
+  "VPC ID không tìm thấy trong /tmp/lab-env.sh"
 
-# 3. Network public-subnet đã xóa
-PUB_EXISTS=$(docker network ls --filter "name=public-subnet" -q | wc -l)
-check "Network 'public-subnet' đã xóa" "$PUB_EXISTS" "0" \
-  "Chạy: docker network rm public-subnet"
+# 2. Kiểm tra các instances đã được chuyển sang trạng thái shutting-down hoặc terminated
+RUNNING_INSTANCES=$(aws ec2 describe-instances \
+  --filters "Name=vpc-id,Values=$VPC_ID" "Name=instance-state-name,Values=running,pending" \
+  --query "Reservations[].Instances[].InstanceId" --output text 2>/dev/null)
 
-# 4. Network private-subnet đã xóa
-PRIV_EXISTS=$(docker network ls --filter "name=private-subnet" -q | wc -l)
-check "Network 'private-subnet' đã xóa" "$PRIV_EXISTS" "0" \
-  "Chạy: docker network rm private-subnet"
-
-# 5. UFW đã disable hoặc rules đã clean
-UFW_LAB_RULES=$(ufw status 2>/dev/null | grep -c "8081\|8080.*ALLOW" || echo 0)
-check "UFW rules lab đã được xóa" "$UFW_LAB_RULES" "0" \
-  "Chạy: ufw delete allow 8081/tcp | ufw delete allow 8080/tcp"
+check "Tất cả máy ảo EC2 đã được Terminate (không còn máy nào chạy ngầm tốn phí)" \
+  "$( [ -z "$RUNNING_INSTANCES" ] && echo "terminated" || echo "$RUNNING_INSTANCES" )" \
+  "terminated" \
+  "Chạy lệnh terminate-instances ở Mục 3 để giải phóng máy ảo"
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Kết quả: $PASS/$((PASS+FAIL)) kiểm tra thành công"
 if [ $FAIL -eq 0 ]; then
-  echo " Dọn dẹp hoàn tất! Không còn tài nguyên nào."
-  echo "   → Thói quen tốt: luôn cleanup sau lab để tránh lãng phí tài nguyên."
+  echo " Xuất sắc! Bạn đã hoàn thành toàn bộ Lab 12 với AWS CLI và LocalStack!"
   exit 0
 else
+  echo " Có $FAIL tiêu chí chưa đạt. Hãy thực hiện lệnh hủy máy ảo để dọn dẹp sạch sẽ."
   exit 1
 fi
-
-echo ""
-echo "===  Bài tập ==="
-echo ""
-
-# Challenge: /tmp/infra-snapshot.json
-check "[Bài tập] File /tmp/infra-snapshot.json đã tạo" \
-  "$(test -f /tmp/infra-snapshot.json && echo ok)" "ok" \
-  "Tạo file JSON với python3 hoặc echo/printf"
-
-JSON_VALID=$(python3 -c "import json; json.load(open('/tmp/infra-snapshot.json'))" 2>/dev/null && echo ok)
-check "[Bài tập] /tmp/infra-snapshot.json là JSON hợp lệ" "$JSON_VALID" "ok" \
-  "Kiểm tra: python3 -m json.tool /tmp/infra-snapshot.json"
-
-HAS_STATUS=$(python3 -c "
-import json
-d = json.load(open('/tmp/infra-snapshot.json'))
-print('ok' if d.get('status') == 'cleaned' else '')
-" 2>/dev/null)
-check "[Bài tập] JSON có field 'status': 'cleaned'" "$HAS_STATUS" "ok" \
-  "Thêm 'status': 'cleaned' vào JSON"
-
-HAS_TIMESTAMP=$(python3 -c "
-import json
-d = json.load(open('/tmp/infra-snapshot.json'))
-print('ok' if d.get('timestamp') else '')
-" 2>/dev/null)
-check "[Bài tập] JSON có field 'timestamp'" "$HAS_TIMESTAMP" "ok" \
-  "Dùng: \$(date -u +\"%Y-%m-%dT%H:%M:%SZ\") để lấy thời gian"

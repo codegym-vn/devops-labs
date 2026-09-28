@@ -1,95 +1,70 @@
-#  Hoàn thành Lab 13: ALB + Auto Scaling Group
+# 🏆 Chúc mừng! Bạn đã hoàn thành Lab: Triển Khai ALB & Auto Scaling Group
 
-## Những gì bạn đã làm được
+Bạn vừa làm chủ một trong những kiến trúc kinh điển và quan trọng nhất của kỹ sư Cloud / DevOps: **Xây dựng hệ thống tự phục hồi (Self-Healing) và co giãn không giới hạn (Auto-Scaling)** trên AWS!
 
-```
- Bước 1 — Launch Template + Auto Scaling Group
-   Blueprint EC2 (AMI, type, user-data) → ASG (min=1, desired=2, max=4)
-   CloudWatch Alarms: scale-out CPU>70%, scale-in CPU<30%
+---
 
- Bước 2 — Application Load Balancer
-   ALB + Target Group (Health Check /health) + Listener port 80
-   Nginx proxy thật: least_conn + passive health check
+## 1. Tóm Tắt Kiến Trúc Bạn Vừa Xây Dựng
 
- Bước 3 — Kiểm thử phân tải
-   Round-robin thực tế: ~50% mỗi backend
-   Mô phỏng backend lỗi: Health Check loại instance khỏi rotation
-   Benchmark với wrk: đo throughput thực tế
+```text
+ 1. Launch Template (web-launch-template):
+    Khuôn mẫu máy chủ tiêu chuẩn với cấu hình t2.micro, Base64 User Data và Security Group app-sg.
 
- Bước 4 — Scale-out & Cleanup
-   ASG tăng desired 2 → 3 → app-3 vào rotation
-   Throughput tăng tương ứng khi thêm instance
-   Dọn sạch: ALB, ASG, Launch Template, VPC, containers
+ 2. Auto Scaling Group (web-asg):
+    Tự động phân bổ máy chủ vào 2 Availability Zones (us-east-1a và us-east-1b), duy trì desired-capacity và tự động đăng ký vào Target Group.
+
+ 3. Application Load Balancer (web-alb):
+    Đón nhận lưu lượng người dùng Internet trên cổng 80, liên tục Health Check đường dẫn /health, phân phối tải thông minh bằng thuật toán Round-Robin.
+
+ 4. Quản trị Co giãn & Dọn dẹp (FinOps):
+    Thực hành Scale-out lên 4 máy chủ khi có tải lớn, và thực hiện xóa dọn tài nguyên an toàn với cờ --force-delete.
 ```
 
 ---
 
-## Bảng tra cứu nhanh
+## 2. Bảng Tra Cứu Lệnh AWS CLI (Cheat Sheet)
 
-### Auto Scaling
+### 2.1 — Quản lý Launch Template & Auto Scaling
 ```bash
-# Tạo ASG
-aws autoscaling create-auto-scaling-group \
-  --auto-scaling-group-name <NAME> \
-  --launch-template "LaunchTemplateName=<LT>,Version=\$Default" \
-  --min-size 1 --max-size 4 --desired-capacity 2 \
-  --vpc-zone-identifier "<SUBNET1>,<SUBNET2>"
+# Tạo Launch Template
+aws ec2 create-launch-template --launch-template-name <NAME> --launch-template-data file://<JSON_FILE>
 
-# Scale thủ công
-aws autoscaling set-desired-capacity \
-  --auto-scaling-group-name <NAME> --desired-capacity <N>
+# Tạo Auto Scaling Group
+aws autoscaling create-auto-scaling-group --auto-scaling-group-name <NAME> \
+  --launch-template "LaunchTemplateName=<NAME>,Version=\$Latest" \
+  --min-size 1 --max-size 4 --desired-capacity 2 --vpc-zone-identifier "<SUBNET_1>,<SUBNET_2>"
 
-# Xem trạng thái instance trong ASG
-aws autoscaling describe-auto-scaling-instances \
-  --query 'AutoScalingInstances[*].{ID:InstanceId,State:LifecycleState,Health:HealthStatus}'
+# Điều chỉnh quy mô (Scale-out / Scale-in)
+aws autoscaling set-desired-capacity --auto-scaling-group-name <NAME> --desired-capacity <NUM>
+
+# Xóa Auto Scaling Group bắt buộc
+aws autoscaling delete-auto-scaling-group --auto-scaling-group-name <NAME> --force-delete
 ```
 
-### Application Load Balancer
+### 2.2 — Quản lý Application Load Balancer
 ```bash
-# Tạo ALB
-aws elbv2 create-load-balancer --name <NAME> --type application \
-  --subnets <SUBNET1> <SUBNET2> --security-groups <SG>
+# Tạo Target Group
+aws elbv2 create-target-group --name <NAME> --protocol HTTP --port 80 --vpc-id <VPC> --health-check-path /health
 
-# Xem Target Health
+# Tạo Application Load Balancer đa vùng
+aws elbv2 create-load-balancer --name <NAME> --subnets <SUB_1> <SUB_2> --security-groups <SG>
+
+# Tạo Listener chuyển tiếp cổng 80 vào Target Group
+aws elbv2 create-listener --load-balancer-arn <ALB_ARN> --protocol HTTP --port 80 \
+  --default-actions Type=forward,TargetGroupArn=<TG_ARN>
+
+# Gắn Target Group vào Auto Scaling Group
+aws autoscaling attach-load-balancer-target-groups --auto-scaling-group-name <ASG> --target-group-arns <TG_ARN>
+
+# Giám sát sức khỏe mục tiêu
 aws elbv2 describe-target-health --target-group-arn <TG_ARN>
-
-# Xem Access Logs (cần bật S3 logging)
-aws elbv2 modify-load-balancer-attributes \
-  --load-balancer-arn <ALB_ARN> \
-  --attributes Key=access_logs.s3.enabled,Value=true \
-               Key=access_logs.s3.bucket,Value=<BUCKET>
-```
-
-### CloudWatch
-```bash
-# Xem Alarm state
-aws cloudwatch describe-alarms --alarm-names <NAME> \
-  --query 'MetricAlarms[0].{State:StateValue,Reason:StateReason}'
-
-# Xem metrics của ASG
-aws cloudwatch get-metric-statistics \
-  --namespace AWS/EC2 --metric-name CPUUtilization \
-  --dimensions Name=AutoScalingGroupName,Value=<ASG> \
-  --start-time $(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%S) \
-  --end-time $(date -u +%Y-%m-%dT%H:%M:%S) \
-  --period 60 --statistics Average
 ```
 
 ---
 
-## Kết nối với các bài học tiếp theo
+## 3. Câu Hỏi Phỏng Vấn Tuyển Dụng Thường Gặp
 
-| Bước tiếp | Mô tả |
-|-----------|-------|
-| **Lab 14: FinOps** | Phân tích chi phí của ALB, ASG, EC2 — tối ưu để tiết kiệm |
-| **Terraform Topic 2** | Viết toàn bộ hạ tầng này bằng code: `aws_lb`, `aws_autoscaling_group`, `aws_launch_template` |
-
----
-
-## Tự kiểm tra
-
-- [ ] Giải thích được sự khác biệt giữa ALB (Layer 7) và NLB (Layer 4)
-- [ ] Vẽ được luồng traffic từ client → ALB → Target Group → EC2
-- [ ] Hiểu tại sao Health Check là bắt buộc trong kiến trúc HA
-- [ ] Biết cấu hình CloudWatch Alarm kích hoạt Scaling Policy
-- [ ] Tự scale-out/in ASG không nhìn tài liệu
+1. **Khi nào nên chọn Application Load Balancer (ALB) và khi nào nên chọn Network Load Balancer (NLB)?**
+   * *Trả lời:* Dùng **ALB** khi cần cân bằng tải tầng ứng dụng Layer 7 (HTTP/HTTPS, gRPC, WebSocket), cần định tuyến dựa trên URL path (`/api` vs `/static`), host header hoặc cần SSL Termination. Dùng **NLB** khi cần hiệu năng siêu cao (hàng triệu request/giây, độ trễ micro-second), giao thức tầng 4 TCP/UDP thuần túy, hoặc yêu cầu IP tĩnh (Static IP / Elastic IP) cố định cho Load Balancer.
+2. **"Sticky Sessions" (Session Affinity) là gì và có nên bật nó không?**
+   * *Trả lời:* Sticky Session giúp định tuyến tất cả các request từ một người dùng cụ thể về đúng một máy chủ backend duy nhất bằng Cookie. Chỉ nên bật khi ứng dụng lưu trữ phiên làm việc (Session state) cục bộ trong bộ nhớ RAM của server; khuyến nghị chuẩn Cloud là đưa session sang Redis/Memcached (Stateless architecture) để không cần bật Sticky Session, giúp tải được phân phối đều hơn.

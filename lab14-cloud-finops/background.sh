@@ -1,21 +1,101 @@
 #!/bin/bash
-# background.sh — Lab 14: FinOps
+# background.sh — Lab 14: FinOps với AWS CLI, LocalStack & Python
 
 apt-get update -y > /dev/null 2>&1
-apt-get install -y python3 python3-pip curl > /dev/null 2>&1
+apt-get install -y python3 python3-pip curl awscli jq > /dev/null 2>&1
 
-mkdir -p /opt/lab-data
+# 1. Khởi động LocalStack hỗ trợ dịch vụ ec2
+docker run -d \
+  --name localstack \
+  --restart unless-stopped \
+  -p 4566:4566 \
+  -e SERVICES=ec2 \
+  -e DEFAULT_REGION=us-east-1 \
+  localstack/localstack:latest > /dev/null 2>&1
 
-# Dataset chi phí 30 ngày
+# 2. Cấu hình AWS CLI
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
+export AWS_DEFAULT_REGION=us-east-1
+
+aws configure set aws_access_key_id test
+aws configure set aws_secret_access_key test
+aws configure set default.region us-east-1
+aws configure set default.output json
+
+cat << 'EOF' > /usr/local/bin/awslocal
+#!/bin/bash
+/usr/bin/aws --endpoint-url=http://localhost:4566 "$@"
+EOF
+chmod +x /usr/local/bin/awslocal
+
+cat << 'EOF' > /usr/local/bin/aws
+#!/bin/bash
+/usr/bin/aws --endpoint-url=http://localhost:4566 "$@"
+EOF
+chmod +x /usr/local/bin/aws
+
+cat << 'EOF' >> /etc/profile.d/aws.sh
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
+export AWS_DEFAULT_REGION=us-east-1
+export AWS_ENDPOINT_URL=http://localhost:4566
+alias awslocal="aws --endpoint-url=http://localhost:4566"
+EOF
+
+# 3. Chờ LocalStack sẵn sàng
+MAX_RETRY=30
+RETRY=0
+while [ $RETRY -lt $MAX_RETRY ]; do
+  if curl -s http://localhost:4566/_localstack/health | grep -q '"ec2": "available"\|"ec2": "running"'; then
+    break
+  fi
+  sleep 2
+  RETRY=$((RETRY+1))
+done
+
+# 4. Khởi tạo 5 EC2 instances đại diện cho các cụm máy chủ trong công ty
+VPC_ID=$(/usr/local/bin/aws ec2 create-vpc --cidr-block 10.0.0.0/16 --query 'Vpc.VpcId' --output text)
+SUBNET_ID=$(/usr/local/bin/aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.0.1.0/24 --query 'Subnet.SubnetId' --output text)
+
+run_ec2() {
+  local NAME=$1
+  local TYPE=$2
+  /usr/local/bin/aws ec2 run-instances \
+    --image-id ami-0c55b159cbfafe1f0 \
+    --instance-type $TYPE \
+    --subnet-id $SUBNET_ID \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$NAME}]" \
+    --query 'Instances[0].InstanceId' --output text
+}
+
+SRV_API=$(run_ec2 "api-server-prod" "t3.large")
+SRV_WEB=$(run_ec2 "web-server-prod" "t3.medium")
+SRV_WORKER=$(run_ec2 "worker-prod" "t3.large")
+SRV_REPORT=$(run_ec2 "reporting-server" "t3.xlarge")
+SRV_TEST=$(run_ec2 "old-test-server" "t3.medium")
+
+cat << EOF > /tmp/lab-env.sh
+export VPC_ID=$VPC_ID
+export SUBNET_ID=$SUBNET_ID
+export SRV_API=$SRV_API
+export SRV_WEB=$SRV_WEB
+export SRV_WORKER=$SRV_WORKER
+export SRV_REPORT=$SRV_REPORT
+export SRV_TEST=$SRV_TEST
+EOF
+
+# 5. Sinh dataset CUR (Cost & Usage Report) 30 ngày
+mkdir -p /opt/lab-data/budgets
 python3 << 'PYEOF'
 import csv, random, datetime
 
 services = [
-    ("Compute (VM)", ["t3.large", "t3.medium", "t3.xlarge"], 0.08, 0.17),
-    ("Load Balancer", ["ALB"], 0.008, 0.016),
-    ("Database",      ["db.t3.medium"], 0.068, 0.14),
-    ("Object Storage",["Standard"], 0.023, 0.05),
-    ("Monitoring",    ["Metrics"], 0.10, 0.30),
+    ("EC2 - Compute", ["t3.large", "t3.medium", "t3.xlarge"], 0.08, 0.17),
+    ("ELB - Load Balancer", ["ALB"], 0.008, 0.016),
+    ("RDS - Database", ["db.t3.medium"], 0.068, 0.14),
+    ("S3 - Storage", ["Standard"], 0.023, 0.05),
+    ("CloudWatch - Monitoring", ["Metrics"], 0.10, 0.30),
 ]
 projects = ["e-commerce", "data-platform", "internal-tools"]
 envs = ["production", "staging", "development"]
@@ -40,7 +120,6 @@ for day in range(30):
 with open("/opt/lab-data/cost-usage-report.csv", "w", newline="") as f:
     w = csv.DictWriter(f, fieldnames=rows[0].keys())
     w.writeheader(); w.writerows(rows)
-print(f"Generated {len(rows)} rows")
 PYEOF
 
 # Dataset utilization
@@ -69,11 +148,51 @@ with open(file_path) as f:
     for row in csv.DictReader(f):
         costs[row.get(group_by, "unknown")] += float(row["Cost"])
 
-print(f"\n=== Chi phí theo {group_by} ===")
+print(f"\n=== Phân Bổ Chi Phí Theo {group_by} ===")
 for k, v in sorted(costs.items(), key=lambda x: -x[1]):
     bar = "█" * int(v / 10)
     print(f"  {k:25s}: ${v:8.2f} {bar}")
-print(f"\n  Tổng: ${sum(costs.values()):.2f}")
+print(f"\n  👉 Tổng Chi Phí: ${sum(costs.values()):.2f}")
+PYEOF
+
+# Script đánh giá Budget Alerts
+cat > /opt/lab-data/budgets/eval-budgets.py << 'PYEOF'
+#!/usr/bin/env python3
+import json, csv, sys
+from collections import defaultdict
+
+with open("/opt/lab-data/budgets/config.json") as f:
+    budgets_cfg = json.load(f)["budgets"]
+
+# Tính tổng chi phí phát sinh (Actual)
+costs_by_project = defaultdict(float)
+total_cost = 0.0
+with open("/opt/lab-data/cost-usage-report.csv") as f:
+    for row in csv.DictReader(f):
+        c = float(row["Cost"])
+        total_cost += c
+        costs_by_project[row.get("Project", "unknown")] += c
+
+print("\n=== ĐÁNH GIÁ CẢNH BÁO NGÂN SÁCH (AWS BUDGET ALERTS) ===\n")
+for b in budgets_cfg:
+    name = b["name"]
+    limit = b["limit_usd"]
+    filter_proj = b.get("filter", {}).get("Project")
+    actual = costs_by_project[filter_proj] if filter_proj else total_cost
+    spent_pct = (actual / limit) * 100
+    forecast_pct = spent_pct * 1.15  # Dự báo xu hướng
+
+    print(f"📌 Budget: {name} (Giới hạn: ${limit:.2f})")
+    print(f"   Thực chi (Actual): ${actual:.2f} ({spent_pct:.1f}%)")
+
+    for a in b["alerts"]:
+        thresh = a["threshold_pct"]
+        atype = a["type"]
+        notify = a["notify"]
+        triggered = (spent_pct >= thresh) if atype == "ACTUAL" else (forecast_pct >= thresh)
+        status = f"🚨 KÍCH HOẠT CẢNH BÁO -> Gửi tới {notify}" if triggered else "✅ Bình thường"
+        print(f"   - Rule [{atype} >= {thresh}%]: {status}")
+    print()
 PYEOF
 
 # Script tìm idle resources
@@ -95,18 +214,18 @@ for inst in instances:
     cost = inst["monthly_cost_usd"]
     if cpu < threshold:
         idle_count += 1
-        if cpu < 5:    rec = " TERMINATE hoặc right-size ngay"
-        elif cpu < 15: rec = " Downgrade instance type"
-        else:          rec = " Xem xét Schedule stop ngoài giờ"
+        if cpu < 5:    rec = "🚨 TERMINATE hoặc tắt ngay"
+        elif cpu < 15: rec = "⚡ RIGHT-SIZE: Downgrade instance type"
+        else:          rec = "📅 Lập lịch tự động Stop ngoài giờ làm việc"
         print(f"  {inst['name']:25s} CPU:{cpu:5.1f}%  ${cost:.2f}/tháng")
-        print(f"  → {rec}\n")
+        print(f"  → Khuyến nghị FinOps: {rec}\n")
     else:
-        print(f"   {inst['name']:25s} CPU:{cpu:5.1f}%  ${cost:.2f}/tháng (OK)\n")
+        print(f"  ✅ {inst['name']:25s} CPU:{cpu:5.1f}%  ${cost:.2f}/tháng (Tối ưu tốt)\n")
 
-print(f"Tổng idle (CPU < {threshold}%): {idle_count}/{len(instances)} instances")
+print(f"👉 Tổng tài nguyên lãng phí (CPU < {threshold}%): {idle_count}/{len(instances)} instances")
 PYEOF
 
 chmod +x /opt/lab-data/*.py
-docker pull nginx:alpine > /dev/null 2>&1 &
+chmod +x /opt/lab-data/budgets/*.py
 
 touch /tmp/.lab_ready

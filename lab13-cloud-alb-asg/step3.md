@@ -1,99 +1,89 @@
-# Bước 3: Quan sát phân phối và kiểm thử
+# Bước 3: Kiểm Tra Target Health & Phân Tích Thuật Toán Cân Bằng Tải
 
-## Lý thuyết
-
-**Round Robin vs Least Connections**:
-
-```
-Round Robin:           Least Connections:
-Request 1 → app-1     Request 1 → app-1 (0 conn)
-Request 2 → app-2     Request 2 → app-2 (0 conn)
-Request 3 → app-1     Request 3 → app-1 (app-1 trả lời nhanh hơn, 0 conn)
-Request 4 → app-2     Request 4 → app-1 (app-2 vẫn đang xử lý, 1 conn)
-```
-
-Least Connections tốt hơn khi request có thời gian xử lý khác nhau.
+Trong bước này, bạn sẽ sử dụng **AWS CLI** để giám sát trạng thái sức khỏe (**Target Health**) của các máy chủ và phân tích cách thức **Application Load Balancer** điều phối lưu lượng.
 
 ---
 
-## Thực hành
+## 1. Lý Thuyết: Cơ Chế Health Check & Thuật Toán Phân Tải
 
-### 3.1 — Đếm phân phối qua 100 request
+### 1.1 — Vòng đời kiểm tra sức khỏe (Health Check Lifecycle)
+ALB định kỳ gửi request HTTP `GET /health` tới từng máy chủ:
+* **Healthy (Khỏe mạnh):** Máy chủ trả về mã HTTP `200 OK`. ALB tiếp tục chuyển tiếp lưu lượng người dùng tới máy này.
+* **Unhealthy (Bất thường):** Nếu máy chủ phản hồi lỗi (HTTP 500) hoặc timeout trong `2` lần liên tiếp (`UnhealthyThreshold = 2`), ALB lập tức cô lập máy chủ này ra khỏi danh sách phục vụ.
+* **Tự phục hồi (Self-healing):** Auto Scaling Group sẽ nhận diện instance bị `unhealthy` từ ALB, tự động hủy instance lỗi và sinh ra một instance mới toanh thay thế.
 
-```bash
-declare -A COUNT
-for i in $(seq 1 100); do
-  SRV=$(curl -s http://localhost/server-id | tr -d '\n')
-  COUNT[$SRV]=$((${COUNT[$SRV]:-0} + 1))
-done
-
-echo "=== Phân phối 100 request ==="
-for SRV in "${!COUNT[@]}"; do
-  N=${COUNT[$SRV]}
-  BAR=$(printf '█%.0s' $(seq 1 $((N / 2))))
-  printf "  %-8s: %3d/100 %s\n" "$SRV" "$N" "$BAR"
-done
-echo "(Least Conn → ~50% mỗi backend khi tải đều)"
+```
+       [ ALB Health Check Ping: GET /health ]
+                      │
+        ┌─────────────┴─────────────┐
+        ▼ (HTTP 200 OK)             ▼ (Timeout / HTTP 500)
+┌──────────────┐            ┌──────────────┐
+│  Instance 1  │            │  Instance 2  │
+│  [ HEALTHY ] │            │ [UNHEALTHY]  │
+└──────┬───────┘            └──────┬───────┘
+       │                           │
+  Tiếp tục nhận             Bị cô lập ngay!
+  traffic người dùng        ASG sẽ thay thế
 ```
 
-### 3.2 — Benchmark baseline (2 backends)
-
-```bash
-# Cài wrk nếu chưa có
-apt-get install -y wrk > /dev/null 2>&1 || \
-  (apt-get install -y build-essential libssl-dev git > /dev/null 2>&1 && \
-   git clone -q https://github.com/wg/wrk /tmp/wrk && \
-   make -C /tmp/wrk -s && cp /tmp/wrk/wrk /usr/local/bin/)
-
-echo "=== Benchmark: 2 backends ==="
-wrk -t2 -c20 -d15s http://localhost/server-id | tee /tmp/bench-2.txt
-grep "Requests/sec" /tmp/bench-2.txt
-```
-
-### 3.3 — Giả lập backend lỗi (instance down)
-
-```bash
-echo "=== Mô phỏng app-2 down ==="
-docker stop app-2
-sleep 3
-
-echo "10 request khi app-2 down:"
-for i in $(seq 1 10); do
-  curl -s http://localhost/server-id; echo ""
-done
-# Tất cả phải đến app-1
-
-docker start app-2
-sleep 2
-docker exec app-2 sh -c "echo 'healthy' > /usr/share/nginx/html/health"
-echo " app-2 phục hồi"
-```
+### 1.2 — Thuật toán điều phối lưu lượng
+* **Round Robin (Mặc định):** Phân bổ tuần tự đều đặn các request theo vòng tròn (Request 1 ➔ Instance A, Request 2 ➔ Instance B).
+* **Least Outstanding Requests (LOR):** Chuyển tiếp request mới tới máy chủ nào đang xử lý ít request nhất (tối ưu cho các tác vụ tính toán nặng không đều).
 
 ---
 
-## Câu hỏi
+## 2. Thực Hành
 
-1. Tỷ lệ phân phối có bao giờ chính xác 50/50 không? Tại sao?
-2. Passive health check (`max_fails`) và Active health check (ALB polling) khác thế nào?
-3. Nếu app-1 nhanh gấp đôi app-2, thuật toán nào phù hợp hơn?
+Tải lại các biến môi trường:
+
+```bash
+source /tmp/lab-env.sh
+```{{exec}}
 
 ---
 
-##  Bài tập
+### 3.1 — Kiểm Tra Trạng Thái Sức Khỏe Các Mục Tiêu (Target Health)
 
-> Hoàn thành phần thực hành trên trước khi làm bài tập này.
+Chạy lệnh kiểm tra xem các máy ảo do ASG tạo ra đã xuất hiện trong Target Group hay chưa:
 
-**Yêu cầu:** Viết script `/tmp/health-check-all.sh` tự động kiểm tra tất cả backends.
+```bash
+aws elbv2 describe-target-health \
+  --target-group-arn $TG_ARN \
+  --query 'TargetHealthDescriptions[].[Target.Id, Target.Port, TargetHealth.State, TargetHealth.Reason]' \
+  --output table
+```{{exec}}
 
-Script phải:
-- Kiểm tra health của tất cả ports đang có container `app-*`
-- In ra ` app-X: healthy` hoặc ` app-X: UNHEALTHY`
-- Thoát với exit code `0` nếu TẤT CẢ healthy, `1` nếu có bất kỳ backend nào fail
-- Phải executable (`chmod +x`)
+> [!NOTE]
+> Khi mới khởi động, trạng thái có thể là `initial` (đang trong quá trình kiểm tra lần đầu) trước khi chuyển thành `healthy`.
 
-**Gợi ý khi bí:**
-- Dùng `docker ps --filter "label=asg=web-asg"` để lấy danh sách containers
-- Dùng `curl` với option `-w` để lấy HTTP status code từ endpoint `/health`
-- Dùng `docker inspect <name>` với `--format` để lấy port mapping của từng container
+---
 
-> Nhấn **Check** khi hoàn thành.
+### 3.2 — Khám Phá Cấu Hình Thuật Toán Cân Bằng Tải Của Target Group
+
+Kiểm tra các thuộc tính nâng cao của Target Group (bao gồm thuật toán cân bằng tải và tính năng duy trì phiên làm việc `stickiness`):
+
+```bash
+aws elbv2 describe-target-group-attributes \
+  --target-group-arn $TG_ARN \
+  --query 'Attributes[?Key==`load_balancing.algorithm.type` || Key==`stickiness.enabled`]' \
+  --output table
+```{{exec}}
+
+Quan sát bảng: Bạn sẽ thấy `load_balancing.algorithm.type` mặc định là `round_robin`.
+
+---
+
+## 3. Bài Tập Thử Thách
+
+**Yêu cầu:** Lấy danh sách toàn bộ ID của các máy ảo đang được đăng ký làm mục tiêu (Target IDs) và xác nhận số lượng mục tiêu hiện tại:
+
+```bash
+REGISTERED_TARGETS=$(aws elbv2 describe-target-health \
+  --target-group-arn $TG_ARN \
+  --query 'TargetHealthDescriptions[].Target.Id' \
+  --output text)
+
+echo "Các mục tiêu đã đăng ký: $REGISTERED_TARGETS"
+```{{exec}}
+
+> Nhấn nút **Check** ở góc dưới để hệ thống kiểm tra và chấm điểm tự động.
