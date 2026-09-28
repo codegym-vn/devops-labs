@@ -14,7 +14,7 @@ Dataset lab: `cost-usage-report.csv` (~400 dòng, 30 ngày, 5 services).
 # Xem cấu trúc file
 head -3 /opt/lab-data/cost-usage-report.csv
 echo "Tổng dòng: $(wc -l < /opt/lab-data/cost-usage-report.csv)"
-```
+```{{exec}}
 
 ### 3.1 — Breakdown chi phí theo Service
 
@@ -22,7 +22,7 @@ echo "Tổng dòng: $(wc -l < /opt/lab-data/cost-usage-report.csv)"
 python3 /opt/lab-data/analyze-cost.py \
   --file /opt/lab-data/cost-usage-report.csv \
   --group-by ProductName
-```
+```{{exec}}
 
 ### 3.2 — Breakdown theo Project
 
@@ -30,7 +30,7 @@ python3 /opt/lab-data/analyze-cost.py \
 python3 /opt/lab-data/analyze-cost.py \
   --file /opt/lab-data/cost-usage-report.csv \
   --group-by Project
-```
+```{{exec}}
 
 ### 3.3 — Breakdown theo Environment
 
@@ -38,7 +38,7 @@ python3 /opt/lab-data/analyze-cost.py \
 python3 /opt/lab-data/analyze-cost.py \
   --file /opt/lab-data/cost-usage-report.csv \
   --group-by Environment
-```
+```{{exec}}
 
 ### 3.4 — Tìm ngày chi phí cao bất thường
 
@@ -56,10 +56,10 @@ avg = sum(daily.values()) / len(daily)
 print(f"Chi phí trung bình/ngày: ${avg:.2f}")
 print("\nNgày cao bất thường (>150% trung bình):")
 for date, cost in sorted(daily.items()):
-    flag = "  SPIKE" if cost > avg * 1.5 else ""
+    flag = "  🚨 SPIKE" if cost > avg * 1.5 else ""
     print(f"  {date}: ${cost:.2f}{flag}")
 EOF
-```
+```{{exec}}
 
 ---
 
