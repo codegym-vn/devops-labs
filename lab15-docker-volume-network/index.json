@@ -1,0 +1,42 @@
+{
+  "title": "Lab 15: Thực Hành Khởi Tạo Named Volume, Cấu Hình Custom Bridge Network & Kết Nối Container",
+  "description": "Thực hành quản trị lưu trữ bền vững với Docker Named Volume, cấu hình mạng tuỳ biến Custom Bridge Network, tận dụng Embedded DNS để phân giải tên miền và triển khai kết nối ứng dụng đa tầng an toàn.",
+  "difficulty": "Intermediate",
+  "time": "35-40 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khởi Tạo & Quản Trị Named Volume Để Lưu Trữ Dữ Liệu Bền Vững",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Cấu Hình Custom Bridge Network & Cơ Chế Phân Giải Tên Miền Embedded DNS",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Kết Nối Đa Tầng Liên Container & Kiểm Thử Cô Lập Mạng",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "environment": {
+    "showdashboard": false,
+    "dashboards": [],
+    "uilayout": "terminal-split",
+    "uimessage1": "\u001b[32mKho thuc hanh DevOps & Networking - Lab 15\u001b[0m\r\n"
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

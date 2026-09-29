@@ -24,6 +24,7 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | **Lab 12** | `lab12-cloud-vpc-vm-sg/` | AWS CLI, LocalStack, Docker, VPC, EC2, Security Groups | Xây dựng hạ tầng mạng VPC, phân vùng Subnet, cấu hình Security Groups, triển khai EC2 và kết nối SSH | 40-45 phút |
 | **Lab 13** | `lab13-cloud-alb-asg/` | AWS CLI, LocalStack, Nginx, ALB, Auto Scaling, CloudWatch | Launch Template, Auto Scaling Group (min/max/desired), ALB + Target Group + Health Check, scale-out | 50-55 phút |
 | **Lab 14** | `lab14-cloud-finops/` | AWS CLI, LocalStack, Python, Cost Allocation Tags, Budgets | Gắn Tags phân bổ chi phí, thiết lập Budget Alerts, phân tích Cost & Usage Report, phát hiện idle resources | 35-40 phút |
+| **Lab 15** | `lab15-docker-volume-network/` | Docker CLI, Named Volume, Bridge Network, Embedded DNS, Redis | Khởi tạo Named Volume lưu trữ dữ liệu bền vững, cấu hình Custom Bridge Network, kết nối đa tầng và cô lập mạng | 35-40 phút |
 
 ---
 
@@ -97,6 +98,30 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Áp dụng kỹ thuật Multi-stage build tách bạch môi trường Builder và Runtime, giảm dung lượng image từ hơn 300MB xuống chỉ còn xấp xỉ 15MB.
 - Sử dụng các cờ biên dịch tối ưu kích thước file nhị phân tĩnh (`CGO_ENABLED=0`, `-ldflags="-s -w"`).
 - Triển khai nguyên tắc đặc quyền tối thiểu (Least Privilege), tạo user/group non-root và chạy tiến trình dưới quyền `USER 10001:10001` đạt chuẩn an toàn Kubernetes và CIS Docker Benchmark.
+
+### Lab 12: Xây Dựng Mạng VPC & Security Groups trên Cloud (`lab12-cloud-vpc-vm-sg/`)
+- Khởi tạo kiến trúc mạng cô lập VPC `10.0.0.0/16`, phân vùng Public Subnet và Private Subnet bằng AWS CLI.
+- Thiết lập Internet Gateway (IGW) và cấu hình bảng định tuyến Route Table cho phép truy cập Internet.
+- Cấu hình tường lửa Security Groups đa tầng (web-sg mở port 80/443, db-sg chỉ mở port 5432 tham chiếu từ web-sg).
+- Khởi tạo SSH Key Pair, chạy máy ảo EC2 và dọn dẹp tài nguyên (FinOps).
+
+### Lab 13: Cân Bằng Tải ALB & Cụm Máy Chủ Auto Scaling Group (`lab13-cloud-alb-asg/`)
+- Tạo Launch Template chuẩn hóa cấu hình máy chủ kèm User Data khởi chạy ứng dụng.
+- Triển khai cụm máy chủ tự động mở rộng Auto Scaling Group (ASG) đa vùng sẵn sàng cao.
+- Cấu hình Application Load Balancer (ALB) và Target Group kèm kiểm tra sức khỏe (Health Check).
+- Giả lập mở rộng quy mô (Scale-Out) và thực hành quy trình dọn dẹp tài nguyên.
+
+### Lab 14: FinOps — Quản Lý và Tối Ưu Chi Phí Cloud (`lab14-cloud-finops/`)
+- Gắn Cost Allocation Tags lên tài nguyên Cloud theo chuẩn quản trị (Project, Environment, CostCenter).
+- Thiết lập hạn mức chi phí AWS Budgets và cấu hình cảnh báo ngưỡng (Budget Alerts).
+- Phân tích báo cáo chi phí Cost & Usage Report (CUR) đa chiều bằng script tự động.
+- Phát hiện tài nguyên lãng phí (idle resources), lập báo cáo FinOps và thực thi hủy máy ảo bằng AWS CLI.
+
+### Lab 15: Docker Named Volume, Custom Bridge Network & Kết Nối Container (`lab15-docker-volume-network/`)
+- Khởi tạo và quản trị Named Volume, kiểm chứng cơ chế lưu trữ dữ liệu bền vững qua vòng đời container.
+- Tạo Custom Bridge Network với dải Subnet quy hoạch chuẩn và khám phá cơ chế Embedded DNS (`127.0.0.11`).
+- Triển khai mô hình ứng dụng đa tầng (Redis DB + Web Client) kết nối nội bộ an toàn bằng Container Name.
+- Kiểm thử nguyên tắc cô lập mạng (Network Isolation) và thực hành kết nối mạng động (`docker network connect`).
 
 ---
 
