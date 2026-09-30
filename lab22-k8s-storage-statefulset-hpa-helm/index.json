@@ -1,0 +1,41 @@
+{
+  "title": "Lab 22: Thực Hành Cấp Phát Động StorageClass, Triển Khai StatefulSet, Cấu Hình HPA & Đóng Gói Helm Chart",
+  "description": "Làm chủ các chủ đề nâng cao trong Kubernetes: cấp phát động lưu trữ bền vững với StorageClass và PVC, triển khai cơ sở dữ liệu có trạng thái với StatefulSet và Headless Service, tự động co giãn quy mô với HPA, và đóng gói phân phối ứng dụng chuyên nghiệp với Helm Chart.",
+  "difficulty": "Advanced",
+  "time": "45-50 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Cấp Phát Bộ Lưu Trữ Động Với StorageClass Và PersistentVolumeClaim",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Triển Khai Ứng Dụng Có Trạng Thái Với StatefulSet Và Headless Service",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Tự Động Mở Rộng Quy Mô Theo Tải Với Horizontal Pod Autoscaler (HPA)",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Đóng Gói Và Quản Trị Ứng Dụng Với Helm Chart",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-2nodes"
+  }
+}

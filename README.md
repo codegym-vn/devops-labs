@@ -31,6 +31,7 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | **Lab 19** | `lab19-k8s-cluster-nodes/` | Kubernetes, Kubeadm 2 Nodes, kubectl, Node Management | Khám phá kubeconfig, đánh giá điều kiện sức khỏe Node (Conditions & Allocatable), gắn nhãn điều phối Pod và bảo trì Cordon/Uncordon | 35-40 phút |
 | **Lab 20** | `lab20-k8s-pod-deployment-probes/` | Pod, Deployment, ReplicaSet, ConfigMap, Secret, Probes | Đóng gói Pod với giới hạn tài nguyên (Requests/Limits), tự phục hồi & scale với Deployment, nạp ConfigMap/Secret và kiểm tra sức khỏe Liveness/Readiness | 40-45 phút |
 | **Lab 21** | `lab21-k8s-service-ingress-namespace-rbac/` | Namespace, ClusterIP, NodePort, Ingress, RBAC, ServiceAccount | Phân vùng tài nguyên Namespace, cân bằng tải ClusterIP & NodePort, định tuyến L7 với Ingress và kiểm soát truy cập phân quyền RBAC | 45-50 phút |
+| **Lab 22** | `lab22-k8s-storage-statefulset-hpa-helm/` | StorageClass, PVC, StatefulSet, Headless Service, HPA, Helm | Cấp phát động StorageClass & PVC, triển khai cơ sở dữ liệu StatefulSet, tự động mở rộng theo tải với HPA và đóng gói ứng dụng bằng Helm Chart | 45-50 phút |
 
 ---
 
@@ -164,6 +165,12 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Cấu hình cân bằng tải nội bộ với Service kiểu ClusterIP và phơi bày cổng máy chủ ra mạng ngoài với NodePort.
 - Thiết lập quy tắc định tuyến HTTP/HTTPS tầng 7 thông minh dựa trên đường dẫn URL (Path-based Routing) thông qua Ingress.
 - Xây dựng ma trận kiểm soát quyền truy cập tối thiểu (Principle of Least Privilege) với ServiceAccount, Role, RoleBinding và kiểm thử với lệnh `kubectl auth can-i`.
+
+### Lab 22: Cấp Phát Động StorageClass, Triển Khai StatefulSet, Cấu Hình HPA & Đóng Gói Helm Chart (`lab22-k8s-storage-statefulset-hpa-helm/`)
+- Cấu hình cấp phát động bộ lưu trữ bền vững thông qua StorageClass và PersistentVolumeClaim (PVC), bảo toàn dữ liệu khi xóa Pod.
+- Triển khai cụm cơ sở dữ liệu có trạng thái với StatefulSet, Headless Service và cơ chế tự động sinh ổ đĩa độc lập qua `volumeClaimTemplates`.
+- Thiết lập tự động co giãn quy mô số lượng bản sao theo tải CPU thời gian thực bằng Horizontal Pod Autoscaler (HPA) và Metrics-Server.
+- Đóng gói chuẩn hóa ứng dụng microservice thành Helm Chart, tham số hóa cấu hình qua Values và quản trị vòng đời phát hành ứng dụng.
 
 ---
 

@@ -85,6 +85,10 @@
     {
       "path": "lab21-k8s-service-ingress-namespace-rbac",
       "title": "Lab 21: Thực hành cấu hình Service, Ingress, phân vùng Namespace và phân quyền RBAC"
+    },
+    {
+      "path": "lab22-k8s-storage-statefulset-hpa-helm",
+      "title": "Lab 22: Thực hành cấp phát động StorageClass, triển khai StatefulSet, cấu hình HPA và đóng gói Helm Chart"
     }
   ]
 }
