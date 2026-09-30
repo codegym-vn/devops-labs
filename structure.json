@@ -65,6 +65,10 @@
     {
       "path": "lab16-cloud-terraform-cli",
       "title": "Lab 16: Thực hành khởi tạo hạ tầng cloud cơ bản bằng Terraform CLI"
+    },
+    {
+      "path": "lab17-cloud-terraform-modules-workspaces",
+      "title": "Lab 17: Thực hành đóng gói Terraform Module và triển khai đa môi trường với Workspaces"
     }
   ]
 }

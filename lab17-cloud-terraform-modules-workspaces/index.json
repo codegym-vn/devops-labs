@@ -1,0 +1,44 @@
+{
+  "title": "Lab 17: Thực Hành Đóng Gói Terraform Module & Triển Khai Đa Môi Trường Với Workspaces",
+  "description": "Phân tách và đóng gói mã nguồn thành Terraform Modules tái sử dụng, cô lập trạng thái hạ tầng đa môi trường (dev, prod) bằng Terraform Workspaces kết hợp các file biến môi trường .tfvars trên LocalStack.",
+  "difficulty": "Advanced",
+  "time": "45-50 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Thiết Kế & Đóng Gói Child Module Mạng (modules/vpc)",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Đóng Gói Module Compute & Kết Nối Liên Module",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Khởi Tạo Terraform Workspaces & Triển Khai Môi Trường Dev",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Triển Khai Môi Trường Prod, Kiểm Thử Cô Lập & Dọn Dẹp",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "interface": {
+    "layout": "ide"
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

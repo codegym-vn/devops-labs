@@ -26,6 +26,7 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | **Lab 14** | `lab14-cloud-finops/` | AWS CLI, LocalStack, Python, Cost Allocation Tags, Budgets | Gắn Tags phân bổ chi phí, thiết lập Budget Alerts, phân tích Cost & Usage Report, phát hiện idle resources | 35-40 phút |
 | **Lab 15** | `lab15-docker-volume-network/` | Docker CLI, Named Volume, Bridge Network, Embedded DNS, Redis | Khởi tạo Named Volume lưu trữ dữ liệu bền vững, cấu hình Custom Bridge Network, kết nối đa tầng và cô lập mạng | 35-40 phút |
 | **Lab 16** | `lab16-cloud-terraform-cli/` | Terraform CLI, AWS Provider, LocalStack, IaC, HCL | Khởi tạo hạ tầng Cloud chuẩn IaC (VPC, Subnet, Security Group, EC2), làm chủ vòng đời init/plan/apply/destroy, quản trị state file | 40-45 phút |
+| **Lab 17** | `lab17-cloud-terraform-modules-workspaces/` | Terraform Modules, Workspaces, LocalStack, Multi-Env | Đóng gói Child Modules tái sử dụng (VPC, Compute), cô lập trạng thái đa môi trường bằng Workspaces và file biến môi trường .tfvars | 45-50 phút |
 
 ---
 
@@ -129,6 +130,12 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Lập trình mạng VPC, Public/Private Subnet, Internet Gateway và tham số hóa cấu hình với Variables & Outputs.
 - Làm chủ chu trình kinh điển: `terraform init`, `validate`, `plan -out`, `apply` và mổ xẻ file trạng thái `terraform.tfstate`.
 - Thực hiện cập nhật hạ tầng tại chỗ (In-Place Drift Update), kiểm chứng tính Idempotent và dọn dẹp an toàn bằng `terraform destroy`.
+
+### Lab 17: Đóng Gói Terraform Module & Quản Lý Đa Môi Trường Workspaces (`lab17-cloud-terraform-modules-workspaces/`)
+- Phân tách và đóng gói mã nguồn thành các Child Modules tái sử dụng (`modules/vpc`, `modules/compute`).
+- Thiết lập hợp đồng giao tiếp chuẩn giữa các module qua `variables.tf` và `outputs.tf`.
+- Quản lý và cô lập trạng thái hạ tầng đa môi trường (`dev`, `prod`) bằng Terraform Workspaces.
+- Cấu hình linh hoạt quy mô máy ảo và IP range tương ứng theo từng môi trường với các file `.tfvars`.
 
 ---
 
