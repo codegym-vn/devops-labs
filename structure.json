@@ -77,6 +77,10 @@
     {
       "path": "lab19-k8s-cluster-nodes",
       "title": "Lab 19: Thực hành tương tác với cụm K8s và kiểm tra trạng thái Node qua kubectl"
+    },
+    {
+      "path": "lab20-k8s-pod-deployment-probes",
+      "title": "Lab 20: Thực hành đóng gói Pod, triển khai Deployment, nạp ConfigMap/Secret và cấu hình Probes"
     }
   ]
 }

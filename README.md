@@ -29,6 +29,7 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | **Lab 17** | `lab17-cloud-terraform-modules-workspaces/` | Terraform Modules, Workspaces, LocalStack, Multi-Env | Đóng gói Child Modules tái sử dụng (VPC, Compute), cô lập trạng thái đa môi trường bằng Workspaces và file biến môi trường .tfvars | 45-50 phút |
 | **Lab 18** | `lab18-cloud-terraform-remote-state-import/` | S3 Remote Backend, DynamoDB Lock, State Recovery, Import | Chuyển đổi Remote State S3 + DynamoDB Locking, xử lý kẹt khóa, can thiệp state mv/rm và import hạ tầng với khối import {} | 45-50 phút |
 | **Lab 19** | `lab19-k8s-cluster-nodes/` | Kubernetes, Kubeadm 2 Nodes, kubectl, Node Management | Khám phá kubeconfig, đánh giá điều kiện sức khỏe Node (Conditions & Allocatable), gắn nhãn điều phối Pod và bảo trì Cordon/Uncordon | 35-40 phút |
+| **Lab 20** | `lab20-k8s-pod-deployment-probes/` | Pod, Deployment, ReplicaSet, ConfigMap, Secret, Probes | Đóng gói Pod với giới hạn tài nguyên (Requests/Limits), tự phục hồi & scale với Deployment, nạp ConfigMap/Secret và kiểm tra sức khỏe Liveness/Readiness | 40-45 phút |
 
 ---
 
@@ -150,6 +151,12 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Phân tích và đánh giá trạng thái vận hành của Node qua các điều kiện sức khỏe và tỷ lệ tài nguyên khả dụng.
 - Quản trị siêu dữ liệu của Node bằng Labels và Annotations phục vụ việc phân loại và định tuyến Pod có điều kiện.
 - Thực thi quy trình bảo trì máy chủ an toàn trong môi trường Production thông qua các lệnh điều phối nút mạng.
+
+### Lab 20: Đóng Gói Pod, Triển Khai Deployment, Nạp ConfigMap/Secret & Cấu Hình Probes (`lab20-k8s-pod-deployment-probes/`)
+- Khởi tạo Pod chuẩn khai báo YAML, áp dụng kỹ thuật `--dry-run=client` và cấu hình hạn mức tài nguyên tính toán (Requests & Limits) phòng tránh OOMKilled.
+- Quản trị vòng đời ứng dụng với Deployment và ReplicaSet, thực nghiệm cơ chế tự phục hồi (Self-healing) và mở rộng quy mô linh hoạt (Scale Out/In).
+- Phân tách cấu hình khỏi mã nguồn (Twelve-Factor App), bảo mật thông tin nhạy cảm với Secret và nạp biến môi trường động vào Pod.
+- Thiết lập hệ thống giám sát sức khỏe container thông minh với Liveness Probe (tự restart) và Readiness Probe (kiểm soát điều phối traffic mạng).
 
 ---
 

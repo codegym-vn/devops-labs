@@ -1,0 +1,41 @@
+{
+  "title": "Lab 20: Thực Hành Đóng Gói Pod, Triển Khai Deployment, Nạp ConfigMap/Secret & Cấu Hình Probes",
+  "description": "Làm chủ các khối xây dựng cốt lõi trong Kubernetes: khởi tạo Pod với hạn mức tài nguyên, quản trị vòng đời ứng dụng với Deployment, nạp dữ liệu động từ ConfigMap và Secret, thiết lập giám sát sức khỏe container với Liveness và Readiness Probes.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khởi Tạo Pod & Thiết Lập Hạn Mức Tài Nguyên (Requests & Limits)",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Triển Khai Ứng Dụng Quy Mô Lớn Với Deployment & Tự Phục Hồi",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Quản Trị Cấu Hình Ứng Dụng Với ConfigMap & Secret",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Cấu Hình Giám Sát Sức Khỏe Tự Động Với Liveness & Readiness Probes",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-2nodes"
+  }
+}
