@@ -1,0 +1,44 @@
+{
+  "title": "Lab 16: Thực Hành Khởi Tạo Hạ Tầng Cloud Cơ Bản Bằng Terraform CLI",
+  "description": "Áp dụng tư duy Infrastructure as Code (IaC) để khởi tạo, cập nhật và dọn dẹp hạ tầng Cloud (VPC, Subnet, Security Group, EC2) bằng Terraform CLI kết hợp LocalStack. Nắm vững workflow init, plan, apply, destroy và mổ xẻ state file.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khởi Tạo Project & Cấu Hình Provider AWS Với LocalStack",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Khai Báo Mạng VPC, Subnet & Quản Lý Biến Số (Variables & Outputs)",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Lập Kế Hoạch Triển Khai EC2, Security Group & Khám Phá State File",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Cập Nhật Hạ Tầng (In-Place Drift Update) & Hủy Diệt (Destroy)",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "interface": {
+    "layout": "ide"
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

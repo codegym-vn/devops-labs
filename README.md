@@ -25,6 +25,7 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | **Lab 13** | `lab13-cloud-alb-asg/` | AWS CLI, LocalStack, Nginx, ALB, Auto Scaling, CloudWatch | Launch Template, Auto Scaling Group (min/max/desired), ALB + Target Group + Health Check, scale-out | 50-55 phút |
 | **Lab 14** | `lab14-cloud-finops/` | AWS CLI, LocalStack, Python, Cost Allocation Tags, Budgets | Gắn Tags phân bổ chi phí, thiết lập Budget Alerts, phân tích Cost & Usage Report, phát hiện idle resources | 35-40 phút |
 | **Lab 15** | `lab15-docker-volume-network/` | Docker CLI, Named Volume, Bridge Network, Embedded DNS, Redis | Khởi tạo Named Volume lưu trữ dữ liệu bền vững, cấu hình Custom Bridge Network, kết nối đa tầng và cô lập mạng | 35-40 phút |
+| **Lab 16** | `lab16-cloud-terraform-cli/` | Terraform CLI, AWS Provider, LocalStack, IaC, HCL | Khởi tạo hạ tầng Cloud chuẩn IaC (VPC, Subnet, Security Group, EC2), làm chủ vòng đời init/plan/apply/destroy, quản trị state file | 40-45 phút |
 
 ---
 
@@ -122,6 +123,12 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Tạo Custom Bridge Network với dải Subnet quy hoạch chuẩn và khám phá cơ chế Embedded DNS (`127.0.0.11`).
 - Triển khai mô hình ứng dụng đa tầng (Redis DB + Web Client) kết nối nội bộ an toàn bằng Container Name.
 - Kiểm thử nguyên tắc cô lập mạng (Network Isolation) và thực hành kết nối mạng động (`docker network connect`).
+
+### Lab 16: Thực Hành Khởi Tạo Hạ Tầng Cloud Cơ Bản Bằng Terraform CLI (`lab16-cloud-terraform-cli/`)
+- Tiếp cận tư duy Declarative Infrastructure as Code (IaC) và cấu hình AWS Provider trỏ tới LocalStack.
+- Lập trình mạng VPC, Public/Private Subnet, Internet Gateway và tham số hóa cấu hình với Variables & Outputs.
+- Làm chủ chu trình kinh điển: `terraform init`, `validate`, `plan -out`, `apply` và mổ xẻ file trạng thái `terraform.tfstate`.
+- Thực hiện cập nhật hạ tầng tại chỗ (In-Place Drift Update), kiểm chứng tính Idempotent và dọn dẹp an toàn bằng `terraform destroy`.
 
 ---
 

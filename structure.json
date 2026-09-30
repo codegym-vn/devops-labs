@@ -61,6 +61,10 @@
     {
       "path": "lab15-docker-volume-network",
       "title": "Lab 15: Thực hành khởi tạo named volume, cấu hình custom bridge network và kết nối container"
+    },
+    {
+      "path": "lab16-cloud-terraform-cli",
+      "title": "Lab 16: Thực hành khởi tạo hạ tầng cloud cơ bản bằng Terraform CLI"
     }
   ]
 }
