@@ -1,0 +1,44 @@
+{
+  "title": "Lab 18: Thực Hành Cấu Hình Remote Backend, Khôi Phục Sự Cố State & Import Hạ Tầng Sẵn Có",
+  "description": "Chuyển đổi lưu trữ state sang Remote Backend S3 kết hợp DynamoDB State Locking, xử lý sự cố kẹt khóa lock, tái cấu trúc bằng terraform state mv/rm và đưa tài nguyên có sẵn vào code với lệnh import và block import {}.",
+  "difficulty": "Advanced",
+  "time": "45-50 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Chuyển Đổi Sang Remote Backend (AWS S3 & DynamoDB State Locking)",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Xử Lý Sự Cố Khóa State & Can Thiệp Bằng State CLI (mv, rm, force-unlock)",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Import Tài Nguyên Thủ Công Bằng Lệnh 'terraform import'",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Khai Báo 'import {}' Khối Hiện Đại & Xác Minh Tính Đồng Bộ Toàn Diện",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "interface": {
+    "layout": "ide"
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}
