@@ -81,6 +81,10 @@
     {
       "path": "lab20-k8s-pod-deployment-probes",
       "title": "Lab 20: Thực hành đóng gói Pod, triển khai Deployment, nạp ConfigMap/Secret và cấu hình Probes"
+    },
+    {
+      "path": "lab21-k8s-service-ingress-namespace-rbac",
+      "title": "Lab 21: Thực hành cấu hình Service, Ingress, phân vùng Namespace và phân quyền RBAC"
     }
   ]
 }

@@ -30,6 +30,7 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | **Lab 18** | `lab18-cloud-terraform-remote-state-import/` | S3 Remote Backend, DynamoDB Lock, State Recovery, Import | Chuyển đổi Remote State S3 + DynamoDB Locking, xử lý kẹt khóa, can thiệp state mv/rm và import hạ tầng với khối import {} | 45-50 phút |
 | **Lab 19** | `lab19-k8s-cluster-nodes/` | Kubernetes, Kubeadm 2 Nodes, kubectl, Node Management | Khám phá kubeconfig, đánh giá điều kiện sức khỏe Node (Conditions & Allocatable), gắn nhãn điều phối Pod và bảo trì Cordon/Uncordon | 35-40 phút |
 | **Lab 20** | `lab20-k8s-pod-deployment-probes/` | Pod, Deployment, ReplicaSet, ConfigMap, Secret, Probes | Đóng gói Pod với giới hạn tài nguyên (Requests/Limits), tự phục hồi & scale với Deployment, nạp ConfigMap/Secret và kiểm tra sức khỏe Liveness/Readiness | 40-45 phút |
+| **Lab 21** | `lab21-k8s-service-ingress-namespace-rbac/` | Namespace, ClusterIP, NodePort, Ingress, RBAC, ServiceAccount | Phân vùng tài nguyên Namespace, cân bằng tải ClusterIP & NodePort, định tuyến L7 với Ingress và kiểm soát truy cập phân quyền RBAC | 45-50 phút |
 
 ---
 
@@ -157,6 +158,12 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Quản trị vòng đời ứng dụng với Deployment và ReplicaSet, thực nghiệm cơ chế tự phục hồi (Self-healing) và mở rộng quy mô linh hoạt (Scale Out/In).
 - Phân tách cấu hình khỏi mã nguồn (Twelve-Factor App), bảo mật thông tin nhạy cảm với Secret và nạp biến môi trường động vào Pod.
 - Thiết lập hệ thống giám sát sức khỏe container thông minh với Liveness Probe (tự restart) và Readiness Probe (kiểm soát điều phối traffic mạng).
+
+### Lab 21: Cấu Hình Service, Ingress, Phân Vùng Namespace & Phân Quyền RBAC (`lab21-k8s-service-ingress-namespace-rbac/`)
+- Phân vùng logic tài nguyên cụm K8s với Namespace, cô lập không gian giữa các đội ngũ và môi trường triển khai.
+- Cấu hình cân bằng tải nội bộ với Service kiểu ClusterIP và phơi bày cổng máy chủ ra mạng ngoài với NodePort.
+- Thiết lập quy tắc định tuyến HTTP/HTTPS tầng 7 thông minh dựa trên đường dẫn URL (Path-based Routing) thông qua Ingress.
+- Xây dựng ma trận kiểm soát quyền truy cập tối thiểu (Principle of Least Privilege) với ServiceAccount, Role, RoleBinding và kiểm thử với lệnh `kubectl auth can-i`.
 
 ---
 
