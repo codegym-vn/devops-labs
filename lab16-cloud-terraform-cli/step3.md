@@ -16,7 +16,10 @@ Trong bước này, bạn sẽ bổ sung tài nguyên điện toán (**EC2**) v�
 
 ### 1.2 — Bí Mật Của `terraform.tfstate`
 File `terraform.tfstate` là bộ não ánh xạ (Mapping) giữa:
-$$\text{Code HCL } (\texttt{aws\_instance.web}) \longleftrightarrow \text{Physical Cloud ID } (\texttt{i-0a1b2c3d4e5f})$$
+
+```text
+Code HCL (aws_instance.web) <───> Physical Cloud ID (i-0a1b2c3d4e5f)
+```
 
 * Nếu không có state file, Terraform sẽ không biết tài nguyên nào đã tồn tại và sẽ cố gắng tạo mới, gây xung đột.
 * **Quy tắc bảo mật:** State file có thể chứa dữ liệu nhạy cảm dạng plaintext (mật khẩu DB, private keys). Tuyệt đối **KHÔNG** commit file này lên public Git! Trong môi trường thực tế, state được lưu tại Remote Backend (như AWS S3 + DynamoDB State Locking).

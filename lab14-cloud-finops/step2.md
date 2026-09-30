@@ -17,7 +17,7 @@ Ngân Sách Được Giao: $300 / tháng
 
 Hai cơ chế kích hoạt cảnh báo:
 * **`ACTUAL` (Thực chi):** Kích hoạt khi số tiền thực tế đã tiêu đạt đến ngưỡng phần trăm quy định.
-* **`FORECASTED` (Dự báo xu hướng):** Sử dụng máy học phân tích tốc độ tiêu tiền trong tuần đầu tiên; nếu tốc độ này tiếp diễn sẽ làm vỡ ngân sách cuối tháng $\rightarrow$ Lập tức gửi cảnh báo sớm để can thiệp kịp thời!
+* **`FORECASTED` (Dự báo xu hướng):** Sử dụng máy học phân tích tốc độ tiêu tiền trong tuần đầu tiên; nếu tốc độ này tiếp diễn sẽ làm vỡ ngân sách cuối tháng → Lập tức gửi cảnh báo sớm để can thiệp kịp thời!
 
 ---
 

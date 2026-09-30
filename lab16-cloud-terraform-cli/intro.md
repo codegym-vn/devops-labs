@@ -9,7 +9,7 @@ Chào mừng bạn đến với bài thực hành chuyên sâu về **Infrastruc
 Ở các bài lab trước, chúng ta đã tiếp cận việc tạo tài nguyên bằng các câu lệnh mệnh lệnh (Imperative) tuần tự của AWS CLI. Mặc dù script hoá được, nhưng cách này bộc lộ những nhược điểm lớn trong môi trường Production:
 
 * **Không lưu vết trạng thái (State-less):** Chạy lại script lần 2 sẽ gây lỗi duplicate tài nguyên hoặc crash hệ thống.
-* **Thứ tự phụ thuộc thủ công:** Kỹ sư phải tự nhớ thứ tự tạo (VPC $\rightarrow$ Subnet $\rightarrow$ IGW $\rightarrow$ EC2) và thứ tự xóa ngược lại.
+* **Thứ tự phụ thuộc thủ công:** Kỹ sư phải tự nhớ thứ tự tạo (VPC → Subnet → IGW → EC2) và thứ tự xóa ngược lại.
 * **Khó quản lý drift:** Không thể dễ dàng so sánh giữa cấu hình mong muốn và thực tế đang chạy trên Cloud.
 
 **Terraform giải quyết triệt để vấn đề này với mô hình Khai Báo (Declarative):** Bạn chỉ cần mô tả *trạng thái mong muốn (Desired State)* trong code, Terraform sẽ tự động tính toán đồ thị phụ thuộc (DAG - Directed Acyclic Graph) để tạo, sửa hoặc xóa tài nguyên một cách tối ưu và an toàn.

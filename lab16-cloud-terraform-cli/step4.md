@@ -16,7 +16,11 @@ Khi mã nguồn `.tf` thay đổi, Terraform phân tích thuộc tính và đưa
 `DependencyViolation: The vpc has dependencies and cannot be deleted.`
 
 Với Terraform, lệnh `terraform destroy` sẽ tự động duyệt **ngược chiều** đồ thị phụ thuộc (DAG):
-$$\text{EC2} \longrightarrow \text{Security Group} \longrightarrow \text{Route Association} \longrightarrow \text{Subnet} \longrightarrow \text{IGW} \longrightarrow \text{VPC}$$
+
+```text
+EC2 ──► Security Group ──► Route Association ──► Subnet ──► IGW ──► VPC
+```
+
 Toàn bộ tài nguyên sẽ được dọn dẹp sạch sẽ, không để lại bất kỳ tài nguyên mồ côi (Orphan Resources) nào gây lãng phí chi phí.
 
 ---
@@ -122,7 +126,7 @@ terraform destroy -auto-approve
 
 Quan sát quá trình:
 1. Terraform liệt kê 8 tài nguyên sẽ bị hủy: `Plan: 0 to add, 0 to change, 8 to destroy.`
-2. Thứ tự hủy diễn ra chuẩn xác: EC2 $\rightarrow$ SG $\rightarrow$ Subnet $\rightarrow$ IGW $\rightarrow$ VPC.
+2. Thứ tự hủy diễn ra chuẩn xác: EC2 → SG → Subnet → IGW → VPC.
 3. Thông báo: `Destroy complete! Resources: 8 destroyed.`
 
 Kiểm tra lại bằng AWS CLI:

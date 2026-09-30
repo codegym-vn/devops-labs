@@ -11,8 +11,8 @@ Trong bước này, bạn sẽ sử dụng **AWS CLI** để tạo cặp khóa x
 2. **Instance Type:** Cấu hình phần cứng vCPU và RAM (ví dụ: `t2.micro` với 1 vCPU, 1GB RAM).
 3. **Key Pair:** Cặp khóa SSH (Public Key nạp vào máy ảo, Private Key người dùng giữ). Tuyệt đối không dùng mật khẩu tĩnh để quản trị server Cloud.
 4. **Subnet ID:** Vị trí đặt máy ảo:
-   * Máy Web $\rightarrow$ Nằm trong `public-subnet`.
-   * Máy DB $\rightarrow$ Nằm trong `private-subnet`.
+   * Máy Web → Nằm trong `public-subnet`.
+   * Máy DB → Nằm trong `private-subnet`.
 5. **Security Group ID:** Gắn tường lửa tương ứng đã tạo ở Bước 2.
 
 ```

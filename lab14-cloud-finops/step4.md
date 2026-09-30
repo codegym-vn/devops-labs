@@ -7,7 +7,7 @@ Trong bước cuối cùng, bạn sẽ học cách phân tích dữ liệu hiệ
 ## 1. Lý Thuyết: Chiến Lược Right-Sizing & Vòng Lặp FinOps
 
 * **Right-Sizing:** Điều chỉnh cấu hình máy ảo (Instance Type) về đúng nhu cầu tải thực tế:
-  * Ví dụ: Máy ảo `t3.xlarge` ($119.81/tháng) nhưng CPU trung bình chỉ 3.1% $\rightarrow$ Hạ xuống `t3.small` ($15/tháng) giúp tiết kiệm ngay ~87%!
+  * Ví dụ: Máy ảo `t3.xlarge` ($119.81/tháng) nhưng CPU trung bình chỉ 3.1% → Hạ xuống `t3.small` ($15/tháng) giúp tiết kiệm ngay ~87%!
 * **Terminate Idle Resources:** Hủy ngay lập tức các máy chủ thử nghiệm cũ (`old-test-server`) bị bỏ quên nhưng vẫn âm thầm đốt tiền hàng tháng.
 
 | Chiến lược FinOps | Mức tiết kiệm ước tính | Khuyến nghị áp dụng |
