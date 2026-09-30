@@ -73,6 +73,10 @@
     {
       "path": "lab18-cloud-terraform-remote-state-import",
       "title": "Lab 18: Thực hành cấu hình Remote Backend, khôi phục sự cố state và import hạ tầng sẵn có"
+    },
+    {
+      "path": "lab19-k8s-cluster-nodes",
+      "title": "Lab 19: Thực hành tương tác với cụm K8s và kiểm tra trạng thái Node qua kubectl"
     }
   ]
 }

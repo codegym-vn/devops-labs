@@ -28,6 +28,7 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | **Lab 16** | `lab16-cloud-terraform-cli/` | Terraform CLI, AWS Provider, LocalStack, IaC, HCL | Khởi tạo hạ tầng Cloud chuẩn IaC (VPC, Subnet, Security Group, EC2), làm chủ vòng đời init/plan/apply/destroy, quản trị state file | 40-45 phút |
 | **Lab 17** | `lab17-cloud-terraform-modules-workspaces/` | Terraform Modules, Workspaces, LocalStack, Multi-Env | Đóng gói Child Modules tái sử dụng (VPC, Compute), cô lập trạng thái đa môi trường bằng Workspaces và file biến môi trường .tfvars | 45-50 phút |
 | **Lab 18** | `lab18-cloud-terraform-remote-state-import/` | S3 Remote Backend, DynamoDB Lock, State Recovery, Import | Chuyển đổi Remote State S3 + DynamoDB Locking, xử lý kẹt khóa, can thiệp state mv/rm và import hạ tầng với khối import {} | 45-50 phút |
+| **Lab 19** | `lab19-k8s-cluster-nodes/` | Kubernetes, Kubeadm 2 Nodes, kubectl, Node Management | Khám phá kubeconfig, đánh giá điều kiện sức khỏe Node (Conditions & Allocatable), gắn nhãn điều phối Pod và bảo trì Cordon/Uncordon | 35-40 phút |
 
 ---
 
@@ -143,6 +144,12 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Xử lý sự cố kẹt khóa và can thiệp state nâng cao (`terraform force-unlock`, `terraform state mv`, `terraform state rm`).
 - Đưa tài nguyên tạo thủ công ngoài luồng vào quản lý bằng lệnh `terraform import` truyền thống.
 - Sử dụng khối khai báo hiện đại `import {}` (từ Terraform 1.5+) tự động sinh mã HCL và kiểm chứng tính đồng bộ 3 bên.
+
+### Lab 19: Quản Trị Cụm Kubernetes & Kiểm Tra Trạng Thái Node Qua kubectl (`lab19-k8s-cluster-nodes/`)
+- Khám phá kiến trúc cụm K8s giữa Control Plane và Worker Nodes cùng cấu trúc tệp xác thực `~/.kube/config`.
+- Phân tích và đánh giá trạng thái vận hành của Node qua các điều kiện sức khỏe và tỷ lệ tài nguyên khả dụng.
+- Quản trị siêu dữ liệu của Node bằng Labels và Annotations phục vụ việc phân loại và định tuyến Pod có điều kiện.
+- Thực thi quy trình bảo trì máy chủ an toàn trong môi trường Production thông qua các lệnh điều phối nút mạng.
 
 ---
 
