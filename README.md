@@ -10,6 +10,7 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 
 | Mã Lab | Thư Mục | Công Nghệ Chính | Trọng Tâm Kiến Thức | Thời Lượng |
 |---|---|---|---|---|
+| **Khởi Động** | `linux-terminal-navigation/` | Linux CLI, Bash, FHS, Navigation | Làm chủ Terminal, giải mã Prompt, điều hướng FHS (`cd`, `pwd`), quản lý tệp tin (`mkdir -p`, `touch`, `cp`, `mv`, `rm`) | 30-35 phút |
 | **Lab 1** | `lab1-tcpip-dns/` | Linux Networking, `iproute2`, `dig`, DNS | Mô hình TCP/IP 4 tầng, Subnetting & CIDR, Routing Table, phân tích luồng truy vấn DNS | 35-40 phút |
 | **Lab 2** | `lab2-http-ssl-nginx/` | Nginx, OpenSSL, TLS 1.3, X.509 | Giao thức HTTP/HTTPS, bắt tay TLS 1.3 Handshake, SSL Termination, phân tích chứng chỉ số | 35-40 phút |
 | **Lab 3** | `lab3-ssh-firewall/` | OpenSSH, UFW Firewall, Ed25519 | SSH Hardening (đổi cổng, tắt mật khẩu), mã hóa đường hầm SSH Tunneling, tường lửa UFW | 35-40 phút |
@@ -37,6 +38,12 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 
 
 ## 2. Tóm Tắt Nội Dung Từng Bài Lab
+
+### Khởi Động: Làm Quen Terminal & Điều Hướng Thư Mục Linux (`linux-terminal-navigation/`)
+- Giải mã cấu trúc Terminal Prompt (`user@host:path$`), phân biệt tài khoản thường (`$`) và Root (`#`), nắm vững cú pháp lệnh Linux tiêu chuẩn.
+- Thẩm tra danh tính phiên làm việc tức thì bằng `whoami`, `hostname`, `id`, `date`, `uname -a` và các biến môi trường `$USER`, `$HOME`, `$PWD`.
+- Làm chủ bản đồ cây thư mục chuẩn FHS (`/`, `/etc`, `/var/log`, `/tmp`), phân biệt đường dẫn Tuyệt đối vs Tương đối và các ký hiệu đặc biệt (`.`, `..`, `~`, `-`).
+- Khởi tạo kiến trúc thư mục đa cấp với `mkdir -p` (Brace Expansion), tạo tệp với `touch`, sao chép đệ quy `cp -r`, di chuyển/đổi tên `mv`, xóa dữ liệu với `rm` và trực quan hóa với `tree`.
 
 ### Lab 1: TCP/IP và DNS Trong DevOps (`lab1-tcpip-dns/`)
 - Tính toán phân chia mạng con (Subnetting, CIDR, Network ID, Broadcast IP) cho VPC và mạng container.

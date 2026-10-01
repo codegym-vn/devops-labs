@@ -1,0 +1,36 @@
+{
+  "title": "Làm Quen Terminal & Điều Hướng Thư Mục Linux",
+  "description": "Làm chủ Terminal Console, giải mã Terminal Prompt, cú pháp lệnh Linux, kỹ thuật điều hướng cây thư mục FHS và thao tác quản trị tệp tin dự án chuẩn DevOps.",
+  "difficulty": "Beginner",
+  "time": "30-35 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Giải Mã Prompt & Thẩm Tra Môi Trường",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Nghệ Thuật Điều Hướng Cây Thư Mục Linux Với cd",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Quản Trị Tệp & Cấu Trúc Thư Mục Dự Án",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}
