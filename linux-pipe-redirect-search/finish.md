@@ -1,9 +1,9 @@
 # Chúc Mừng Bạn Đã Hoàn Thành Bài Thực Hành!
 
 Bạn đã xuất sắc làm chủ 3 kỹ năng tự động hóa và xử lý dữ liệu mạnh mẽ bậc nhất của Linux:
-1. **Quản trị 3 luồng dữ liệu chuẩn (stdin, stdout, stderr)** và nghệ thuật chuyển hướng dữ liệu với `>`, `>>`, `2>`, `2>&1`, `/dev/null`.
-2. **Xây dựng chuỗi đường ống Pipe (`|`)** kết hợp các bộ lọc văn bản `grep`, `wc`, `sort`, `uniq` và ngã ba đường ống `tee`.
-3. **Tìm kiếm tệp và nội dung chuyên sâu** với bộ đôi công cụ quyền lực `find` (quét theo thuộc tính tệp) và `grep -rn` (truy vết nội dung đệ quy).
+1. **Quản trị 3 luồng dữ liệu chuẩn (stdin, stdout, stderr)** và nghệ thuật chuyển hướng dữ liệu với >, >>, 2>, 2>&1, /dev/null.
+2. **Xây dựng chuỗi đường ống Pipe (|)** kết hợp các bộ lọc văn bản grep, wc, sort, uniq và ngã ba đường ống tee.
+3. **Tìm kiếm tệp và nội dung chuyên sâu** với bộ đôi công cụ quyền lực find (quét theo thuộc tính tệp) và grep -rn (truy vết nội dung đệ quy).
 
 ---
 
@@ -61,6 +61,6 @@ Bạn đã xuất sắc làm chủ 3 kỹ năng tự động hóa và xử lý d
 
 ## Lộ Trình Tiếp Theo
 
-Sau khi hoàn tất 3 bài thực hành nền tảng về Linux (Làm quen Terminal & Điều hướng $\rightarrow$ Thao tác tệp & Thư mục $\rightarrow$ Pipe, Redirect & Tìm kiếm), bạn đã sở hữu trọn vẹn kỹ năng thao tác dòng lệnh chuyên nghiệp.
+Sau khi hoàn tất 3 bài thực hành nền tảng về Linux (Làm quen Terminal & Điều hướng → Thao tác tệp & Thư mục → Pipe, Redirect & Tìm kiếm), bạn đã sở hữu trọn vẹn kỹ năng thao tác dòng lệnh chuyên nghiệp.
 
 Hãy sẵn sàng bước vào bài thực hành chuyên sâu đầu tiên: **Lab 1: TCP/IP và DNS Trong DevOps**!

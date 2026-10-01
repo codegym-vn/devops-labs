@@ -7,18 +7,18 @@ Một trong những sức mạnh vĩ đại nhất giúp Linux thống trị to�
 
 Khi viết Bash Script tự động hóa, cấu hình Cronjob, xử lý log trong Kubernetes hay xây dựng CI/CD Pipeline, bạn sẽ liên tục:
 - Tách bạch luồng thông báo bình thường và luồng lỗi để gửi cảnh báo tự động.
-- Nối các lệnh đơn lẻ lại thành một dây chuyền xử lý dữ liệu phức tạp chỉ bằng một đường ống duy nhất (`|`).
-- Quét tìm nhanh các tệp cấu hình bí mật hoặc lỗ hổng lộ lọt token trong hàng chục nghìn file mã nguồn với `find` và `grep`.
+- Nối các lệnh đơn lẻ lại thành một dây chuyền xử lý dữ liệu phức tạp chỉ bằng một đường ống duy nhất (|).
+- Quét tìm nhanh các tệp cấu hình bí mật hoặc lỗ hổng lộ lọt token trong hàng chục nghìn file mã nguồn với find và grep.
 
 ---
 
 ## 1. Mục Tiêu Bài Học
 
 Sau khi hoàn thành bài thực hành này, bạn sẽ:
-1. **Làm chủ 3 luồng dữ liệu chuẩn:** Hiểu sâu sắc cơ chế hoạt động của `stdin` (0), `stdout` (1) và `stderr` (2).
-2. **Thành thạo kỹ thuật chuyển hướng (Redirection):** Sử dụng chuẩn xác các toán tử `>`, `>>`, `2>`, `2>&1` và hố đen `/dev/null` để lọc sạch thông báo hoặc lưu trữ nhật ký theo ý muốn.
-3. **Làm chủ cơ chế đường ống (Pipes):** Ghép nối các lệnh độc lập thành dây chuyền chế biến dữ liệu mạnh mẽ bằng toán tử `|` kết hợp `grep`, `wc`, `sort`, `uniq` và ngã ba đường ống `tee`.
-4. **Tìm kiếm tệp tin & nội dung chuyên sâu:** Quét tìm tệp theo tên, loại và thời gian bằng `find`, đồng thời truy vết các chuỗi ký tự bí mật đệ quy trong thư mục dự án bằng `grep -rn`.
+1. **Làm chủ 3 luồng dữ liệu chuẩn:** Hiểu sâu sắc cơ chế hoạt động của stdin (0), stdout (1) và stderr (2).
+2. **Thành thạo kỹ thuật chuyển hướng (Redirection):** Sử dụng chuẩn xác các toán tử >, >>, 2>, 2>&1 và hố đen /dev/null để lọc sạch thông báo hoặc lưu trữ nhật ký theo ý muốn.
+3. **Làm chủ cơ chế đường ống (Pipes):** Ghép nối các lệnh độc lập thành dây chuyền chế biến dữ liệu mạnh mẽ bằng toán tử Pipe (|) kết hợp các công cụ grep, wc, sort, uniq và ngã ba đường ống tee.
+4. **Tìm kiếm tệp tin & nội dung chuyên sâu:** Quét tìm tệp theo tên, loại và thời gian bằng lệnh find, đồng thời truy vết các chuỗi ký tự bí mật đệ quy trong thư mục dự án bằng grep -rn.
 
 ---
 
