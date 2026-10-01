@@ -7,6 +7,10 @@
       "title": "Làm Quen Terminal & Điều Hướng Thư Mục Linux"
     },
     {
+      "path": "linux-file-permissions",
+      "title": "Thao Tác Tệp & Phân Quyền Trong Linux"
+    },
+    {
       "path": "lab1-tcpip-dns",
       "title": "Lab 1: TCP/IP và DNS Trong DevOps"
     },

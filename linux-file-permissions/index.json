@@ -1,0 +1,36 @@
+{
+  "title": "Thao Tác Tệp & Phân Quyền Trong Linux",
+  "description": "Làm chủ cơ chế phân quyền User/Group/Others, ý nghĩa rwx trên file và thư mục, thiết lập quyền hạn chuẩn Production với chmod (Octal & Symbolic), quản trị sở hữu với chown/chgrp theo nguyên tắc đặc quyền tối thiểu.",
+  "difficulty": "Beginner",
+  "time": "30-35 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Giải Mã Cơ Chế Phân Quyền Linux & Ý Nghĩa rwx",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Làm Chủ Lệnh chmod: Phương Pháp Ký Hiệu & Số Bát Phân",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Quản Trị Sở Hữu User & Group Với chown và chgrp",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}
