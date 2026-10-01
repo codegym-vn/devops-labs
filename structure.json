@@ -11,6 +11,10 @@
       "title": "Thao Tác Tệp & Thư Mục Trong Linux"
     },
     {
+      "path": "linux-pipe-redirect-search",
+      "title": "Pipe, Redirect & Tìm Kiếm Trong Linux"
+    },
+    {
       "path": "lab1-tcpip-dns",
       "title": "Lab 1: TCP/IP và DNS Trong DevOps"
     },

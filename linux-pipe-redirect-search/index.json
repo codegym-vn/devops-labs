@@ -1,0 +1,36 @@
+{
+  "title": "Pipe, Redirect & Tìm Kiếm Trong Linux",
+  "description": "Làm chủ 3 luồng dữ liệu chuẩn (stdin, stdout, stderr), kỹ thuật chuyển hướng Redirect, cơ chế đường ống Pipe kết hợp các bộ lọc dữ liệu, và nghệ thuật tìm kiếm tệp tin và nội dung chuyên sâu với find và grep.",
+  "difficulty": "Beginner",
+  "time": "30-35 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "3 Luồng Dữ Liệu Chuẩn & Kỹ Thuật Chuyển Hướng",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Cơ Chế Đường Ống Pipe & Xử Lý Dữ Liệu Chuỗi",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Tìm Kiếm Tệp Tin & Nội Dung Với find và grep",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

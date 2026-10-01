@@ -12,6 +12,7 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 |---|---|---|---|---|
 | **Khởi Động** | `linux-terminal-navigation/` | Linux CLI, Bash, FHS, Navigation | Làm chủ Terminal, giải mã Prompt, điều hướng FHS (`cd`, `pwd`), quản lý tệp tin (`mkdir -p`, `touch`, `cp`, `mv`, `rm`) | 30-35 phút |
 | **Thao Tác Tệp** | `linux-file-operations/` | Linux CLI, Files & Directories | Khởi tạo cấu trúc dự án đa tầng (`mkdir -p`, `touch`), sao chép/di chuyển/xóa (`cp`, `mv`, `rm`), đọc và theo dõi log (`cat`, `less`, `head`, `tail -f`) | 30-35 phút |
+| **Pipe & Search** | `linux-pipe-redirect-search/` | Linux CLI, Streams, Pipes, find, grep | 3 luồng stdin/stdout/stderr, chuyển hướng (`>`, `2>`, `&>`), đường ống `\|`, tìm kiếm `find` và `grep -rn` | 30-35 phút |
 | **Lab 1** | `lab1-tcpip-dns/` | Linux Networking, `iproute2`, `dig`, DNS | Mô hình TCP/IP 4 tầng, Subnetting & CIDR, Routing Table, phân tích luồng truy vấn DNS | 35-40 phút |
 | **Lab 2** | `lab2-http-ssl-nginx/` | Nginx, OpenSSL, TLS 1.3, X.509 | Giao thức HTTP/HTTPS, bắt tay TLS 1.3 Handshake, SSL Termination, phân tích chứng chỉ số | 35-40 phút |
 | **Lab 3** | `lab3-ssh-firewall/` | OpenSSH, UFW Firewall, Ed25519 | SSH Hardening (đổi cổng, tắt mật khẩu), mã hóa đường hầm SSH Tunneling, tường lửa UFW | 35-40 phút |
@@ -51,6 +52,11 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Thực hiện sao lưu giữ thuộc tính (`cp -p`), sao chép đệ quy (`cp -r`), di chuyển và đổi tên tệp/thư mục (`mv`).
 - Dọn dẹp tệp tin an toàn với `rm` và `rmdir`, phòng ngừa các sự cố rủi ro dữ liệu.
 - Đọc, kiểm tra và phân tích tệp nhật ký ứng dụng với bộ công cụ `cat -n`, `less`, `head`, `tail`, `wc -l` và giám sát thời gian thực `tail -f`.
+
+### Nền Tảng: Pipe, Redirect & Tìm Kiếm Trong Linux (`linux-pipe-redirect-search/`)
+- Quản trị 3 luồng dữ liệu chuẩn `stdin` (0), `stdout` (1), `stderr` (2) và kỹ thuật chuyển hướng dữ liệu với `>`, `>>`, `2>`, `2>&1`, `/dev/null`.
+- Xây dựng chuỗi xử lý dữ liệu tự động với đường ống Pipe (`|`) kết hợp các bộ lọc `grep`, `wc`, `sort`, `uniq` và ngã ba đường ống `tee`.
+- Thực hành tìm kiếm tệp tin theo thuộc tính bằng `find` và truy vết nội dung/chuỗi bí mật đệ quy với `grep -rn`.
 
 ### Lab 1: TCP/IP và DNS Trong DevOps (`lab1-tcpip-dns/`)
 - Tính toán phân chia mạng con (Subnetting, CIDR, Network ID, Broadcast IP) cho VPC và mạng container.
