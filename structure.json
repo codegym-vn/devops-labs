@@ -7,8 +7,8 @@
       "title": "Làm Quen Terminal & Điều Hướng Thư Mục Linux"
     },
     {
-      "path": "linux-file-permissions",
-      "title": "Thao Tác Tệp & Phân Quyền Trong Linux"
+      "path": "linux-file-operations",
+      "title": "Thao Tác Tệp & Thư Mục Trong Linux"
     },
     {
       "path": "lab1-tcpip-dns",

@@ -11,7 +11,7 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | Mã Lab | Thư Mục | Công Nghệ Chính | Trọng Tâm Kiến Thức | Thời Lượng |
 |---|---|---|---|---|
 | **Khởi Động** | `linux-terminal-navigation/` | Linux CLI, Bash, FHS, Navigation | Làm chủ Terminal, giải mã Prompt, điều hướng FHS (`cd`, `pwd`), quản lý tệp tin (`mkdir -p`, `touch`, `cp`, `mv`, `rm`) | 30-35 phút |
-| **Phân Quyền** | `linux-file-permissions/` | Linux Security, `chmod`, `chown`, `chgrp` | Mô hình User/Group/Others, giải mã `rwx`, phân quyền số bát phân (755, 644, 600, 400), gán quyền sở hữu Least Privilege | 30-35 phút |
+| **Thao Tác Tệp** | `linux-file-operations/` | Linux CLI, Files & Directories | Khởi tạo cấu trúc dự án đa tầng (`mkdir -p`, `touch`), sao chép/di chuyển/xóa (`cp`, `mv`, `rm`), đọc và theo dõi log (`cat`, `less`, `head`, `tail -f`) | 30-35 phút |
 | **Lab 1** | `lab1-tcpip-dns/` | Linux Networking, `iproute2`, `dig`, DNS | Mô hình TCP/IP 4 tầng, Subnetting & CIDR, Routing Table, phân tích luồng truy vấn DNS | 35-40 phút |
 | **Lab 2** | `lab2-http-ssl-nginx/` | Nginx, OpenSSL, TLS 1.3, X.509 | Giao thức HTTP/HTTPS, bắt tay TLS 1.3 Handshake, SSL Termination, phân tích chứng chỉ số | 35-40 phút |
 | **Lab 3** | `lab3-ssh-firewall/` | OpenSSH, UFW Firewall, Ed25519 | SSH Hardening (đổi cổng, tắt mật khẩu), mã hóa đường hầm SSH Tunneling, tường lửa UFW | 35-40 phút |
@@ -46,11 +46,11 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Làm chủ bản đồ cây thư mục chuẩn FHS (`/`, `/etc`, `/var/log`, `/tmp`), phân biệt đường dẫn Tuyệt đối vs Tương đối và các ký hiệu đặc biệt (`.`, `..`, `~`, `-`).
 - Khởi tạo kiến trúc thư mục đa cấp với `mkdir -p` (Brace Expansion), tạo tệp với `touch`, sao chép đệ quy `cp -r`, di chuyển/đổi tên `mv`, xóa dữ liệu với `rm` và trực quan hóa với `tree`.
 
-### Nền Tảng: Thao Tác Tệp & Phân Quyền Trong Linux (`linux-file-permissions/`)
-- Mổ xẻ chi tiết chuỗi 10 ký tự quyền hạn (`ls -l`), phân biệt loại tệp và 3 nhóm đối tượng User, Group, Others.
-- Phân tích sự khác biệt cốt lõi của bộ quyền `rwx` khi áp dụng trên File so với Thư mục.
-- Làm chủ lệnh `chmod` theo cả hai phương pháp Ký hiệu (`+x`, `u=rw,go=r`) và Số bát phân Octal (`755`, `644`, `600`, `400`).
-- Thiết lập quyền sở hữu người dùng và nhóm dịch vụ với `chown` và `chgrp` theo nguyên tắc đặc quyền tối thiểu (Least Privilege).
+### Nền Tảng: Thao Tác Tệp & Thư Mục Trong Linux (`linux-file-operations/`)
+- Khởi tạo kiến trúc dự án đa tầng với `mkdir -p` (Brace Expansion), tạo tệp và ghi dữ liệu với `touch`, `echo >` và Here-Doc.
+- Thực hiện sao lưu giữ thuộc tính (`cp -p`), sao chép đệ quy (`cp -r`), di chuyển và đổi tên tệp/thư mục (`mv`).
+- Dọn dẹp tệp tin an toàn với `rm` và `rmdir`, phòng ngừa các sự cố rủi ro dữ liệu.
+- Đọc, kiểm tra và phân tích tệp nhật ký ứng dụng với bộ công cụ `cat -n`, `less`, `head`, `tail`, `wc -l` và giám sát thời gian thực `tail -f`.
 
 ### Lab 1: TCP/IP và DNS Trong DevOps (`lab1-tcpip-dns/`)
 - Tính toán phân chia mạng con (Subnetting, CIDR, Network ID, Broadcast IP) cho VPC và mạng container.

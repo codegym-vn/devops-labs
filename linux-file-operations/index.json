@@ -1,0 +1,36 @@
+{
+  "title": "Thao Tác Tệp & Thư Mục Trong Linux",
+  "description": "Làm chủ các thao tác cốt lõi trên tệp và thư mục: Khởi tạo cấu trúc dự án đa tầng với mkdir và touch, kỹ thuật sao chép, di chuyển, đổi tên, xóa an toàn với cp/mv/rm, và kỹ năng đọc, xem, theo dõi log thời gian thực với cat, less, head, tail.",
+  "difficulty": "Beginner",
+  "time": "30-35 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khởi Tạo Tệp & Cấu Trúc Thư Mục Đa Tầng",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Sao Chép, Di Chuyển, Đổi Tên & Xóa Tệp/Thư Mục",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Đọc, Xem & Theo Dõi Nội Dung Tệp Tin",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}
