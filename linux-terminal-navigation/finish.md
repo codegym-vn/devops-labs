@@ -31,7 +31,7 @@ Từ đây, bạn đã hoàn toàn tự tin thao tác trên bất kỳ máy ch�
 1. **`Tab` (Auto-completion):** Gõ 1-2 chữ cái đầu rồi bấm `Tab`. Shell sẽ tự động hoàn thiện tên file/thư mục/lệnh, giúp tránh lỗi gõ sai chính tả.
 2. **`Ctrl + C` (Cancel / Terminate):** Hủy ngay lập tức lệnh đang chạy nếu bị treo hoặc gõ nhầm.
 3. **`Ctrl + L` (Clear Screen):** Xóa sạch màn hình terminal cho gọn gàng (tương đương lệnh `clear`) mà không mất lịch sử.
-4. **`Mũi tên Lên / Xuống` ($\uparrow / \downarrow$):** Duyệt lại các câu lệnh đã gõ trước đó trong lịch sử.
+4. **`Mũi tên Lên / Xuống` (↑ / ↓):** Duyệt lại các câu lệnh đã gõ trước đó trong lịch sử.
 5. **`Ctrl + R` (Reverse Search):** Tìm kiếm thông minh câu lệnh cũ trong lịch sử bash bằng từ khóa.
 
 ---

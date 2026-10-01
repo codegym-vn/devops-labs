@@ -35,9 +35,9 @@ Chuỗi ký tự này được cấu thành từ 5 thành phần quan trọng:
 
 ## 2. Quy Tắc Cú Pháp Lệnh Linux Tiêu Chuẩn
 
-Hầu hết mọi câu lệnh trong Linux đều tuân thủ một công thức kinh điển gồm 3 phần:
-
-$$\text{command} \quad [\text{options/flags}] \quad [\text{arguments}]$$
+```text
+command [options/flags] [arguments]
+```
 
 - **`command` (Tên lệnh):** Hành động muốn thực hiện (ví dụ: `ls`, `mkdir`, `rm`, `date`).
 - **`options` (Tùy chọn / Cờ hiệu):** Tinh chỉnh hành vi của lệnh, thường bắt đầu bằng dấu gạch ngang:
