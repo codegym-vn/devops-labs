@@ -35,6 +35,7 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | **Lab 20** | `lab20-k8s-pod-deployment-probes/` | Pod, Deployment, ReplicaSet, ConfigMap, Secret, Probes | Đóng gói Pod với giới hạn tài nguyên (Requests/Limits), tự phục hồi & scale với Deployment, nạp ConfigMap/Secret và kiểm tra sức khỏe Liveness/Readiness | 40-45 phút |
 | **Lab 21** | `lab21-k8s-service-ingress-namespace-rbac/` | Namespace, ClusterIP, NodePort, Ingress, RBAC, ServiceAccount | Phân vùng tài nguyên Namespace, cân bằng tải ClusterIP & NodePort, định tuyến L7 với Ingress và kiểm soát truy cập phân quyền RBAC | 45-50 phút |
 | **Lab 22** | `lab22-k8s-storage-statefulset-hpa-helm/` | StorageClass, PVC, StatefulSet, Headless Service, HPA, Helm | Cấp phát động StorageClass & PVC, triển khai cơ sở dữ liệu StatefulSet, tự động mở rộng theo tải với HPA và đóng gói ứng dụng bằng Helm Chart | 45-50 phút |
+| **Lab 23** | `lab23-cicd-pipeline-test-package/` | GitHub Actions, act, Go test, Docker Registry | Pipeline as Code, quality gate (gofmt, vet, test, coverage 70%), Fail-Fast, đóng gói image gắn tag Git SHA, publish registry, smoke test & rollback | 45-50 phút |
 
 ---
 
@@ -191,6 +192,13 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Triển khai cụm cơ sở dữ liệu có trạng thái với StatefulSet, Headless Service và cơ chế tự động sinh ổ đĩa độc lập qua `volumeClaimTemplates`.
 - Thiết lập tự động co giãn quy mô số lượng bản sao theo tải CPU thời gian thực bằng Horizontal Pod Autoscaler (HPA) và Metrics-Server.
 - Đóng gói chuẩn hóa ứng dụng microservice thành Helm Chart, tham số hóa cấu hình qua Values và quản trị vòng đời phát hành ứng dụng.
+
+### Lab 23: Xây Dựng Pipeline CI/CD Cơ Bản — Kiểm Thử & Đóng Gói Ứng Dụng (`lab23-cicd-pipeline-test-package/`)
+- Viết workflow GitHub Actions (Pipeline as Code) với trigger, job, step và chạy cục bộ bằng `act` trên runner container.
+- Thiết lập chuỗi quality gate: kiểm tra format `gofmt`, phân tích tĩnh `go vet`, unit test và ngưỡng coverage 70%.
+- Thực hành vòng Fail-Fast trên nhánh tính năng có lỗi: đọc log pipeline đỏ, sửa format và bug logic, rebase và merge an toàn vào `main`.
+- Đóng gói Docker image bất biến với job phụ thuộc `needs`, điều kiện `if`, gắn tag Git SHA + `latest`, publish lên registry nội bộ và lưu artifact coverage.
+- Tự động smoke test image sau build, phát hành phiên bản mới và diễn tập rollback bằng tag SHA.
 
 ---
 

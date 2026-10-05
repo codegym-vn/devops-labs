@@ -1,6 +1,6 @@
 {
   "title": "Khóa Thực Hành DevOps, Networking & Cloud",
-  "description": "Chuỗi bài thực hành chuyên sâu chuẩn Production: TCP/IP & DNS, HTTP/HTTPS & SSL/TLS, SSH Hardening & UFW, Nginx Load Balancing & Connection Pooling, Server Monitoring & Webhook Alerting, Git Internals & Reflog, Branching Strategy & PR Workflows, PostgreSQL & Redis Cache-Aside & Flyway Migration, Docker CLI & Image Layers, Docker Runtime Resources, Log Rotation & Graceful Shutdown, Production Multi-stage Dockerfile, Cloud VPC & EC2 & Security Groups, Application Load Balancer & Auto Scaling, FinOps & Cost Optimization.",
+  "description": "Chuỗi bài thực hành chuyên sâu chuẩn Production: TCP/IP & DNS, HTTP/HTTPS & SSL/TLS, SSH Hardening & UFW, Nginx Load Balancing & Connection Pooling, Server Monitoring & Webhook Alerting, Git Internals & Reflog, Branching Strategy & PR Workflows, PostgreSQL & Redis Cache-Aside & Flyway Migration, Docker CLI & Image Layers, Docker Runtime Resources, Log Rotation & Graceful Shutdown, Production Multi-stage Dockerfile, Cloud VPC & EC2 & Security Groups, Application Load Balancer & Auto Scaling, FinOps & Cost Optimization, CI/CD Pipeline.",
   "items": [
     {
       "path": "linux-terminal-navigation",
@@ -101,6 +101,10 @@
     {
       "path": "lab22-k8s-storage-statefulset-hpa-helm",
       "title": "Lab 22: Thực hành cấp phát động StorageClass, triển khai StatefulSet, cấu hình HPA và đóng gói Helm Chart"
+    },
+    {
+      "path": "lab23-cicd-pipeline-test-package",
+      "title": "Lab 23: Thực hành xây dựng pipeline CI/CD cơ bản kiểm thử và đóng gói ứng dụng"
     }
   ]
 }
