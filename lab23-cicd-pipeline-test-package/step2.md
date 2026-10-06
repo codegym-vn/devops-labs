@@ -98,6 +98,18 @@ Thêm vào job `test` một step **ngay sau step Unit test**:
 - In ra giá trị coverage hiện tại
 - Nếu coverage **nhỏ hơn 70** thì in cảnh báo và `exit 1`
 
+> **Gợi ý cho step kiểm tra coverage:**
+> ```yaml
+>       - name: Coverage gate (>= 70%)
+>         run: |
+>           COVERAGE=$(go tool cover -func=coverage.out | awk '/^total:/ {gsub("%","",$3); print $3}')
+>           echo "Total coverage: ${COVERAGE}%"
+>           if ! awk -v c="$COVERAGE" 'BEGIN { exit (c >= 70) ? 0 : 1 }'; then
+>             echo "Coverage ${COVERAGE}% thap hon nguong 70%"
+>             exit 1
+>           fi
+> ```
+
 Commit thay đổi với thông điệp `ci: them cong chat luong coverage 70%`, rồi chạy pipeline và lưu log:
 
 ```bash

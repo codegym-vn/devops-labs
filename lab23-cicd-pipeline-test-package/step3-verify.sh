@@ -20,7 +20,10 @@ check() {
   fi
 }
 check '^[[:space:]]+package:' "Workflow chua co job id 'package'."
-check 'needs:[[:space:]]*\[?[[:space:]]*test' "Job 'package' chua khai bao 'needs: test'."
+if ! echo "$WF_CONTENT" | grep -A2 'needs:' | grep -q 'test'; then
+  echo "[ERROR] Job 'package' chua khai bao 'needs: test'."
+  exit 1
+fi
 check 'refs/heads/main' "Job 'package' chua co dieu kien chi chay tren nhanh main (if: github.ref == 'refs/heads/main')."
 check 'GITHUB_SHA' "Chua dung bien GITHUB_SHA de tinh tag image."
 check 'docker build' "Job 'package' chua co lenh 'docker build'."

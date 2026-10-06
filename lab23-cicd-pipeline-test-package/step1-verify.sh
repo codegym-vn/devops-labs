@@ -35,6 +35,7 @@ check() {
 }
 check '^on:|^"on":|^true:' "Workflow chua khai bao trigger 'on:'."
 check 'push' "Workflow chua co trigger 'push'."
+check 'feature' "Trigger 'push' can khai bao ca nhanh 'feature/**'."
 check '^[[:space:]]+test:' "Chua tim thay job co id 'test'."
 check 'actions/checkout@' "Job 'test' chua co step 'actions/checkout@v4'."
 check 'actions/setup-go@' "Job 'test' chua co step 'actions/setup-go@v5'."

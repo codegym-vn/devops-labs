@@ -5,6 +5,8 @@
 # Khoi tao repo mau /root/cicd-app (nhanh main + nhanh feature/discount co bug)
 # =====================================================================
 
+export PATH="/usr/local/go/bin:/usr/local/bin:$PATH"
+
 STATUS_FILE="/tmp/lab-status.log"
 GO_VERSION="1.22.12"
 ACT_VERSION="v0.2.88"
@@ -210,7 +212,8 @@ EOF
 # Chuan hoa format bang gofmt (heredoc dung space, gofmt doi sang tab)
 gofmt -w main.go main_test.go 2> /dev/null || true
 
-git init -q -b main
+git init -q
+git checkout -B main -q
 git remote add origin https://github.com/devops-labs/cicd-app.git
 git add .
 git commit -q -m "feat: khoi tao dich vu cicd-app voi endpoint /healthz"

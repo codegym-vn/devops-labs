@@ -17,7 +17,7 @@ Thuật ngữ đến từ ngành điện tử: cắm điện thiết bị mới,
 Một smoke test điển hình cho dịch vụ web:
 
 ```bash
-docker run -d --name app-smoke -p 8088:8080 myimage:tag
+docker run -d --name cicd-app-smoke -p 8088:8080 myimage:tag
 curl -fsS http://localhost:8088/healthz     # -f: trả về exit code lỗi nếu HTTP >= 400
 ```
 
@@ -28,7 +28,7 @@ for i in $(seq 1 10); do
   curl -fsS http://localhost:8088/healthz && exit 0
   sleep 1
 done
-echo "Smoke test that bai"; docker logs app-smoke; exit 1
+echo "Smoke test that bai"; docker logs cicd-app-smoke; exit 1
 ```
 
 ---
@@ -65,6 +65,25 @@ Thêm step `Smoke test` vào **cuối job `package`** (sau khi push image), yêu
 - Chạy container **nền** tên `cicd-app-smoke` từ image `$IMAGE:$TAG`, ánh xạ cổng `8088` của máy sang `8080` của container
 - Gọi `http://localhost:8088/healthz` bằng `curl -fsS`, **thử lại tối đa 10 lần**, mỗi lần cách nhau 1 giây
 - Nếu sau 10 lần vẫn thất bại: in log container và `exit 1`
+
+> **Gợi ý cho step Smoke test:**
+> ```yaml
+>       - name: Smoke test
+>         run: |
+>           docker rm -f cicd-app-smoke 2>/dev/null || true
+>           docker run -d --name cicd-app-smoke -p 8088:8080 "$IMAGE:$TAG"
+>           for i in $(seq 1 10); do
+>             if curl -fsS http://localhost:8088/healthz; then
+>               echo ""
+>               echo "Smoke test passed (lan thu $i)"
+>               exit 0
+>             fi
+>             sleep 1
+>           done
+>           echo "Smoke test that bai"
+>           docker logs cicd-app-smoke
+>           exit 1
+> ```
 
 > Container smoke test được **giữ lại** sau khi pipeline kết thúc, đóng vai trò môi trường "staging" để bạn kiểm tra tiếp.
 
