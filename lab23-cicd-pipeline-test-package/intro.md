@@ -38,22 +38,7 @@ Killercoda không kết nối tới GitHub thật, vì vậy chúng ta dùng **`
 
 ## Kiến Trúc Pipeline Sẽ Xây Dựng
 
-```mermaid
-graph LR
-    DEV["Developer: git commit"] -->|"act push"| RUNNER["act Runner (Docker)"]
-    subgraph "Workflow ci.yml"
-        RUNNER --> J1["Job test: gofmt, go vet, go test, coverage gate"]
-        J1 -->|"needs: test"| J2["Job package: docker build, docker push"]
-        J2 --> J3["Smoke test: curl /healthz"]
-    end
-    J1 -->|"upload-artifact"| ART["Artifact: coverage report"]
-    J2 -->|"sha-xxxxxxx, latest"| REG["Registry localhost:5000"]
-
-    style J1 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px;
-    style J2 fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    style J3 fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    style REG fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
-```
+![Kiến Trúc Pipeline CI/CD Sẽ Xây Dựng](./img/pipeline-architecture.png)
 
 ---
 
