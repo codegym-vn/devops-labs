@@ -142,9 +142,9 @@ jobs:
 
 | Tag | Dùng khi | Production? |
 | :--- | :--- | :---: |
-| `latest` | Thử nghiệm nhanh | ❌ |
-| `sha-<7 ký tự>` | Mọi commit trên `main`, truy vết và rollback | ✅ |
-| `1.2.0` (SemVer) | Phát hành chính thức qua Git tag | ✅ |
+| `latest` | Thử nghiệm nhanh | Khong |
+| `sha-<7 ký tự>` | Mọi commit trên `main`, truy vết và rollback | Co |
+| `1.2.0` (SemVer) | Phát hành chính thức qua Git tag | Co |
 
 ---
 

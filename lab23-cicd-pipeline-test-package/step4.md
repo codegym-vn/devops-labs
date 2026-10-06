@@ -37,11 +37,11 @@ echo "Smoke test that bai"; docker logs cicd-app-smoke; exit 1
 
 ```mermaid
 graph LR
-    A["Sửa code v1.1.0"] --> B["git commit"]
+    A["Sua code v1.1.0"] --> B["git commit"]
     B --> C["act push"]
-    C --> D["test ✅"]
-    D --> E["package: sha-new"]
-    E --> F["smoke test ✅"]
+    C --> D["Job test: PASS"]
+    D --> E["Job package: sha-new"]
+    E --> F["Smoke test: PASS"]
     F --> G["Registry: sha-old, sha-new, latest"]
     G -.->|"Rollback"| H["docker run sha-old"]
 ```

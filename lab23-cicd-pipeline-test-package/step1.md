@@ -190,7 +190,7 @@ act push -j test 2>&1 | tee /root/ci-logs/step1.log
 > **Lưu ý:** Ở lần chạy đầu tiên, `actions/setup-go` sẽ tải bộ cài Go vào runner nên có thể mất từ 30-60 giây.
 
 **Quan sát đầu ra:**
-- Mỗi step khi chạy thành công sẽ có biểu tượng `✅ Success`.
-- Dòng kết thúc hiển thị `🏁 Job succeeded`.
+- Mỗi step khi chạy thành công sẽ hiển thị trạng thái `Success`.
+- Dòng kết thúc hiển thị thông báo `Job succeeded`.
 
 Sau khi hoàn thành, hãy nhấn nút **Check** để hệ thống kiểm tra workflow và kết quả thực thi của bạn.

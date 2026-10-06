@@ -19,7 +19,7 @@ Viết code  →  CI  →  Staging  →  Production
 - Step nào thất bại (exit code khác 0) thì dừng ngay, không lãng phí tài nguyên chạy các step sau.
 
 ```text
-gofmt ──✅──► go vet ──✅──► go test ──❌──► (dừng, các step sau bị bỏ qua)
+gofmt ──[PASS]──► go vet ──[PASS]──► go test ──[FAIL]──► (dung, cac step sau bi bo qua)
 ```
 
 ---
@@ -84,7 +84,7 @@ act push -j test 2>&1 | tee /root/ci-logs/step2-fail.log
 ```{{exec}}
 
 **Phân tích kết quả:**
-- Step `Check formatting (gofmt)` thất bại (`❌ Failure`), job dừng ngay lập tức.
+- Step `Check formatting (gofmt)` thất bại (`Failure`), job dừng ngay lập tức.
 - Các step phía sau (`go vet`, `Unit test`) hoàn toàn bị bỏ qua nhờ cơ chế **Fail-Fast**, giúp tiết kiệm tài nguyên tính toán.
 - File vi phạm được hiển thị rõ trong log là `pricing.go`.
 
@@ -106,7 +106,7 @@ Chạy lại pipeline để kiểm tra:
 act push -j test
 ```{{exec}}
 
-Lần này step format và static analysis đều vượt qua (`✅ Success`), nhưng step `Unit test` lại báo đỏ (`❌ Failure`) tại `TestApplyDiscount`:
+Lần này step format và static analysis đều vượt qua (`Success`), nhưng step `Unit test` lại báo lỗi (`Failure`) tại `TestApplyDiscount`:
 ```text
 ApplyDiscount(100000, 20) = 20000, want 80000
 ```
@@ -215,7 +215,7 @@ git commit -m "ci: them cong chat luong coverage 70%"
 act push -j test 2>&1 | tee /root/ci-logs/step2-pass.log
 ```{{exec}}
 
-Quan sát log: tổng coverage đạt khoảng 82.4% (vượt ngưỡng 70%) và toàn bộ job đều thành công (`🏁 Job succeeded`).
+Quan sát log: tổng coverage đạt khoảng 82.4% (vượt ngưỡng 70%) và toàn bộ job đều thành công (`Job succeeded`).
 
 ---
 
