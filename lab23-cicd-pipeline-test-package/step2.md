@@ -58,74 +58,174 @@ awk -v c="78.6" 'BEGIN { exit (c >= 70) ? 0 : 1 }' && echo "Dat" || echo "Khong 
 
 ---
 
-## 3. Thử Thách Thực Hành (DIY Challenge)
+## 3. Thực Hành Từng Bước (Step-by-Step)
 
-### Nhiệm vụ 1: Đưa workflow vào nhánh tính năng
+### Bước 2.1 — Đồng bộ workflow sang nhánh tính năng bằng Git Rebase
 
-Nhánh `feature/discount` được tạo **trước khi** có `ci.yml`, nên chưa có pipeline. Hãy chuyển sang nhánh đó và **rebase lên `main`** (kỹ thuật ở Lab 7):
+Nhánh `feature/discount` được tạo trước khi có file `ci.yml`. Chuyển sang nhánh tính năng và dùng kỹ thuật rebase để đưa các commit mới nhất từ `main` sang:
 
 ```bash
 cd /root/cicd-app
 git checkout feature/discount
 git rebase main
-ls .github/workflows/
-```
+ls -la .github/workflows/
+```{{exec}}
 
-### Nhiệm vụ 2: Chạy pipeline và quan sát thất bại
+Lúc này, nhánh `feature/discount` đã có file `.github/workflows/ci.yml`.
+
+---
+
+### Bước 2.2 — Kích hoạt pipeline và quan sát thất bại (Pipeline Đỏ)
+
+Chạy pipeline cho nhánh hiện tại và lưu nhật ký lỗi vào `/root/ci-logs/step2-fail.log`:
 
 ```bash
 act push -j test 2>&1 | tee /root/ci-logs/step2-fail.log
-```
+```{{exec}}
 
-Pipeline sẽ **đỏ**. Hãy đọc log và trả lời:
-- Step nào thất bại? Các step phía sau có được chạy không?
-- File nào bị báo lỗi?
+**Phân tích kết quả:**
+- Step `Check formatting (gofmt)` thất bại (`❌ Failure`), job dừng ngay lập tức.
+- Các step phía sau (`go vet`, `Unit test`) hoàn toàn bị bỏ qua nhờ cơ chế **Fail-Fast**, giúp tiết kiệm tài nguyên tính toán.
+- File vi phạm được hiển thị rõ trong log là `pricing.go`.
 
-### Nhiệm vụ 3: Sửa lần lượt từng lỗi
+---
 
-1. **Lỗi format:** xem chênh lệch bằng `gofmt -d pricing.go`, sửa bằng `gofmt -w pricing.go`, rồi commit với thông điệp `style: chuan hoa format pricing.go`.
-2. Chạy lại `act push -j test`. Pipeline tiếp tục đỏ ở một step khác. Đọc thông báo `FAIL` trong log để biết test nào sai, giá trị mong đợi là bao nhiêu.
-3. **Lỗi logic:** mở `pricing.go`, sửa công thức trong hàm `ApplyDiscount` sao cho trả về **giá sau khi giảm** (ví dụ 100000 giảm 20% còn 80000). Kiểm tra cục bộ bằng `go test ./...`, rồi commit với thông điệp `fix: sua cong thuc tinh gia giam`.
+### Bước 2.3 — Chuẩn hóa format và phát hiện lỗi logic
 
-> **Không** được sửa file test để "ép" pipeline xanh. Test mô tả đúng nghiệp vụ, code mới là phần sai.
-
-### Nhiệm vụ 4: Bổ sung cổng chất lượng coverage
-
-Thêm vào job `test` một step **ngay sau step Unit test**:
-
-- **Tên step:** `Coverage gate (>= 70%)`
-- Dùng `go tool cover -func=coverage.out` để lấy tổng coverage
-- In ra giá trị coverage hiện tại
-- Nếu coverage **nhỏ hơn 70** thì in cảnh báo và `exit 1`
-
-> **Gợi ý cho step kiểm tra coverage:**
-> ```yaml
->       - name: Coverage gate (>= 70%)
->         run: |
->           COVERAGE=$(go tool cover -func=coverage.out | awk '/^total:/ {gsub("%","",$3); print $3}')
->           echo "Total coverage: ${COVERAGE}%"
->           if ! awk -v c="$COVERAGE" 'BEGIN { exit (c >= 70) ? 0 : 1 }'; then
->             echo "Coverage ${COVERAGE}% thap hon nguong 70%"
->             exit 1
->           fi
-> ```
-
-Commit thay đổi với thông điệp `ci: them cong chat luong coverage 70%`, rồi chạy pipeline và lưu log:
+Dùng công cụ `gofmt -w` để tự động chuẩn hóa lại thụt lề (thay 4 spaces bằng tabs) cho `pricing.go`:
 
 ```bash
-act push -j test 2>&1 | tee /root/ci-logs/step2-pass.log
+gofmt -w pricing.go
+git add pricing.go
+git commit -m "style: chuan hoa format pricing.go"
+```{{exec}}
+
+Chạy lại pipeline để kiểm tra:
+
+```bash
+act push -j test
+```{{exec}}
+
+Lần này step format và static analysis đều vượt qua (`✅ Success`), nhưng step `Unit test` lại báo đỏ (`❌ Failure`) tại `TestApplyDiscount`:
+```text
+ApplyDiscount(100000, 20) = 20000, want 80000
 ```
+Mã nguồn hàm giảm giá đang trả về *số tiền được giảm* (20.000) thay vì *giá sau khi giảm* (80.000).
 
-Lần này pipeline phải **xanh** và log in ra giá trị coverage (khoảng 82%).
+---
 
-### Nhiệm vụ 5: Merge vào main
+### Bước 2.4 — Sửa lỗi logic trong hàm `ApplyDiscount`
 
-Khi pipeline đã xanh, hợp nhất nhánh tính năng vào `main`:
+Cập nhật lại tệp `pricing.go` với công thức tính đúng: `price - (price * percent / 100)`:
+
+```bash
+cat << 'EOF' > pricing.go
+package main
+
+import "errors"
+
+// ErrInvalidPercent duoc tra ve khi phan tram giam gia nam ngoai khoang 0-100.
+var ErrInvalidPercent = errors.New("percent must be between 0 and 100")
+
+// ApplyDiscount tra ve gia sau khi giam (don vi VND).
+func ApplyDiscount(price int, percent int) (int, error) {
+    if percent < 0 || percent > 100 {
+        return 0, ErrInvalidPercent
+    }
+    return price - (price * percent / 100), nil
+}
+EOF
+```{{exec}}
+
+Kiểm tra cục bộ xem test đã pass hay chưa:
+
+```bash
+go test -v ./...
+```{{exec}}
+
+Commit bản sửa lỗi vào Git:
+
+```bash
+git add pricing.go
+git commit -m "fix: sua cong thuc tinh gia giam"
+```{{exec}}
+
+---
+
+### Bước 2.5 — Bổ sung cổng chất lượng Code Coverage 70% vào workflow
+
+Cập nhật tệp `.github/workflows/ci.yml` để bổ sung step `Coverage gate (>= 70%)` ngay sau step unit test:
+
+```bash
+cat << 'EOF' > .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint & Unit Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: false
+
+      - name: Check formatting (gofmt)
+        run: |
+          UNFORMATTED=$(gofmt -l .)
+          if [ -n "$UNFORMATTED" ]; then
+            echo "Cac file chua dung chuan gofmt:"
+            echo "$UNFORMATTED"
+            exit 1
+          fi
+
+      - name: Static analysis (go vet)
+        run: go vet ./...
+
+      - name: Unit test
+        run: go test -v -coverprofile=coverage.out ./...
+
+      - name: Coverage gate (>= 70%)
+        run: |
+          COVERAGE=$(go tool cover -func=coverage.out | awk '/^total:/ {gsub("%","",$3); print $3}')
+          echo "Total coverage: ${COVERAGE}%"
+          if ! awk -v c="$COVERAGE" 'BEGIN { exit (c >= 70) ? 0 : 1 }'; then
+            echo "Coverage ${COVERAGE}% thap hon nguong 70%"
+            exit 1
+          fi
+EOF
+```{{exec}}
+
+Commit thay đổi và chạy pipeline xác nhận trạng thái xanh hoàn toàn:
+
+```bash
+git add .github/workflows/ci.yml
+git commit -m "ci: them cong chat luong coverage 70%"
+act push -j test 2>&1 | tee /root/ci-logs/step2-pass.log
+```{{exec}}
+
+Quan sát log: tổng coverage đạt khoảng 82.4% (vượt ngưỡng 70%) và toàn bộ job đều thành công (`🏁 Job succeeded`).
+
+---
+
+### Bước 2.6 — Hợp nhất nhánh tính năng vào nhánh `main`
+
+Sau khi code đã đáp ứng toàn bộ các tiêu chuẩn kiểm thử, chuyển về `main` và hợp nhất:
 
 ```bash
 git checkout main
 git merge --no-ff feature/discount -m "Merge branch 'feature/discount'"
 git log --oneline --graph -8
-```
+```{{exec}}
 
-Sau khi hoàn thành, hãy bấm nút **Check** để hệ thống kiểm tra mã nguồn trên `main`, cổng chất lượng và lịch sử chạy pipeline.
+Sau khi hoàn thành, hãy nhấn nút **Check** để hệ thống kiểm tra mã nguồn, cổng chất lượng và lịch sử pipeline.

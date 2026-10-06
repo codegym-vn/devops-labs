@@ -69,83 +69,147 @@ Trong lab này, `act` lưu artifact vào thư mục `/tmp/artifacts` (đã cấu
 
 ---
 
-## 5. Thử Thách Thực Hành (DIY Challenge)
+## 5. Thực Hành Từng Bước (Step-by-Step)
 
-Đảm bảo bạn đang ở nhánh `main`:
+### Bước 3.1 — Đảm bảo đang làm việc trên nhánh `main`
+
+Chuyển về nhánh `main` trước khi bổ sung quy trình đóng gói:
 
 ```bash
 cd /root/cicd-app
 git checkout main
-```
+```{{exec}}
 
-### Nhiệm vụ 1: Lưu báo cáo coverage
+---
 
-Thêm vào **cuối job `test`** step `Upload coverage report` dùng `actions/upload-artifact@v4`, tên artifact `coverage-report`, đường dẫn `coverage.out`.
+### Bước 3.2 — Cập nhật workflow thêm lưu Artifact và Job `package`
 
-### Nhiệm vụ 2: Thêm job `package`
+Cập nhật tệp `.github/workflows/ci.yml` để hoàn thiện cả 2 job: `test` (có thêm step upload artifact) và `package` (chịu trách nhiệm build và publish Docker image):
 
-Thêm job mới có id **`package`**, tên hiển thị `Build & Publish Image`, yêu cầu:
+```bash
+cat << 'EOF' > .github/workflows/ci.yml
+name: CI
 
-- Chạy trên `ubuntu-latest`
-- **Phụ thuộc** job `test`
-- **Chỉ chạy** khi `github.ref` là `refs/heads/main`
-- Khai báo biến môi trường cấp job: `IMAGE: localhost:5000/cicd-app`
-- Các step:
-  1. Checkout mã nguồn bằng `actions/checkout@v4`
-  2. **Tính tag:** ghi `TAG=sha-${GITHUB_SHA::7}` vào `$GITHUB_ENV`
-  3. **Build image:** `docker build` gắn **đồng thời 2 tag** `$IMAGE:$TAG` và `$IMAGE:latest`
-  4. **Push image:** `docker push` cả 2 tag lên registry
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
 
-> **Gợi ý cấu trúc job `package`:**
-> ```yaml
->   package:
->     name: Build & Publish Image
->     needs: test
->     if: github.ref == 'refs/heads/main'
->     runs-on: ubuntu-latest
->     env:
->       IMAGE: localhost:5000/cicd-app
->     steps:
->       - name: Checkout source
->         uses: actions/checkout@v4
->       - name: Compute image tag
->         run: echo "TAG=sha-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
->       - name: Build image
->         run: docker build -t "$IMAGE:$TAG" -t "$IMAGE:latest" .
->       - name: Push image
->         run: |
->           docker push "$IMAGE:$TAG"
->           docker push "$IMAGE:latest"
-> ```
+jobs:
+  test:
+    name: Lint & Unit Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-> Runner của `act` dùng chung Docker daemon và mạng `host` với máy, nên lệnh `docker` trong job đẩy được image lên `localhost:5000`.
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: false
 
-### Nhiệm vụ 3: Commit rồi chạy toàn bộ pipeline
+      - name: Check formatting (gofmt)
+        run: |
+          UNFORMATTED=$(gofmt -l .)
+          if [ -n "$UNFORMATTED" ]; then
+            echo "Cac file chua dung chuan gofmt:"
+            echo "$UNFORMATTED"
+            exit 1
+          fi
+
+      - name: Static analysis (go vet)
+        run: go vet ./...
+
+      - name: Unit test
+        run: go test -v -coverprofile=coverage.out ./...
+
+      - name: Coverage gate (>= 70%)
+        run: |
+          COVERAGE=$(go tool cover -func=coverage.out | awk '/^total:/ {gsub("%","",$3); print $3}')
+          echo "Total coverage: ${COVERAGE}%"
+          if ! awk -v c="$COVERAGE" 'BEGIN { exit (c >= 70) ? 0 : 1 }'; then
+            echo "Coverage ${COVERAGE}% thap hon nguong 70%"
+            exit 1
+          fi
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.out
+
+  package:
+    name: Build & Publish Image
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      IMAGE: localhost:5000/cicd-app
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Compute image tag
+        run: echo "TAG=sha-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
+      - name: Build image
+        run: docker build -t "$IMAGE:$TAG" -t "$IMAGE:latest" .
+
+      - name: Push image
+        run: |
+          docker push "$IMAGE:$TAG"
+          docker push "$IMAGE:latest"
+EOF
+```{{exec}}
+
+**Giải thích các điểm cốt lõi trong job `package`:**
+- `needs: test`: Thiết lập phụ thuộc chuỗi — chỉ khi job `test` thành công thì job `package` mới được kích hoạt.
+- `if: github.ref == 'refs/heads/main'`: Điều kiện bảo vệ — chỉ phát hành image khi mã nguồn nằm trên nhánh chính thức `main`.
+- `TAG=sha-${GITHUB_SHA::7}`: Trích xuất 7 ký tự hash SHA đầu tiên của commit hiện tại và đưa vào `$GITHUB_ENV` để các step sau có thể sử dụng `$TAG`.
+- `docker build -t "$IMAGE:$TAG" -t "$IMAGE:latest" .`: Đóng gói ứng dụng thành một image bất biến gắn nhãn SHA, đồng thời trỏ nhãn `latest` về bản dựng mới nhất.
+- `docker push`: Đẩy cả 2 tag lên registry nội bộ (`localhost:5000`).
+
+---
+
+### Bước 3.3 — Commit và chạy toàn bộ pipeline
+
+Ghi nhận thay đổi vào Git và kiểm tra danh sách job qua `act`:
 
 ```bash
 git add .github/workflows/ci.yml
 git commit -m "ci: dong goi va publish docker image"
 act -l
+```{{exec}}
+
+Kích hoạt toàn bộ pipeline cho sự kiện `push` và lưu nhật ký:
+
+```bash
 act push 2>&1 | tee /root/ci-logs/step3.log
-```
+```{{exec}}
 
-Quan sát thứ tự: job `package` chỉ bắt đầu **sau khi** job `test` thành công.
+Quan sát thứ tự thực thi: Job `Lint & Unit Test` chạy trước, sau khi hoàn tất thành công thì Job `Build & Publish Image` mới bắt đầu chạy và đẩy image lên registry.
 
-### Nhiệm vụ 4: Kiểm chứng kết quả
+---
 
-Đối chiếu tag trong registry với commit hiện tại:
+### Bước 3.4 — Kiểm chứng kết quả trong Registry và Artifact
+
+So sánh 7 ký tự SHA của commit HEAD với danh sách tag hiện có trong Registry:
 
 ```bash
 git rev-parse --short=7 HEAD
 curl -s http://localhost:5000/v2/cicd-app/tags/list
-```
+```{{exec}}
 
-Kiểm tra artifact coverage:
+Registry sẽ hiển thị cả 2 tag: `latest` và `sha-<7 ký tự SHA>`.
+
+Kiểm tra tệp artifact coverage đã được lưu lại trên máy:
 
 ```bash
 find /tmp/artifacts -type f
-```
+```{{exec}}
 
-**Câu hỏi suy ngẫm:** Nếu chạy `act push` khi đang ở nhánh `feature/discount`, job `package` sẽ thế nào? Vì sao đây là hành vi mong muốn?
+> **Câu hỏi suy ngẫm:** Nếu chạy `act push` khi đang ở nhánh `feature/discount`, job `package` sẽ thế nào? Vì sao đây là hành vi mong muốn?
 
-Sau khi hoàn thành, hãy bấm nút **Check** để hệ thống kiểm tra job đóng gói, image trong registry và artifact.
+Sau khi hoàn thành, hãy nhấn nút **Check** để hệ thống kiểm tra job đóng gói, image trong registry và artifact.

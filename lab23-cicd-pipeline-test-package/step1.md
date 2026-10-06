@@ -96,57 +96,101 @@ act push -j test       # Chỉ chạy job có id là "test"
 
 ---
 
-## 3. Thử Thách Thực Hành (DIY Challenge)
+## 3. Thực Hành Từng Bước (Step-by-Step)
 
-### Nhiệm vụ 1: Viết workflow CI
+### Bước 1.1 — Tạo file định nghĩa workflow CI
 
-Tạo tệp `/root/cicd-app/.github/workflows/ci.yml` với yêu cầu:
+Đảm bảo bạn đang ở thư mục dự án và tạo thư mục chứa workflow `.github/workflows/`:
 
-- **Tên workflow:** `CI`
-- **Trigger (`on`):**
-  - `push` trên các nhánh `main` và `feature/**`
-  - `pull_request` vào nhánh `main`
-- **Một job có id là `test`**, tên hiển thị `Lint & Unit Test`, chạy trên `ubuntu-latest`, gồm các step theo thứ tự:
-  1. Checkout mã nguồn bằng `actions/checkout@v4`
-  2. Cài Go bằng `actions/setup-go@v5` (khai báo trong khối `with:` gồm `go-version: "1.22"` và `cache: false`)
-  3. **Kiểm tra format:** chạy `gofmt -l .`, nếu kết quả **không rỗng** thì in danh sách file và `exit 1`
-  4. **Phân tích tĩnh:** `go vet ./...`
-  5. **Unit test:** `go test -v -coverprofile=coverage.out ./...`
+```bash
+cd /root/cicd-app
+mkdir -p .github/workflows
+```{{exec}}
 
-> **Gợi ý cho step kiểm tra format:** lệnh `gofmt -l` luôn trả về exit code 0 kể cả khi có file sai format, nên bạn phải tự kiểm tra output:
-> ```bash
-> UNFORMATTED=$(gofmt -l .)
-> if [ -n "$UNFORMATTED" ]; then
->   echo "Cac file chua dung chuan gofmt:"
->   echo "$UNFORMATTED"
->   exit 1
-> fi
-> ```
-> Trong YAML, dùng `run: |` để viết lệnh nhiều dòng.
+Tạo tệp `.github/workflows/ci.yml` với cấu hình job `test` hoàn chỉnh:
 
-### Nhiệm vụ 2: Commit và chạy pipeline
+```bash
+cat << 'EOF' > .github/workflows/ci.yml
+name: CI
 
-Commit workflow vào nhánh `main`:
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint & Unit Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: false
+
+      - name: Check formatting (gofmt)
+        run: |
+          UNFORMATTED=$(gofmt -l .)
+          if [ -n "$UNFORMATTED" ]; then
+            echo "Cac file chua dung chuan gofmt:"
+            echo "$UNFORMATTED"
+            exit 1
+          fi
+
+      - name: Static analysis (go vet)
+        run: go vet ./...
+
+      - name: Unit test
+        run: go test -v -coverprofile=coverage.out ./...
+EOF
+```{{exec}}
+
+**Giải thích các thành phần trong workflow:**
+- `on.push.branches`: Kích hoạt pipeline khi có commit đẩy lên `main` hoặc các nhánh tính năng `feature/**`.
+- `actions/checkout@v4`: Tải toàn bộ mã nguồn vào máy runner.
+- `actions/setup-go@v5`: Thiết lập môi trường Go 1.22 trên runner.
+- `gofmt -l .`: Kiểm tra định dạng code. Lệnh in ra danh sách file chưa đúng chuẩn; nếu có file vi phạm thì `exit 1` để dừng pipeline.
+- `go vet ./...`: Phân tích cú pháp tĩnh để phát hiện các lỗi tiềm ẩn.
+- `go test ... -coverprofile=coverage.out`: Chạy toàn bộ unit test và xuất số liệu độ phủ code ra file `coverage.out`.
+
+---
+
+### Bước 1.2 — Commit workflow vào nhánh `main`
+
+Ghi nhận file workflow mới vào lịch sử Git:
 
 ```bash
 git add .github/workflows/ci.yml
 git commit -m "ci: them workflow kiem thu tu dong"
-```
+```{{exec}}
 
-Kiểm tra `act` đã nhận diện được job:
+Kiểm tra `act` đã nhận diện được workflow và job:
 
 ```bash
 act -l
-```
+```{{exec}}
 
-Chạy pipeline và **lưu log** để hệ thống chấm điểm:
+Kết quả sẽ hiển thị bảng gồm job `test` với sự kiện kích hoạt `push` và `pull_request`.
+
+---
+
+### Bước 1.3 — Kích hoạt pipeline bằng `act` và quan sát kết quả
+
+Chạy job `test` thông qua `act` và lưu nhật ký log vào thư mục `/root/ci-logs/`:
 
 ```bash
 act push -j test 2>&1 | tee /root/ci-logs/step1.log
-```
+```{{exec}}
 
-> Lần chạy đầu tiên, `actions/setup-go` cần tải Go về runner nên mất khoảng 30-60 giây.
+> **Lưu ý:** Ở lần chạy đầu tiên, `actions/setup-go` sẽ tải bộ cài Go vào runner nên có thể mất từ 30-60 giây.
 
-Quan sát log: mỗi step được đánh dấu `✅ Success`, cuối cùng là dòng `🏁 Job succeeded`.
+**Quan sát đầu ra:**
+- Mỗi step khi chạy thành công sẽ có biểu tượng `✅ Success`.
+- Dòng kết thúc hiển thị `🏁 Job succeeded`.
 
-Sau khi hoàn thành, hãy bấm nút **Check** để hệ thống kiểm tra workflow và kết quả chạy pipeline.
+Sau khi hoàn thành, hãy nhấn nút **Check** để hệ thống kiểm tra workflow và kết quả thực thi của bạn.
