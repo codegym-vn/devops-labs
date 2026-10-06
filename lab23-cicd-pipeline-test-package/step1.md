@@ -108,7 +108,7 @@ Tạo tệp `/root/cicd-app/.github/workflows/ci.yml` với yêu cầu:
   - `pull_request` vào nhánh `main`
 - **Một job có id là `test`**, tên hiển thị `Lint & Unit Test`, chạy trên `ubuntu-latest`, gồm các step theo thứ tự:
   1. Checkout mã nguồn bằng `actions/checkout@v4`
-  2. Cài Go bằng `actions/setup-go@v5` với `go-version: "1.22"` và `cache: false`
+  2. Cài Go bằng `actions/setup-go@v5` (khai báo trong khối `with:` gồm `go-version: "1.22"` và `cache: false`)
   3. **Kiểm tra format:** chạy `gofmt -l .`, nếu kết quả **không rỗng** thì in danh sách file và `exit 1`
   4. **Phân tích tĩnh:** `go vet ./...`
   5. **Unit test:** `go test -v -coverprofile=coverage.out ./...`

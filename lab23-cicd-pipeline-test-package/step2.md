@@ -83,7 +83,7 @@ Pipeline sẽ **đỏ**. Hãy đọc log và trả lời:
 
 ### Nhiệm vụ 3: Sửa lần lượt từng lỗi
 
-1. **Lỗi format:** xem chênh lệch bằng `gofmt -d pricing.go`, sửa bằng `gofmt -w`, rồi commit với thông điệp `style: chuan hoa format pricing.go`.
+1. **Lỗi format:** xem chênh lệch bằng `gofmt -d pricing.go`, sửa bằng `gofmt -w pricing.go`, rồi commit với thông điệp `style: chuan hoa format pricing.go`.
 2. Chạy lại `act push -j test`. Pipeline tiếp tục đỏ ở một step khác. Đọc thông báo `FAIL` trong log để biết test nào sai, giá trị mong đợi là bao nhiêu.
 3. **Lỗi logic:** mở `pricing.go`, sửa công thức trong hàm `ApplyDiscount` sao cho trả về **giá sau khi giảm** (ví dụ 100000 giảm 20% còn 80000). Kiểm tra cục bộ bằng `go test ./...`, rồi commit với thông điệp `fix: sua cong thuc tinh gia giam`.
 

@@ -89,7 +89,7 @@ Thêm step `Smoke test` vào **cuối job `package`** (sau khi push image), yêu
 
 ### Nhiệm vụ 2: Phát hành phiên bản 1.1.0
 
-1. Sửa hằng số `Version` trong `main.go` từ `"1.0.0"` thành `"1.1.0"`
+1. Sửa hằng số `Version` trong `main.go` từ `"1.0.0"` thành `"1.1.0"` (bằng trình soạn thảo hoặc lệnh `sed -i 's/"1.0.0"/"1.1.0"/' main.go`)
 2. Kiểm tra cục bộ: `go test ./...`
 3. Commit **cả thay đổi workflow và mã nguồn** với thông điệp `feat: phat hanh phien ban 1.1.0`
 4. Chạy pipeline:

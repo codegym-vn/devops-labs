@@ -91,10 +91,32 @@ Thêm job mới có id **`package`**, tên hiển thị `Build & Publish Image`,
 - **Chỉ chạy** khi `github.ref` là `refs/heads/main`
 - Khai báo biến môi trường cấp job: `IMAGE: localhost:5000/cicd-app`
 - Các step:
-  1. Checkout mã nguồn
-  2. **Tính tag:** ghi `TAG=sha-<7 ký tự đầu của GITHUB_SHA>` vào `$GITHUB_ENV`
+  1. Checkout mã nguồn bằng `actions/checkout@v4`
+  2. **Tính tag:** ghi `TAG=sha-${GITHUB_SHA::7}` vào `$GITHUB_ENV`
   3. **Build image:** `docker build` gắn **đồng thời 2 tag** `$IMAGE:$TAG` và `$IMAGE:latest`
   4. **Push image:** `docker push` cả 2 tag lên registry
+
+> **Gợi ý cấu trúc job `package`:**
+> ```yaml
+>   package:
+>     name: Build & Publish Image
+>     needs: test
+>     if: github.ref == 'refs/heads/main'
+>     runs-on: ubuntu-latest
+>     env:
+>       IMAGE: localhost:5000/cicd-app
+>     steps:
+>       - name: Checkout source
+>         uses: actions/checkout@v4
+>       - name: Compute image tag
+>         run: echo "TAG=sha-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+>       - name: Build image
+>         run: docker build -t "$IMAGE:$TAG" -t "$IMAGE:latest" .
+>       - name: Push image
+>         run: |
+>           docker push "$IMAGE:$TAG"
+>           docker push "$IMAGE:latest"
+> ```
 
 > Runner của `act` dùng chung Docker daemon và mạng `host` với máy, nên lệnh `docker` trong job đẩy được image lên `localhost:5000`.
 
