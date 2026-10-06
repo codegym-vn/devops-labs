@@ -137,9 +137,10 @@ func ApplyDiscount(price int, percent int) (int, error) {
 EOF
 ```{{exec}}
 
-Kiểm tra cục bộ xem test đã pass hay chưa:
+Chuẩn hóa format bằng `gofmt` và kiểm tra cục bộ:
 
 ```bash
+gofmt -w pricing.go
 go test -v ./...
 ```{{exec}}
 
