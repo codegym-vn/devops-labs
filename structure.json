@@ -117,6 +117,10 @@
     {
       "path": "lab26-secret-scanning-gitleaks",
       "title": "Lab 26: Tự động quét lộ mật khẩu, token trong mã nguồn với Gitleaks"
+    },
+    {
+      "path": "lab27-vault-secret-management",
+      "title": "Lab 27: Quản trị và inject secret an toàn vào ứng dụng với HashiCorp Vault"
     }
   ]
 }

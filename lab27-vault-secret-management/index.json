@@ -1,0 +1,41 @@
+{
+  "title": "Lab 27: Quản Trị & Inject Secret An Toàn Vào Pipeline Với HashiCorp Vault",
+  "description": "Làm chủ nền tảng quản trị bí mật hàng đầu thế giới: khởi tạo HashiCorp Vault Server, quản lý Key-Value Secrets Engine v2, thiết lập phân quyền Least Privilege với Vault Policy, cấu hình cơ chế xác thực AppRole chuẩn CI/CD và inject secret an toàn vào ứng dụng mà không để lộ trong mã nguồn.",
+  "difficulty": "Advanced",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khởi Tạo Vault Server & Thao Tác Với KV-v2 Secret Engine",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Thiết Lập Phân Quyền Least Privilege Với Vault Policy",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Cấu Hình Cơ Chế Xác Thực AppRole Cho CI/CD Pipeline",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Inject Secret An Toàn Vào Ứng Dụng Runtime",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}
