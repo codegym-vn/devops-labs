@@ -43,11 +43,7 @@ vault secrets list
 Lưu thông tin xác thực cơ sở dữ liệu của dịch vụ thanh toán (`payment`) vào đường dẫn `secret/payment/database`:
 
 ```bash
-vault kv put secret/payment/database \
-  username="payment_user" \
-  password="VaultSuperSecretP@ss2026!" \
-  host="postgres.prod.internal" \
-  port="5432"
+vault kv put secret/payment/database username="payment_user" password="VaultSuperSecretPass2026" host="postgres.prod.internal" port="5432"
 ```{{exec}}
 
 Đọc secret vừa lưu trữ:
@@ -61,11 +57,7 @@ Quan sát phần **Metadata**: Secret đang ở phiên bản `version 1`.
 Bây giờ, mô phỏng quy trình định kỳ đổi mật khẩu (Password Rotation): Thực hiện ghi đè mật khẩu mới vào cùng đường dẫn:
 
 ```bash
-vault kv put secret/payment/database \
-  username="payment_user" \
-  password="RotatedNewP@ssword2026!#" \
-  host="postgres.prod.internal" \
-  port="5432"
+vault kv put secret/payment/database username="payment_user" password="RotatedNewPassword2026" host="postgres.prod.internal" port="5432"
 ```{{exec}}
 
 Kiểm tra lại:
