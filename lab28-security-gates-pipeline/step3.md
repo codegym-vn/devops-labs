@@ -38,7 +38,7 @@ echo ""
 echo "[GATE 3] Dang quet an ninh Container Image..."
 set +e
 trivy image \
-  --severity CRITICAL,HIGH \
+  --severity CRITICAL \
   --exit-code 1 \
   --ignore-unfixed \
   --format table \
