@@ -1,0 +1,41 @@
+{
+  "title": "Lab 28: Xây Dựng Security Gates Trong CI/CD Pipeline",
+  "description": "Làm chủ mô hình DevSecOps chuẩn doanh nghiệp: thiết lập các cổng kiểm soát an ninh đa tầng (Security Gates) trong pipeline CI/CD gồm Secret Scanning (Gitleaks), Phân tích mã tĩnh SAST/SCA và quét lỗ hổng Container Image (Trivy), tự động chặn đứng việc phát hành khi phát hiện vi phạm mức Critical.",
+  "difficulty": "Advanced",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khởi Tạo Ứng Dụng Mẫu & Cổng Quét Secret Leak (Gate 1)",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Thiết Lập Cổng Quét Lỗ Hổng Thư Viện Phụ Thuộc SCA (Gate 2)",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Thiết Lập Cổng Quét Lỗ Hổng Container Image (Gate 3)",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Tích Hợp Pipeline Hoàn Chỉnh & Thử Nghiệm Cơ Chế Chặn Release",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

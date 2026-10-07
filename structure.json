@@ -121,6 +121,10 @@
     {
       "path": "lab27-vault-secret-management",
       "title": "Lab 27: Quản trị và inject secret an toàn vào ứng dụng với HashiCorp Vault"
+    },
+    {
+      "path": "lab28-security-gates-pipeline",
+      "title": "Lab 28: Xây dựng Security Gates trong CI/CD Pipeline"
     }
   ]
 }
