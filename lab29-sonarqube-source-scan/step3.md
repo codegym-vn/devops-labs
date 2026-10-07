@@ -65,9 +65,10 @@ Biến `SONAR_SCANNER_OPTS` cấu hình giới hạn RAM 256MB và ép dùng ng�
 cd /root/sonarqube-lab && SONAR_SCANNER_OPTS="-Xmx256m -Djava.net.preferIPv4Stack=true" sonar-scanner -Dsonar.login="$(cat sonar-token.txt)"
 ```{{exec}}
 
-> **Lưu ý quan trọng về SonarQube 9.9 LTS:**
-> * Tham số truyền token là `-Dsonar.login`. Tham số `-Dsonar.token` chỉ được hỗ trợ từ SonarQube 10.0. Nếu token gặp lỗi, có thể xác thực bằng tài khoản quản trị: `sonar-scanner -Dsonar.login=admin -Dsonar.password=AdminSecurePass123`
-> * **Hiện tượng timeout 300s ở Sensor JavaScript:** Nếu terminal dừng lại tại `Sensor JavaScript analysis [javascript]` khoảng 5 phút và xuất hiện `Failed to start server (300s timeout)` nhưng cuối cùng hiển thị `ANALYSIS SUCCESSFUL` và `EXECUTION SUCCESS`: Quá trình quét vẫn **thành công 100%** và báo cáo đã được tải lên server đầy đủ. Bạn hoàn toàn có thể nhấn **Check** để sang bước tiếp theo.
+**Lưu ý quan trọng về SonarQube 9.9 LTS:**
+
+* **Tham số token:** Sử dụng cờ `-Dsonar.login`. Tham số `-Dsonar.token` chỉ bắt đầu hỗ trợ từ bản 10.0. Nếu token gặp lỗi, có thể xác thực trực tiếp: `sonar-scanner -Dsonar.login=admin -Dsonar.password=AdminSecurePass123`
+* **Trường hợp gặp timeout 300s:** Nếu màn hình xuất hiện thông báo "Failed to start server (300s timeout)" nhưng các dòng cuối vẫn báo **ANALYSIS SUCCESSFUL** và **EXECUTION SUCCESS**: Quá trình quét vẫn **thành công 100%** và báo cáo đã được tải lên server đầy đủ. Bạn hoàn toàn có thể nhấn **Check** để sang bước tiếp theo.
 
 ---
 
