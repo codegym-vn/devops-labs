@@ -69,7 +69,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Target Web Application (Secured) dang chay tren cong ${PORT}`);
 });
 EOF
-```
+```{{exec}}
 
 ---
 
@@ -82,13 +82,13 @@ pkill -f "node server.js" || true
 sleep 1
 nohup node server.js > app.log 2>&1 &
 sleep 2
-```
+```{{exec}}
 
 Kiểm tra lại Response Headers của ứng dụng:
 
 ```bash
 curl -I http://localhost:3000
-```
+```{{exec}}
 
 Quan sát các tiêu đề an ninh mới xuất hiện:
 ```http
@@ -116,7 +116,7 @@ Chạy lại OWASP ZAP Baseline Scan để nghiệm thu:
 
 ```bash
 zap-baseline.py -t http://localhost:3000 -J zap-final-report.json -r zap-final-report.html
-```
+```{{exec}}
 
 Quan sát thông báo nghiệm thu an ninh từ ZAP:
 ```
@@ -131,7 +131,7 @@ Kiểm tra số lượng cảnh báo trong tệp nghiệm thu JSON:
 
 ```bash
 jq '.site[0].alerts | length' zap-final-report.json
-```
+```{{exec}}
 
 Kết quả trả về `0` và mã thoát (exit code) là `0`. Toàn bộ ứng dụng đã đáp ứng các tiêu chuẩn an ninh động (DAST) sẵn sàng phát hành lên Production!
 

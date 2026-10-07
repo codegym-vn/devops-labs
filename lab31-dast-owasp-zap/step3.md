@@ -11,7 +11,7 @@ Sử dụng `jq` để lọc các thông số kỹ thuật cốt lõi:
 ```bash
 cd /root/dast-target-app
 jq '.site[0].alerts[] | {name: .name, risk: .risk, cweid: .cweid, solution: .solution}' zap-initial-report.json
-```
+```{{exec}}
 
 ---
 
@@ -33,6 +33,6 @@ Trích xuất danh sách tên các lỗ hổng cần xử lý vào tệp `remedi
 ```bash
 jq -r '.site[0].alerts[].name' zap-initial-report.json > remediation-plan.txt
 cat remediation-plan.txt
-```
+```{{exec}}
 
 Nhấn **Check** để hoàn thành bước 3!

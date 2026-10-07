@@ -11,20 +11,20 @@ Di chuyển vào thư mục `/root/dast-target-app` và khởi động dịch v�
 ```bash
 cd /root/dast-target-app
 nohup node server.js > app.log 2>&1 &
-```
+```{{exec}}
 
 Chờ 2 giây và kiểm tra tiến trình đang lắng nghe trên cổng 3000:
 
 ```bash
 sleep 2
 lsof -i :3000 || netstat -tlpn | grep 3000
-```
+```{{exec}}
 
 Kiểm tra API phản hồi trạng thái:
 
 ```bash
 curl -s http://localhost:3000/api/health | jq .
-```
+```{{exec}}
 
 ---
 
@@ -34,7 +34,7 @@ Trong kiểm thử hộp đen, tin tặc hoặc công cụ quét DAST sẽ kiể
 
 ```bash
 curl -I http://localhost:3000
-```
+```{{exec}}
 
 Quan sát kết quả trả về:
 ```http

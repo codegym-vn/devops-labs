@@ -11,7 +11,7 @@ Thực thi lệnh quét nhắm vào ứng dụng đang chạy tại `http://loca
 ```bash
 cd /root/dast-target-app
 zap-baseline.py -t http://localhost:3000 -J zap-initial-report.json -r zap-initial-report.html -w
-```
+```{{exec}}
 
 > **Giải thích tham số:**
 > * `-t`: Chỉ định URL mục tiêu cần quét.
@@ -35,7 +35,7 @@ Kiểm tra số lượng cảnh báo được ghi lại trong tệp báo cáo JS
 
 ```bash
 jq '.site[0].alerts | length' zap-initial-report.json
-```
+```{{exec}}
 
 Kết quả hiển thị `4` cảnh báo lỗ hổng an ninh động.
 

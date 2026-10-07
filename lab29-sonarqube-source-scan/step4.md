@@ -10,7 +10,7 @@ SonarQube cung cấp hệ thống REST API hoàn chỉnh để các công cụ b
 
 ```bash
 curl -u admin:AdminSecurePass123 -s "http://localhost:9000/api/issues/search?componentKeys=express-api-service" | jq '{total: .total, issues: [.issues[] | {rule: .rule, severity: .severity, message: .message, line: .line}]}'
-```
+```{{exec}}
 
 Bạn sẽ thấy SonarQube chỉ ra chính xác các dòng mã có vấn đề trong `src/app.js`:
 * Biến không sử dụng (`unusedVariable`).
@@ -24,7 +24,7 @@ Mặc định, dự án được áp dụng bộ quy chuẩn **Sonar way**. Truy
 
 ```bash
 curl -u admin:AdminSecurePass123 -s "http://localhost:9000/api/qualitygates/project_status?projectKey=express-api-service" | jq .projectStatus
-```
+```{{exec}}
 
 Phản hồi trả về cấu trúc:
 ```json
@@ -79,13 +79,13 @@ fi
 EOF
 
 chmod +x /root/sonarqube-lab/check-quality-gate.sh
-```
+```{{exec}}
 
 Thực thi kiểm tra cổng chất lượng:
 
 ```bash
 /root/sonarqube-lab/check-quality-gate.sh
-```
+```{{exec}}
 
 Kết quả trả về `[GATE PASSED]` và mã thoát (exit code) là `0`, báo hiệu pipeline được phép tiếp tục bước đóng gói container.
 

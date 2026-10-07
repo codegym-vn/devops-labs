@@ -28,13 +28,13 @@ sonar.sourceEncoding=UTF-8
 # Dia chi may chu SonarQube
 sonar.host.url=http://localhost:9000
 EOF
-```
+```{{exec}}
 
 Xem lại nội dung cấu hình:
 
 ```bash
 cat sonar-project.properties
-```
+```{{exec}}
 
 ---
 
@@ -47,7 +47,7 @@ Thực hiện lệnh quét với Token xác thực:
 ```bash
 SONAR_TOKEN=$(cat /root/sonarqube-lab/sonar-token.txt)
 sonar-scanner -Dsonar.login="$SONAR_TOKEN"
-```
+```{{exec}}
 
 > **Lưu ý quan trọng về phiên bản SonarQube 9.9 LTS:**
 > * Đối với máy chủ SonarQube LTS (phiên bản 9.9), tham số nạp User Token trên SonarScanner CLI là `-Dsonar.login="$SONAR_TOKEN"` (tham số `-Dsonar.token` chỉ bắt đầu hỗ trợ từ SonarQube 10.0+).
@@ -72,7 +72,7 @@ Sau khi quá trình quét thành công, SonarScanner sẽ sinh thư mục lưu t
 
 ```bash
 cat .scannerwork/report-task.txt
-```
+```{{exec}}
 
 Tệp này ghi nhận thông tin `ceTaskId` và đường dẫn xem báo cáo phân tích trực tiếp.
 

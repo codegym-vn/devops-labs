@@ -12,7 +12,7 @@ Kiểm tra container đang chạy:
 
 ```bash
 docker ps --filter "name=sonarqube" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-```
+```{{exec}}
 
 ---
 
@@ -28,13 +28,13 @@ until curl -s http://localhost:9000/api/system/status | grep -q '"status":"UP"';
   sleep 5
 done
 echo "SonarQube Server da san sang (UP)!"
-```
+```{{exec}}
 
 Kiểm tra lại thông tin phiên bản và trạng thái trả về:
 
 ```bash
 curl -s http://localhost:9000/api/system/status | jq .
-```
+```{{exec}}
 
 Kết quả phản hồi chuẩn dạng JSON:
 ```json
@@ -53,13 +53,13 @@ Mặc định, tài khoản quản trị hệ thống là `admin` với mật kh
 
 ```bash
 curl -u admin:admin -X POST "http://localhost:9000/api/users/change_password?login=admin&previousPassword=admin&password=AdminSecurePass123"
-```
+```{{exec}}
 
 Xác thực lại quyền truy cập với mật khẩu mới:
 
 ```bash
 curl -u admin:AdminSecurePass123 -s "http://localhost:9000/api/authentication/validate" | jq .
-```
+```{{exec}}
 
 Kết quả trả về `"valid": true` chứng minh tài khoản quản trị đã được thiết lập thành công.
 
