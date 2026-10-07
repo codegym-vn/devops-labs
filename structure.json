@@ -109,6 +109,10 @@
     {
       "path": "lab24-k8s-canary-deployment",
       "title": "Lab 24: Thực hành triển khai ứng dụng tự động lên cụm Kubernetes theo chiến lược Canary Deployment"
+    },
+    {
+      "path": "lab25-iac-security-checkov-tfsec",
+      "title": "Lab 25: Thực hành quét lỗ hổng bảo mật mã nguồn Terraform với Checkov & Tfsec"
     }
   ]
 }
