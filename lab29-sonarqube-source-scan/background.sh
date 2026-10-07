@@ -1,27 +1,13 @@
 #!/bin/bash
 set -e
 
+STAGE_FILE="/tmp/init-stage.log"
+echo "Dang khoi tao bo nho he thong..." > "$STAGE_FILE"
+
 # 1. Cau hinh bo nho Elasticsearch cho SonarQube
 sysctl -w vm.max_map_count=262144 > /dev/null 2>&1 || true
 
-# 2. Cai dat tien ich
-apt-get update -qq > /dev/null 2>&1
-apt-get install -y -qq curl unzip jq nodejs npm > /dev/null 2>&1
-
-# 3. Cai dat SonarScanner CLI
-if ! command -v sonar-scanner > /dev/null 2>&1; then
-  curl -fsSL https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip -o /tmp/sonar-scanner.zip
-  unzip -q /tmp/sonar-scanner.zip -d /opt
-  rm -f /tmp/sonar-scanner.zip
-  ln -sf /opt/sonar-scanner-*/bin/sonar-scanner /usr/local/bin/sonar-scanner
-fi
-
-# 4. Khoi chay SonarQube Server container
-if ! docker ps -a | grep -q "sonarqube"; then
-  docker run -d --name sonarqube -p 9000:9000 sonarqube:lts-community > /dev/null 2>&1
-fi
-
-# 5. Khoi tao thu muc du an mau
+# 2. Khoi tao ngay thu muc du an mau (hoan thanh ngay lap tuc)
 mkdir -p /root/sonarqube-lab/src
 cd /root/sonarqube-lab
 
@@ -66,4 +52,36 @@ app.listen(PORT, () => {
 });
 EOF
 
+# 3. Kich hoat chay song song Docker container SonarQube
+(
+  echo "Dang tai Docker image va khoi chay SonarQube Server..." >> "$STAGE_FILE"
+  if ! docker ps -a | grep -q "sonarqube"; then
+    docker run -d --name sonarqube -p 9000:9000 sonarqube:lts-community > /dev/null 2>&1
+  fi
+  touch /tmp/sonarqube-docker-ready
+) &
+DOCKER_PID=$!
+
+# 4. Kich hoat cai dat SonarScanner CLI song song
+(
+  echo "Dang tai va giai nen SonarScanner CLI..." >> "$STAGE_FILE"
+  if ! command -v sonar-scanner > /dev/null 2>&1; then
+    if ! command -v unzip > /dev/null 2>&1 || ! command -v jq > /dev/null 2>&1; then
+      apt-get update -qq > /dev/null 2>&1
+      apt-get install -y -qq curl unzip jq > /dev/null 2>&1
+    fi
+    curl -fsSL https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip -o /tmp/sonar-scanner.zip
+    unzip -q /tmp/sonar-scanner.zip -d /opt
+    rm -f /tmp/sonar-scanner.zip
+    ln -sf /opt/sonar-scanner-*/bin/sonar-scanner /usr/local/bin/sonar-scanner
+  fi
+  touch /tmp/sonar-scanner-ready
+) &
+SCANNER_PID=$!
+
+# Cho ca 2 tien trinh song song hoan tat
+wait $DOCKER_PID
+wait $SCANNER_PID
+
+echo "Moi truong SonarQube da san sang!" > "$STAGE_FILE"
 touch /tmp/background-finished
