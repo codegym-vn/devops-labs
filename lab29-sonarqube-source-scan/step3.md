@@ -4,7 +4,24 @@ Trong các dự án phần mềm chuyên nghiệp, cấu hình quét mã nguồn
 
 ---
 
-### 1. Tạo tệp cấu hình sonar-project.properties
+### 1. Cài đặt SonarScanner CLI
+
+Kiểm tra và cài đặt công cụ dòng lệnh SonarScanner CLI:
+
+```bash
+if ! command -v sonar-scanner > /dev/null 2>&1; then
+  echo "Dang cai dat SonarScanner CLI..."
+  curl -fsSL https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip -o /tmp/sonar-scanner.zip
+  unzip -q /tmp/sonar-scanner.zip -d /opt
+  rm -f /tmp/sonar-scanner.zip
+  ln -sf /opt/sonar-scanner-*/bin/sonar-scanner /usr/local/bin/sonar-scanner
+fi
+sonar-scanner -v
+```{{exec}}
+
+---
+
+### 2. Tạo tệp cấu hình sonar-project.properties
 
 Di chuyển vào thư mục `/root/sonarqube-lab` và khởi tạo tệp cấu hình:
 
@@ -38,7 +55,7 @@ cat sonar-project.properties
 
 ---
 
-### 2. Kích hoạt SonarScanner CLI
+### 3. Kích hoạt SonarScanner CLI
 
 SonarScanner CLI đọc cấu hình từ `sonar-project.properties`, nạp các Ruleset từ SonarQube Server tương ứng với ngôn ngữ JavaScript, phân tích cây cú pháp trừu tượng (AST) của các tệp mã nguồn trong thư mục `src/`, và đóng gói báo cáo gửi về Compute Engine.
 
@@ -56,7 +73,7 @@ sonar-scanner -Dsonar.login="$SONAR_TOKEN"
 
 ---
 
-### 3. Kiểm tra kết quả thực thi của Scanner
+### 4. Kiểm tra kết quả thực thi của Scanner
 
 Quan sát các dòng nhật ký cuối cùng trên màn hình Terminal:
 ```

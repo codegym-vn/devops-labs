@@ -4,7 +4,13 @@ set -e
 # 1. Cau hinh bo nho Elasticsearch cho SonarQube
 sysctl -w vm.max_map_count=262144 > /dev/null 2>&1 || true
 
-# 2. Khoi tao ngay thu muc du an mau (hoan tat trong 0.1s)
+# 2. Cai dat cac tien ich can thiet (unzip, jq)
+if ! command -v unzip > /dev/null 2>&1 || ! command -v jq > /dev/null 2>&1; then
+  apt-get update -qq > /dev/null 2>&1
+  apt-get install -y -qq curl unzip jq > /dev/null 2>&1
+fi
+
+# 3. Khoi tao ngay thu muc du an mau
 mkdir -p /root/sonarqube-lab/src
 cd /root/sonarqube-lab
 
@@ -49,24 +55,5 @@ app.listen(PORT, () => {
 });
 EOF
 
-# 3. Mo Terminal ngay lap tuc de khong bi chan boi vong xoay loading
+# 4. Ket thuc background ngay lap tuc de Terminal mo tuc thi (khong keo docker nang o background)
 touch /tmp/background-finished
-
-# 4. Khoi chay SonarQube Server Container o che do nen
-if ! docker ps -a | grep -q "sonarqube"; then
-  docker run -d --name sonarqube -p 9000:9000 sonarqube:lts-community > /dev/null 2>&1
-fi
-
-# 5. Cai dat SonarScanner CLI o che do nen
-if ! command -v sonar-scanner > /dev/null 2>&1; then
-  if ! command -v unzip > /dev/null 2>&1 || ! command -v jq > /dev/null 2>&1; then
-    apt-get update -qq > /dev/null 2>&1
-    apt-get install -y -qq curl unzip jq > /dev/null 2>&1
-  fi
-  curl -fsSL https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip -o /tmp/sonar-scanner.zip
-  unzip -q /tmp/sonar-scanner.zip -d /opt
-  rm -f /tmp/sonar-scanner.zip
-  ln -sf /opt/sonar-scanner-*/bin/sonar-scanner /usr/local/bin/sonar-scanner
-fi
-
-touch /tmp/setup-fully-completed
