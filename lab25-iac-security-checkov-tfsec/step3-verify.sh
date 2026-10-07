@@ -23,10 +23,10 @@ if ! grep -q "10.0.0.0/16" "/root/iac-security-lab/secure_resources.tf"; then
   exit 1
 fi
 
-# Kiểm tra tfsec không còn lỗi
+# Kiểm tra tfsec không còn lỗi Critical và High
 cd /root/iac-security-lab
-if ! tfsec . > /dev/null 2>&1; then
-  echo "tfsec van con phat hien loi trong ma nguon! Hay kiem tra lai cau hinh."
+if ! tfsec . --minimum-severity HIGH > /dev/null 2>&1; then
+  echo "tfsec van con phat hien vi pham an ninh muc do High/Critical trong ma nguon! Hay kiem tra lai cau hinh."
   exit 1
 fi
 

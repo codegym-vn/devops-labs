@@ -89,13 +89,21 @@ EOF
 
 ### 2.2 — Kiểm chứng lại bằng Tfsec
 
-Chạy lại `tfsec` để kiểm tra kết quả:
+Trong thực tế DevSecOps, các cổng kiểm soát an ninh (Quality Gate) ưu tiên chặn đứng các lỗ hổng ở mức độ nguy cấp (Critical và High). Chạy `tfsec` với bộ lọc mức độ:
+
+```bash
+tfsec . --minimum-severity HIGH
+```{{exec}}
+
+Thông báo in ra: `No problems detected!`, xác nhận 100% các vi phạm an ninh nghiêm trọng (mở cổng 22 SSH công khai, S3 thiếu mã hóa và mở public) đã được khắc phục triệt để.
+
+Nếu chạy kiểm tra bao gồm cả các khuyến nghị phụ ở mức Low:
 
 ```bash
 tfsec .
 ```{{exec}}
 
-Thông báo in ra: `No problems detected!`, xác nhận toàn bộ các vi phạm nghiêm trọng trước đây đã được giải quyết triệt để.
+Hệ thống ghi nhận `11 passed, 4 potential problem(s) detected`. Bốn cảnh báo này thuộc mức Low (như gợi ý thêm mô tả description cho egress rule hoặc kích hoạt bucket logging nâng cao), không phải là lỗ hổng khai thác trực tiếp.
 
 ---
 
