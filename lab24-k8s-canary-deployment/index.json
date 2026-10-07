@@ -1,0 +1,41 @@
+{
+  "title": "Lab 24: Thực Hành Triển Khai Ứng Dụng Tự Động Lên Cụm Kubernetes Theo Chiến Lược Canary Deployment",
+  "description": "Làm chủ chiến lược phát hành phần mềm không gián đoạn (Zero-downtime) chuẩn doanh nghiệp: triển khai song song phiên bản Stable và Canary, điều phối lưu lượng giao thông qua Kubernetes Service, kiểm thử tự động tỷ lệ lỗi, thăng cấp phiên bản an toàn và cô lập sự cố với Rollback tức thì.",
+  "difficulty": "Advanced",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khởi Tạo Service Định Tuyến & Triển Khai Phiên Bản Ổn Định (Stable v1)",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Triển Khai Phiên Bản Thử Nghiệm Canary v2 & Phân Bổ Lưu Lượng",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Tự Động Hóa Giám Sát Sức Khỏe & Thăng Cấp (Promotion) Lên Cụm",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Giả Lập Sự Cố Phiên Bản Mới & Kích Hoạt Cơ Chế Rollback Khẩn Cấp",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "kubernetes-kubeadm-2nodes"
+  }
+}

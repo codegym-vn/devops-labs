@@ -105,6 +105,10 @@
     {
       "path": "lab23-cicd-pipeline-test-package",
       "title": "Lab 23: Thực hành xây dựng pipeline CI/CD cơ bản kiểm thử và đóng gói ứng dụng"
+    },
+    {
+      "path": "lab24-k8s-canary-deployment",
+      "title": "Lab 24: Thực hành triển khai ứng dụng tự động lên cụm Kubernetes theo chiến lược Canary Deployment"
     }
   ]
 }
