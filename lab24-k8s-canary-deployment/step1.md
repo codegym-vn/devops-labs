@@ -52,12 +52,6 @@ Kiểm tra Service vừa tạo:
 kubectl get svc web-service
 ```{{exec}}
 
-Hiện tại Service chưa có Pod nào phía sau nên danh sách Endpoints đang trống:
-
-```bash
-kubectl get endpoints web-service
-```{{exec}}
-
 ---
 
 ### 2.2 — Triển khai Deployment Stable v1

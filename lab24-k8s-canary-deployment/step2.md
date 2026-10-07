@@ -6,12 +6,9 @@ Trong bước này, bạn sẽ triển khai phiên bản thử nghiệm mới (v
 
 ## 1. Tính Toán Tỷ Lệ Lưu Lượng (Traffic Weighting)
 
-Với cấu hình Kubernetes Service mặc định phân phối Round-Robin:
-
-$$\text{Tỷ lệ lưu lượng Canary} = \frac{\text{Số Pod Canary}}{\text{Tổng số Pod}} = \frac{1}{3 + 1} = \frac{1}{4} = 25\%$$
-
-* **Phiên bản v1.0 (Stable):** Nhận xấp xỉ **75%** yêu cầu từ người dùng.
-* **Phiên bản v2.0 (Canary):** Nhận xấp xỉ **25%** yêu cầu thử nghiệm.
+Tỷ lệ phân phối lưu lượng giữa các phiên bản được tính như sau:
+* **Tỷ lệ lưu lượng Canary** = Số Pod Canary / Tổng số Pod = 1 / (3 + 1) = 1/4 = **25%**
+* **Tỷ lệ lưu lượng Stable** = Số Pod Stable / Tổng số Pod = 3 / (3 + 1) = 3/4 = **75%**
 
 Nếu phiên bản mới phát sinh lỗi, tối đa chỉ 25% người dùng gặp sự cố trong thời gian thử nghiệm, và ta có thể khắc phục ngay mà không ảnh hưởng tới 75% còn lại.
 

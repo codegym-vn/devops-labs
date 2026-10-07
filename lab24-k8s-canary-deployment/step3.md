@@ -10,8 +10,8 @@ Quy trình tự động hóa kiểm tra sức khỏe:
 1. Gửi liên tục một loạt các yêu cầu (ví dụ 30 requests) tới Service.
 2. Đếm số lượng phản hồi HTTP 200 (thành công) và các phản hồi lỗi (HTTP 5xx hoặc mất kết nối).
 3. Tính toán tỷ lệ lỗi:
-   * Nếu Tỷ lệ lỗi $\le 5\%$: Đánh giá đạt chuẩn, cho phép thăng cấp.
-   * Nếu Tỷ lệ lỗi $> 5\%$: Cảnh báo nguy hiểm, từ chối thăng cấp và dừng pipeline.
+   * Nếu Tỷ lệ lỗi <= 5%: Đánh giá đạt chuẩn, cho phép thăng cấp.
+   * Nếu Tỷ lệ lỗi > 5%: Cảnh báo nguy hiểm, từ chối thăng cấp và dừng pipeline.
 
 ---
 
