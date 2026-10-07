@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-# 1. Cai dat Vault binary
-if ! command -v vault > /dev/null 2>&1; then
+# 1. Cai dat Vault binary va Node.js
+if ! command -v vault > /dev/null 2>&1 || ! command -v node > /dev/null 2>&1; then
   apt-get update -qq > /dev/null 2>&1
-  apt-get install -y -qq curl unzip jq > /dev/null 2>&1
+  apt-get install -y -qq curl unzip jq nodejs > /dev/null 2>&1
   curl -fsSL https://releases.hashicorp.com/vault/1.15.6/vault_1.15.6_linux_amd64.zip -o /tmp/vault.zip
   unzip -q /tmp/vault.zip -d /usr/local/bin
   rm -f /tmp/vault.zip
