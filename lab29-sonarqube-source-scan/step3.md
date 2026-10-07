@@ -11,7 +11,7 @@ Bộ phân tích JavaScript của SonarQube 9.9 cần **Node.js 14.17 trở lên
 Cài Node.js 18 dạng binary:
 
 ```bash
-curl -fsSL https://nodejs.org/dist/v18.20.4/node-v18.20.4-linux-x64.tar.gz | tar -xz -C /opt && ln -sf /opt/node-v18.20.4-linux-x64/bin/node /usr/local/bin/node && node -v
+curl -fsSL https://nodejs.org/dist/v18.20.4/node-v18.20.4-linux-x64.tar.gz | tar -xz -C /opt && ln -sf /opt/node-v18.20.4-linux-x64/bin/* /usr/local/bin/ && node -v
 ```{{exec}}
 
 Cài SonarScanner CLI. Bản này đã đóng gói sẵn Java nên không cần cài JDK:
