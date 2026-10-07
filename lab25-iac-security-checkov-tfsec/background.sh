@@ -13,7 +13,7 @@ docker pull bridgecrew/checkov:latest > /dev/null 2>&1 &
 
 cat << 'EOF' > /usr/local/bin/checkov
 #!/bin/bash
-docker run --rm -t -v "$(pwd):/work" -w /work bridgecrew/checkov:latest "$@"
+docker run --rm -v "$(pwd):/work" -w /work bridgecrew/checkov:latest "$@"
 EOF
 chmod +x /usr/local/bin/checkov
 
