@@ -2,28 +2,18 @@
 
 SonarQube Server bao gồm 3 thành phần chính chạy bên trong container: Web Server giao diện người dùng, công cụ tìm kiếm Elasticsearch và Compute Engine (CE) xử lý báo cáo phân tích mã nguồn.
 
-Hệ thống đã tự động kích hoạt container `sonarqube` trên cổng `9000`. Hãy kiểm tra trạng thái khởi động của máy chủ.
+Hệ thống đang tự động tải và kích hoạt container `sonarqube` trên cổng `9000` ở chế độ ngầm. Hãy theo dõi tiến trình khởi động của máy chủ.
 
 ---
 
-### 1. Kiểm tra trạng thái Container SonarQube
-
-Kiểm tra container đang chạy:
-
-```bash
-docker ps --filter "name=sonarqube" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-```{{exec}}
-
----
-
-### 2. Theo dõi tiến trình khởi động của SonarQube
+### 1. Theo dõi tiến trình khởi động của SonarQube
 
 SonarQube là ứng dụng Java lớn và khởi chạy Elasticsearch nội bộ, do đó thường mất khoảng 30 đến 45 giây để sẵn sàng nhận kết nối.
 
 Hãy chạy lệnh vòng lặp kiểm tra API trạng thái hệ thống:
 
 ```bash
-until curl -s http://localhost:9000/api/system/status | grep -q '"status":"UP"'; do
+until curl -s http://localhost:9000/api/system/status 2>/dev/null | grep -q '"status":"UP"'; do
   echo "SonarQube dang khoi dong (Elasticsearch & Web Server)... Cho 5s"
   sleep 5
 done
@@ -44,6 +34,16 @@ Kết quả phản hồi chuẩn dạng JSON:
   "status": "UP"
 }
 ```
+
+---
+
+### 2. Kiểm tra trạng thái Container SonarQube
+
+Kiểm tra container đang chạy:
+
+```bash
+docker ps --filter "name=sonarqube" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+```{{exec}}
 
 ---
 
