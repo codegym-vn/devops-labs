@@ -141,6 +141,10 @@
     {
       "path": "lab32-dependency-vulnerability-scan",
       "title": "Lab 32: Quét lỗ hổng Dependency trong ứng dụng"
+    },
+    {
+      "path": "lab33-docker-image-trivy-scan",
+      "title": "Lab 33: Quét Docker Image với Trivy"
     }
   ]
 }

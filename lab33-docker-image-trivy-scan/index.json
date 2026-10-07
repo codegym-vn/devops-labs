@@ -1,0 +1,41 @@
+{
+  "title": "Lab 33: Quét Docker Image Với Trivy (Container Security)",
+  "description": "Làm chủ kỹ thuật kiểm thử an ninh container chuyên sâu: bóc tách và phân tích lỗ hổng từng layer của Docker Image bằng Trivy, phân loại lỗ hổng hệ điều hành (OS Packages) và lỗ hổng ngôn ngữ (Language Packages), phát hiện sai sót cấu hình Dockerfile (Misconfiguration), tái cấu trúc Dockerfile Multi-stage với Non-root user để triệt tiêu CVE, quản lý ngoại lệ an ninh với .trivyignore, tích hợp Security Gate tự động và xuất SBOM chuẩn CycloneDX.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khởi Tạo Image Mục Tiêu & Quét Lỗ Hổng Container Ban Đầu",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Phân Tích Báo Cáo Layer & Quét Sai Sót Cấu Hình Dockerfile",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Tối Ưu Dockerfile Multi-stage & Vá Lỗ Hổng Triệt Để",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Thiết Lập Container Security Gate Trong CI/CD & Xuất SBOM",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}
