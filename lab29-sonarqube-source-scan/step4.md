@@ -1,92 +1,82 @@
 # Bước 4: Phân Tích Chỉ Số Đo Lường & Thiết Lập Cổng Quality Gate
 
-Sau khi SonarScanner gửi báo cáo lên server, tiến trình **Compute Engine (CE)** của SonarQube phân loại các phát hiện thành Bugs, Vulnerabilities, Security Hotspots và Code Smells, đồng thời đối chiếu với chính sách **Quality Gate (Cổng chất lượng)**.
+Sau khi SonarScanner gửi báo cáo, tiến trình **Compute Engine (CE)** của SonarQube xử lý báo cáo **bất đồng bộ**, phân loại phát hiện thành Bugs, Vulnerabilities, Security Hotspots, Code Smells và đối chiếu với **Quality Gate**.
 
 ---
 
-### 1. Truy vấn các vấn đề (Issues) được phát hiện qua API
+### 1. Chờ Compute Engine xử lý xong báo cáo
 
-SonarQube cung cấp hệ thống REST API hoàn chỉnh để các công cụ bên ngoài có thể trích xuất báo cáo. Hãy truy vấn danh sách lỗi tìm thấy trong dự án:
+Nếu truy vấn kết quả ngay sau khi scan, dữ liệu có thể chưa sẵn sàng. Đọc `ceTaskId` từ `report-task.txt` và chờ tác vụ đạt trạng thái `SUCCESS`:
 
 ```bash
-curl -u admin:AdminSecurePass123 -s "http://localhost:9000/api/issues/search?componentKeys=express-api-service" | jq '{total: .total, issues: [.issues[] | {rule: .rule, severity: .severity, message: .message, line: .line}]}'
+cd /root/sonarqube-lab && TASK_ID=$(grep ceTaskId .scannerwork/report-task.txt | cut -d= -f2); until [ "$(curl -s -u admin:AdminSecurePass123 "http://localhost:9000/api/ce/task?id=$TASK_ID" | jq -r '.task.status')" = "SUCCESS" ]; do echo "Compute Engine dang xu ly bao cao... Cho 3s"; sleep 3; done; echo "Bao cao da xu ly xong"
 ```{{exec}}
-
-Bạn sẽ thấy SonarQube chỉ ra chính xác các dòng mã có vấn đề trong `src/app.js`:
-* Biến không sử dụng (`unusedVariable`).
-* Thông tin nhạy cảm dạng comment hoặc các điểm cần tối ưu hóa.
 
 ---
 
-### 2. Kiểm tra trạng thái Cổng chất lượng (Quality Gate)
-
-Mặc định, dự án được áp dụng bộ quy chuẩn **Sonar way**. Truy vấn trạng thái cổng chất lượng của dự án:
+### 2. Truy vấn các vấn đề được phát hiện qua API
 
 ```bash
-curl -u admin:AdminSecurePass123 -s "http://localhost:9000/api/qualitygates/project_status?projectKey=express-api-service" | jq .projectStatus
+curl -s -u admin:AdminSecurePass123 "http://localhost:9000/api/issues/search?componentKeys=express-api-service" | jq '{total: .total, issues: [.issues[] | {rule: .rule, severity: .severity, message: .message, line: .line}]}'
 ```{{exec}}
 
-Phản hồi trả về cấu trúc:
-```json
-{
-  "status": "OK",
-  "conditions": [ ... ]
-}
-```
-Nếu mã nguồn mới vi phạm các điều kiện (ví dụ: Security Rating kém hơn A, Coverage dưới 80%, hoặc có Vulnerability chưa xử lý), trường `status` sẽ chuyển sang `ERROR`.
+SonarQube chỉ ra các dòng mã có vấn đề trong `src/app.js`, ví dụ:
+* Rule `javascript:S1481`: biến `unusedVariable` khai báo nhưng không sử dụng.
+* Rule `javascript:S125`: đoạn mã bị comment lại thay vì xóa bỏ.
 
 ---
 
-### 3. Viết script tự động hóa kiểm tra Quality Gate trong CI/CD
+### 3. Kiểm tra trạng thái Quality Gate
 
-Trong thực tế, pipeline CI/CD (GitHub Actions, GitLab CI, Jenkins) cần một tập lệnh kiểm tra để tự động dừng build nếu Quality Gate bị vi phạm.
+Dự án mặc định áp dụng Quality Gate **Sonar way**:
 
-Tạo tệp `/root/sonarqube-lab/check-quality-gate.sh`:
+```bash
+curl -s -u admin:AdminSecurePass123 "http://localhost:9000/api/qualitygates/project_status?projectKey=express-api-service" | jq .projectStatus
+```{{exec}}
+
+Các điều kiện của **Sonar way** áp dụng cho **New Code**. Ở lần phân tích đầu tiên, toàn bộ mã được coi là baseline nên trạng thái thường là `OK`. Từ các lần phân tích sau, nếu mã mới có Vulnerability, Bug, hoặc độ phủ test dưới 80%, trạng thái sẽ chuyển sang `ERROR`.
+
+---
+
+### 4. Viết script tự động kiểm tra Quality Gate cho CI/CD
+
+Pipeline CI/CD cần một bước tự động dừng build khi Quality Gate bị vi phạm:
 
 ```bash
 cat << 'EOF' > /root/sonarqube-lab/check-quality-gate.sh
 #!/bin/bash
-set -e
-
 PROJECT_KEY="express-api-service"
 SONAR_URL="http://localhost:9000"
-TOKEN=$(cat /root/sonarqube-lab/sonar-token.txt 2>/dev/null || true)
+TOKEN=$(cat /root/sonarqube-lab/sonar-token.txt)
 
-echo ">>> [CI GATE] Dang kiem tra trang thai Quality Gate cho du an $PROJECT_KEY..."
+echo ">>> [CI GATE] Kiem tra Quality Gate cho du an $PROJECT_KEY..."
 
-if [ -n "$TOKEN" ] && [ "$TOKEN" != "null" ]; then
-  AUTH_HEADER="-u $TOKEN:"
-else
-  AUTH_HEADER="-u admin:AdminSecurePass123"
-fi
-
-STATUS=$(curl -s $AUTH_HEADER "$SONAR_URL/api/qualitygates/project_status?projectKey=$PROJECT_KEY" | jq -r '.projectStatus.status // empty')
+STATUS=$(curl -s -u "$TOKEN:" "$SONAR_URL/api/qualitygates/project_status?projectKey=$PROJECT_KEY" | jq -r '.projectStatus.status // empty')
 
 if [ -z "$STATUS" ]; then
-  echo "[CI GATE ERROR] Khong the lay du lieu trang thai tu SonarQube!"
+  echo "[CI GATE ERROR] Khong lay duoc trang thai tu SonarQube"
   exit 1
 fi
 
 echo ">>> Ket qua Quality Gate: $STATUS"
 
 if [ "$STATUS" = "OK" ]; then
-  echo ">>> [GATE PASSED] Du an vuot qua tieu chuan an ninh & chat luong ma nguon!"
+  echo ">>> [GATE PASSED] Du an dat tieu chuan chat luong ma nguon"
   exit 0
 else
-  echo ">>> [GATE FAILED] Du an vi pham Cổng chất lượng SonarQube! Chan pipeline."
+  echo ">>> [GATE FAILED] Du an vi pham Quality Gate. Chan pipeline"
   exit 1
 fi
 EOF
-
 chmod +x /root/sonarqube-lab/check-quality-gate.sh
 ```{{exec}}
 
-Thực thi kiểm tra cổng chất lượng:
+Chạy script:
 
 ```bash
-/root/sonarqube-lab/check-quality-gate.sh
+/root/sonarqube-lab/check-quality-gate.sh; echo "Exit code: $?"
 ```{{exec}}
 
-Kết quả trả về `[GATE PASSED]` và mã thoát (exit code) là `0`, báo hiệu pipeline được phép tiếp tục bước đóng gói container.
+Kết quả `[GATE PASSED]` với `Exit code: 0` báo hiệu pipeline được phép đi tiếp sang bước đóng gói.
 
-Nhấn **Check** để hoàn thành bước 4!
+Nhấn **Check** để hoàn thành bước 4.

@@ -1,24 +1,29 @@
 #!/bin/bash
-set -e
 
-# 1. Kiem tra du an express-api-service tren SonarQube
-PROJECT_EXISTS=$(curl -u admin:AdminSecurePass123 -s "http://localhost:9000/api/projects/search?projects=express-api-service" | jq -r '.components | length' 2>/dev/null || echo "0")
-if [ "$PROJECT_EXISTS" -lt 1 ]; then
-  echo "Loi: Du an 'express-api-service' chua duoc tao tren SonarQube!"
+# 1. Du an express-api-service ton tai
+if ! curl -s -u admin:AdminSecurePass123 "http://localhost:9000/api/projects/search?projects=express-api-service" | grep -q '"key":"express-api-service"'; then
+  echo "Du an 'express-api-service' chua duoc tao tren SonarQube."
   exit 1
 fi
 
-# 2. Kiem tra tep sonar-token.txt
-if [ ! -f /root/sonarqube-lab/sonar-token.txt ]; then
-  echo "Loi: Tep /root/sonarqube-lab/sonar-token.txt khong ton tai!"
+# 2. Tep token ton tai va hop le
+TOKEN_FILE=/root/sonarqube-lab/sonar-token.txt
+if [ ! -s "$TOKEN_FILE" ]; then
+  echo "Tep $TOKEN_FILE chua ton tai hoac rong."
   exit 1
 fi
 
-TOKEN=$(cat /root/sonarqube-lab/sonar-token.txt | tr -d '[:space:]')
-if [ -z "$TOKEN" ] || [ ${#TOKEN} -lt 15 ]; then
-  echo "Loi: Token trong tep /root/sonarqube-lab/sonar-token.txt khong hop le!"
+TOKEN=$(tr -d '[:space:]' < "$TOKEN_FILE")
+if [ "$TOKEN" = "null" ] || [ ${#TOKEN} -lt 20 ]; then
+  echo "Token trong $TOKEN_FILE khong hop le. Hay chay lai lenh sinh token."
   exit 1
 fi
 
-echo "Du an da duoc tao va Analysis Token da duoc ghi nhan!"
+# 3. Token xac thuc duoc voi server
+if ! curl -s -u "$TOKEN:" http://localhost:9000/api/authentication/validate | grep -q '"valid":true'; then
+  echo "Token khong xac thuc duoc voi SonarQube. Hay sinh lai token."
+  exit 1
+fi
+
+echo "Buoc 2 hoan thanh"
 exit 0

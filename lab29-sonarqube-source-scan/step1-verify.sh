@@ -1,29 +1,22 @@
 #!/bin/bash
-set -e
 
-# 1. Kiem tra container dang chay
-if ! docker ps | grep -q "sonarqube"; then
-  echo "Loi: Container 'sonarqube' chua chay tren he thong!"
+# 1. Container sonarqube dang chay
+if ! docker ps --format '{{.Names}}' | grep -qx "sonarqube"; then
+  echo "Container 'sonarqube' chua chay. Hay chay lenh docker run o muc 2."
   exit 1
 fi
 
-# 2. Kiem tra trang thai API he thong
-STATUS=$(curl -s http://localhost:9000/api/system/status | jq -r '.status // empty' 2>/dev/null || true)
-if [ "$STATUS" != "UP" ]; then
-  echo "Loi: SonarQube Server chua o trang thai UP! Trang thai hien tai: $STATUS"
+# 2. API trang thai tra ve UP
+if ! curl -s http://localhost:9000/api/system/status | grep -q '"status":"UP"'; then
+  echo "SonarQube chua o trang thai UP. Hay cho vong lap o muc 3 bao san sang."
   exit 1
 fi
 
-# 3. Kiem tra xac thuc admin
-VALID=$(curl -u admin:AdminSecurePass123 -s "http://localhost:9000/api/authentication/validate" | jq -r '.valid // empty' 2>/dev/null || true)
-if [ "$VALID" != "true" ]; then
-  # Thu mat khau cu admin:admin
-  OLD_VALID=$(curl -u admin:admin -s "http://localhost:9000/api/authentication/validate" | jq -r '.valid // empty' 2>/dev/null || true)
-  if [ "$OLD_VALID" != "true" ]; then
-    echo "Loi: Khong the xac thuc tai khoan admin tren SonarQube!"
-    exit 1
-  fi
+# 3. Mat khau admin da duoc doi
+if ! curl -s -u admin:AdminSecurePass123 http://localhost:9000/api/authentication/validate | grep -q '"valid":true'; then
+  echo "Chua doi mat khau admin sang AdminSecurePass123."
+  exit 1
 fi
 
-echo "SonarQube Server san sang va xac thuc thanh cong!"
+echo "Buoc 1 hoan thanh"
 exit 0
