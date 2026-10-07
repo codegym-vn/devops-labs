@@ -4,13 +4,7 @@ set -e
 # 1. Cau hinh bo nho Elasticsearch cho SonarQube
 sysctl -w vm.max_map_count=262144 > /dev/null 2>&1 || true
 
-# 2. Cai dat cac tien ich can thiet (unzip, jq)
-if ! command -v unzip > /dev/null 2>&1 || ! command -v jq > /dev/null 2>&1; then
-  apt-get update -qq > /dev/null 2>&1
-  apt-get install -y -qq curl unzip jq > /dev/null 2>&1
-fi
-
-# 3. Khoi tao ngay thu muc du an mau
+# 2. Khoi tao ngay thu muc du an mau
 mkdir -p /root/sonarqube-lab/src
 cd /root/sonarqube-lab
 
@@ -55,5 +49,4 @@ app.listen(PORT, () => {
 });
 EOF
 
-# 4. Ket thuc background ngay lap tuc de Terminal mo tuc thi (khong keo docker nang o background)
 touch /tmp/background-finished
