@@ -145,6 +145,10 @@
     {
       "path": "lab33-docker-image-trivy-scan",
       "title": "Lab 33: Quét Docker Image với Trivy"
+    },
+    {
+      "path": "lab34-docker-image-signing-cosign",
+      "title": "Lab 34: Ký số và Xác thực Docker Image với Cosign"
     }
   ]
 }

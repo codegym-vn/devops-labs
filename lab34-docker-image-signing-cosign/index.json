@@ -1,0 +1,41 @@
+{
+  "title": "Lab 34: Ký Số Và Xác Thực Docker Image Với Cosign",
+  "description": "Làm chủ kỹ thuật bảo mật chuỗi cung ứng phần mềm (Software Supply Chain Security) với Sigstore Cosign: khởi tạo kho lưu trữ OCI Registry cục bộ, tạo cặp khóa mật mã bất đối xứng, thực thi ký số cryptographic digest của Container Image, xác thực chữ ký số bằng Public Key, mô phỏng và ngăn chặn các cuộc tấn công đánh tráo Image (Tampering Attack), đính kèm danh mục SBOM vào Image Manifest và xây dựng Deployment Verification Gate tự động.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khởi Tạo OCI Registry, Cài Đặt Cosign & Tạo Cặp Khóa",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Đóng Gói, Đẩy Image Lên Registry & Thực Thi Ký Số",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Xác Thực Chữ Ký Số & Ngăn Chặn Tấn Công Giả Mạo",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Đính Kèm SBOM Vào Image & Xây Dựng Deployment Gate",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}
