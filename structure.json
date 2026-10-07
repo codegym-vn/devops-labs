@@ -125,6 +125,18 @@
     {
       "path": "lab28-security-gates-pipeline",
       "title": "Lab 28: Xây dựng Security Gates trong CI/CD Pipeline"
+    },
+    {
+      "path": "lab29-sonarqube-source-scan",
+      "title": "Lab 29: Cấu hình SonarQube quét mã nguồn"
+    },
+    {
+      "path": "lab30-sast-vulnerability-fix",
+      "title": "Lab 30: Phân tích lỗ hổng mã nguồn và sửa lỗi"
+    },
+    {
+      "path": "lab31-dast-owasp-zap",
+      "title": "Lab 31: Tích hợp OWASP ZAP quét ứng dụng đang chạy"
     }
   ]
 }

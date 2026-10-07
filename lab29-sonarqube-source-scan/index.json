@@ -1,0 +1,41 @@
+{
+  "title": "Lab 29: Cấu Hình SonarQube Quét Mã Nguồn & Phân Tích Chất Lượng",
+  "description": "Làm chủ nền tảng kiểm thử an ninh tĩnh (SAST) và chất lượng mã nguồn tiêu chuẩn doanh nghiệp: khởi tạo SonarQube Server, cấu hình SonarScanner CLI, thiết lập sonar-project.properties, kích hoạt phân tích tự động và thiết lập Cổng chất lượng Quality Gate.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khởi Chạy SonarQube Server & Đăng Nhập Giao Diện Quản Trị",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Cấu Hình Dự Án Mới & Sinh Token Xác Thực",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Cấu Hình sonar-project.properties & Kích Hoạt SonarScanner",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Phân Tích Dashboard & Thiết Lập Cổng Quality Gate",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

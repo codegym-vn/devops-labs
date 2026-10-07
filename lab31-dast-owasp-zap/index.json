@@ -1,0 +1,41 @@
+{
+  "title": "Lab 31: Tích Hợp OWASP ZAP Quét Ứng Dụng Đang Chạy (DAST)",
+  "description": "Làm chủ phương pháp kiểm thử an ninh động (DAST) với OWASP ZAP: khởi chạy ứng dụng web mục tiêu, thực thi quét tự động ZAP Baseline Scan phát hiện các lỗ hổng thời gian thực (Missing Security Headers, Clickjacking, CSP, Information Disclosure), cấu hình phòng thủ toàn diện với Helmet middleware và nghiệm thu báo cáo.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khởi Chạy Ứng Dụng Web Mục Tiêu & Khảo Sát Bề Mặt Tấn Công",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Thực Thi Quét Động DAST Với OWASP ZAP Baseline Scan",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Phân Tích Báo Cáo Rủi Ro & Cơ Chế Khai Thác",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Khắc Phục Lỗ Hổng Bằng Helmet.js & Quét Nghiệm Thu An Toàn",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}
