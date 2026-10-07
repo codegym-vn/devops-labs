@@ -113,6 +113,10 @@
     {
       "path": "lab25-iac-security-checkov-tfsec",
       "title": "Lab 25: Thực hành quét lỗ hổng bảo mật mã nguồn Terraform với Checkov & Tfsec"
+    },
+    {
+      "path": "lab26-secret-scanning-gitleaks",
+      "title": "Lab 26: Tự động quét lộ mật khẩu, token trong mã nguồn với Gitleaks"
     }
   ]
 }

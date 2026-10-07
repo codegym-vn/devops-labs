@@ -1,0 +1,41 @@
+{
+  "title": "Lab 26: Tự Động Quét Lộ Mật Khẩu, Token & Khóa Bí Mật Trong Mã Nguồn Với Gitleaks",
+  "description": "Làm chủ kỹ thuật phòng chống rò rỉ thông tin mật (Secret Leak Prevention): sử dụng Gitleaks phát hiện hardcoded credentials trong mã nguồn và lịch sử Git, thiết lập Git Pre-commit Hook chặn rò rỉ từ máy trạm và cấu hình quy tắc ngoại lệ an toàn.",
+  "difficulty": "Intermediate",
+  "time": "35-40 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khám Phá Mã Nguồn & Phát Hiện Lộ Secret Với Gitleaks CLI",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Quét Lịch Sử Git Commit & Xuất Báo Cáo Truy Vết",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Cấu Hình Git Pre-commit Hook Chặn Đứng Rò Rỉ Tự Động",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Quản Trị Ngoại Lệ Với .gitleaksignore & Quy Tắc Tùy Chỉnh",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}
