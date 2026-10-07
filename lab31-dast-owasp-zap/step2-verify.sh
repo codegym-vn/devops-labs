@@ -1,19 +1,15 @@
 #!/bin/bash
-set -e
+DIR=/root/dast-target-app/zap-reports
 
-cd /root/dast-target-app
-
-# 1. Kiem tra tep bao cao JSON va HTML cua ZAP
-if [ ! -f zap-initial-report.json ] || [ ! -f zap-initial-report.html ]; then
-  echo "Loi: Tep bao cao zap-initial-report.json hoac zap-initial-report.html chua duoc tao!"
+if [ ! -s "$DIR/zap-initial-report.json" ] || [ ! -s "$DIR/zap-initial-report.html" ]; then
+  echo "Chua co bao cao zap-initial-report.json/html trong $DIR. Hay chay lenh ZAP o muc 2."
   exit 1
 fi
 
-ALERTS=$(jq -r '.site[0].alerts | length' zap-initial-report.json 2>/dev/null || echo "0")
-if [ "$ALERTS" -lt 1 ]; then
-  echo "Loi: Bao cao ZAP khong chua du lieu canh bao lo hong DAST!"
+if ! grep -q '"pluginid"' "$DIR/zap-initial-report.json"; then
+  echo "Bao cao ZAP khong co canh bao nao. Kiem tra ung dung co dang chay o cong 3000 khong."
   exit 1
 fi
 
-echo "OWASP ZAP Baseline Scan da hoan thanh va tao bao cao hop le ($ALERTS canh bao)!"
+echo "Buoc 2 hoan thanh"
 exit 0

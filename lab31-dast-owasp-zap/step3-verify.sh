@@ -1,19 +1,15 @@
 #!/bin/bash
-set -e
+PLAN=/root/dast-target-app/remediation-plan.txt
 
-cd /root/dast-target-app
-
-# 1. Kiem tra tep remediation-plan.txt
-if [ ! -f remediation-plan.txt ]; then
-  echo "Loi: Tep remediation-plan.txt chua duoc tao!"
+if [ ! -s "$PLAN" ]; then
+  echo "Chua co tep remediation-plan.txt."
   exit 1
 fi
 
-COUNT=$(wc -l < remediation-plan.txt)
-if [ "$COUNT" -lt 2 ]; then
-  echo "Loi: remediation-plan.txt chua chua day du danh sach lo hong DAST can khac phuc!"
+if [ "$(wc -l < "$PLAN")" -lt 2 ]; then
+  echo "remediation-plan.txt chua du danh sach canh bao."
   exit 1
 fi
 
-echo "Ke hoach khac phuc lo hong DAST da duoc phan tich va tong hop thanh cong!"
+echo "Buoc 3 hoan thanh"
 exit 0

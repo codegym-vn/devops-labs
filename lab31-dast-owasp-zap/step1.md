@@ -1,55 +1,63 @@
 # Bước 1: Khởi Chạy Ứng Dụng Web Mục Tiêu & Khảo Sát Bề Mặt Tấn Công
 
-Trước khi chạy công cụ DAST, ứng dụng mục tiêu phải đang hoạt động thực tế trên máy chủ để công cụ có thể gửi các HTTP request thăm dò.
+DAST kiểm thử ứng dụng **đang chạy**, nên trước tiên cần khởi động ứng dụng mục tiêu để công cụ quét có thể gửi HTTP request tới.
 
 ---
 
-### 1. Khởi chạy ứng dụng Web trên cổng 3000
+### 1. Cài đặt Node.js và jq
 
-Di chuyển vào thư mục `/root/dast-target-app` và khởi động dịch vụ bằng tiến trình chạy ngầm:
+Cài Node.js 18 dạng binary (thư viện Helmet 7 yêu cầu Node.js 16 trở lên) và `jq` để đọc báo cáo JSON:
 
 ```bash
-cd /root/dast-target-app
-nohup node server.js > app.log 2>&1 &
+curl -fsSL https://nodejs.org/dist/v18.20.4/node-v18.20.4-linux-x64.tar.gz | tar -xz -C /opt && ln -sf /opt/node-v18.20.4-linux-x64/bin/node /usr/local/bin/node && ln -sf /opt/node-v18.20.4-linux-x64/bin/npm /usr/local/bin/npm && node -v && npm -v
 ```{{exec}}
 
-Chờ 2 giây và kiểm tra tiến trình đang lắng nghe trên cổng 3000:
-
 ```bash
-sleep 2
-lsof -i :3000 || netstat -tlpn | grep 3000
-```{{exec}}
-
-Kiểm tra API phản hồi trạng thái:
-
-```bash
-curl -s http://localhost:3000/api/health | jq .
+apt-get update -qq && apt-get install -y -qq jq > /dev/null && echo "Da cai xong jq"
 ```{{exec}}
 
 ---
 
-### 2. Khảo sát bề mặt tấn công qua HTTP Response Headers
+### 2. Cài thư viện và khởi chạy ứng dụng
 
-Trong kiểm thử hộp đen, tin tặc hoặc công cụ quét DAST sẽ kiểm tra các thông số phản hồi trong Header của máy chủ:
+```bash
+cd /root/dast-target-app && npm install --no-audit --no-fund
+```{{exec}}
+
+Khởi chạy ứng dụng ở chế độ nền trên cổng 3000:
+
+```bash
+nohup node server.js > app.log 2>&1 & sleep 2; curl -s http://localhost:3000/api/health | jq .
+```{{exec}}
+
+Kiểm tra tiến trình đang lắng nghe:
+
+```bash
+ss -tlnp | grep 3000
+```{{exec}}
+
+---
+
+### 3. Khảo sát bề mặt tấn công qua HTTP Response Headers
+
+Kẻ tấn công hoặc công cụ DAST luôn bắt đầu bằng việc quan sát header phản hồi của máy chủ:
 
 ```bash
 curl -I http://localhost:3000
 ```{{exec}}
 
-Quan sát kết quả trả về:
+Kết quả:
 ```http
 HTTP/1.1 200 OK
 X-Powered-By: Express
 Content-Type: text/html; charset=utf-8
 Content-Length: ...
-Date: ...
-Connection: keep-alive
 ```
 
-Nhận xét các điểm yếu ban đầu:
-1. **Rò rỉ thông tin công nghệ:** Header `X-Powered-By: Express` tiết lộ trực tiếp cho kẻ tấn công framework backend đang sử dụng, tạo tiền đề cho các cuộc tấn công khai thác lỗ hổng đặc thù của Node.js/Express.
-2. **Thiếu cơ chế chống Clickjacking:** Không có tiêu đề `X-Frame-Options`. Kẻ tấn công có thể nhúng trang web này vào một `<iframe>` ẩn trên trang web độc hại để lừa người dùng nhấp chuột ngoài ý muốn.
-3. **Thiếu chính sách bảo mật nội dung (CSP):** Trình duyệt không được cung cấp danh sách trắng các nguồn tải script hợp lệ, mở đường cho tấn công XSS.
-4. **Thiếu chỉ thị chống MIME-Sniffing:** Thiếu `X-Content-Type-Options: nosniff`.
+Các điểm yếu quan sát được:
+1. **Rò rỉ công nghệ:** `X-Powered-By: Express` cho kẻ tấn công biết framework backend để tìm lỗ hổng tương ứng.
+2. **Thiếu chống Clickjacking:** không có `X-Frame-Options` hoặc CSP `frame-ancestors`, trang có thể bị nhúng vào iframe ẩn trên trang độc hại.
+3. **Thiếu Content Security Policy:** trình duyệt không có danh sách nguồn script hợp lệ, tăng tác hại khi bị XSS.
+4. **Thiếu chống MIME Sniffing:** không có `X-Content-Type-Options: nosniff`.
 
-Nhấn **Check** để hoàn thành bước 1!
+Nhấn **Check** để hoàn thành bước 1.

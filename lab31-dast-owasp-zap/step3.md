@@ -1,38 +1,42 @@
 # Bước 3: Phân Tích Báo Cáo Rủi Ro & Cơ Chế Khai Thác
 
-Báo cáo do OWASP ZAP tạo ra cung cấp đầy đủ thông tin: Mã định danh quy tắc (Plugin ID), Mức độ rủi ro (Risk), Mã lỗ hổng chuẩn quốc tế (CWE ID) và Giải pháp kỹ thuật khuyến nghị (Solution).
+Báo cáo ZAP cung cấp cho mỗi cảnh báo: mã plugin (`pluginid`), mức độ rủi ro (`riskdesc`), mã CWE (`cweid`) và giải pháp (`solution`).
 
 ---
 
-### 1. Trích xuất danh sách lỗ hổng và giải pháp từ báo cáo JSON
-
-Sử dụng `jq` để lọc các thông số kỹ thuật cốt lõi:
+### 1. Trích xuất danh sách cảnh báo từ báo cáo JSON
 
 ```bash
-cd /root/dast-target-app
-jq '.site[0].alerts[] | {name: .name, risk: .risk, cweid: .cweid, solution: .solution}' zap-initial-report.json
+cd /root/dast-target-app && jq -r '.site[0].alerts[] | "\(.pluginid)\t\(.riskdesc)\tCWE-\(.cweid)\t\(.name)"' zap-reports/zap-initial-report.json
+```{{exec}}
+
+Xem giải pháp ZAP đề xuất cho từng cảnh báo:
+
+```bash
+jq -r '.site[0].alerts[] | "[\(.pluginid)] \(.name)\n  Giai phap: \(.solution | gsub("<[^>]*>"; ""))\n"' zap-reports/zap-initial-report.json
 ```{{exec}}
 
 ---
 
-### 2. Phân tích chi tiết 4 mối đe dọa an ninh DAST
+### 2. Phân tích 4 cảnh báo chính về HTTP Header
 
-| Plugin ID | Tên lỗ hổng | Mức độ | CWE ID | Cơ chế tấn công & Khắc phục |
+| Plugin ID | Tên cảnh báo | Mức độ | CWE | Cơ chế tấn công và cách sửa |
 |---|---|---|---|---|
-| **10020** | Anti-clickjacking Header Not Set | Medium | CWE-1021 | Kẻ tấn công tạo một trang web độc hại nhúng trang đăng nhập vào iframe trong suốt, lừa người dùng nhấn nhầm nút chuyển tiền hoặc đổi mật khẩu. **Cách sửa:** Thêm `X-Frame-Options: SAMEORIGIN`. |
-| **10038** | CSP Header Not Set | Medium | CWE-693 | Trình duyệt không biết nguồn nạp script nào là hợp lệ, tạo điều kiện cho mã độc XSS thực thi tự do. **Cách sửa:** Thêm tiêu đề `Content-Security-Policy: default-src 'self'`. |
-| **10021** | X-Content-Type-Options Missing | Low | CWE-16 | Trình duyệt cố gắng tự đoán định dạng (MIME-sniffing), có thể thực thi tệp ảnh tải lên như tệp mã JavaScript. **Cách sửa:** Thêm `X-Content-Type-Options: nosniff`. |
-| **10004** | Server Leaks X-Powered-By | Low | CWE-200 | Tiết lộ framework Express, giúp tin tặc thu hẹp phạm vi tấn công theo phiên bản. **Cách sửa:** Loại bỏ header bằng `app.disable('x-powered-by')`. |
+| **10020** | Missing Anti-clickjacking Header | Medium | 1021 | Kẻ tấn công nhúng trang vào iframe trong suốt, lừa người dùng bấm nhầm nút. Sửa bằng `X-Frame-Options: SAMEORIGIN` hoặc CSP `frame-ancestors 'self'`. |
+| **10038** | Content Security Policy Header Not Set | Medium | 693 | Không có danh sách nguồn script hợp lệ, mã độc XSS chạy tự do. Sửa bằng header `Content-Security-Policy`. |
+| **10021** | X-Content-Type-Options Header Missing | Low | 693 | Trình duyệt tự đoán kiểu MIME, có thể thực thi tệp tải lên như JavaScript. Sửa bằng `X-Content-Type-Options: nosniff`. |
+| **10037** | Server Leaks Information via X-Powered-By | Low | 200 | Lộ framework Express, giúp kẻ tấn công thu hẹp phạm vi tìm lỗ hổng. Sửa bằng cách gỡ header `X-Powered-By`. |
+
+Ngoài 4 cảnh báo trên, ZAP có thể báo thêm các mục như **Permissions Policy Header Not Set (10063)** hoặc **Absence of Anti-CSRF Tokens (10202)** cho form đăng nhập. Đây là các điểm cần cải thiện thêm sau bài lab.
 
 ---
 
-### 3. Tạo kế hoạch khắc phục an ninh (Remediation Plan)
+### 3. Lập kế hoạch khắc phục
 
-Trích xuất danh sách tên các lỗ hổng cần xử lý vào tệp `remediation-plan.txt`:
+Ghi danh sách cảnh báo vào tệp `remediation-plan.txt`:
 
 ```bash
-jq -r '.site[0].alerts[].name' zap-initial-report.json > remediation-plan.txt
-cat remediation-plan.txt
+jq -r '.site[0].alerts[] | "\(.pluginid) | \(.riskdesc) | \(.name)"' zap-reports/zap-initial-report.json > remediation-plan.txt && cat remediation-plan.txt
 ```{{exec}}
 
-Nhấn **Check** để hoàn thành bước 3!
+Nhấn **Check** để hoàn thành bước 3.

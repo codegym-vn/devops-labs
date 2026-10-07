@@ -1,138 +1,68 @@
-# Bước 4: Khắc Phục Lỗ Hổng Bằng Helmet.js & Quét Nghiệm Thu An Toàn
+# Bước 4: Khắc Phục Lỗ Hổng Bằng Helmet.js & Quét Nghiệm Thu
 
-Để khắc phục đồng thời cả 4 vấn đề an ninh tiêu đề HTTP mà OWASP ZAP đã cảnh báo, giải pháp chuẩn mực trong hệ sinh thái Node.js là tích hợp thư viện **Helmet.js**.
-
-Helmet là middleware tập trung thiết lập 15 tiêu đề HTTP bảo mật tự động, bao gồm CSP, HSTS, X-Frame-Options, X-Content-Type-Options và tự động gỡ bỏ `X-Powered-By`.
+**Helmet** là middleware cho Express, tự động thiết lập nhóm HTTP Security Header gồm CSP, HSTS, X-Frame-Options, X-Content-Type-Options và gỡ bỏ `X-Powered-By`.
 
 ---
 
-### 1. Cập nhật mã nguồn ứng dụng với Helmet.js
+### 1. Tích hợp Helmet vào ứng dụng
 
-Mở tệp `server.js` và bổ sung middleware `helmet()` ngay sau khi khởi tạo đối tượng Express `app`:
+Thêm `require('helmet')` và `app.use(helmet())` ngay sau khi khởi tạo `app`:
 
 ```bash
 cd /root/dast-target-app
-
-cat << 'EOF' > server.js
-const express = require('express');
-const helmet = require('helmet');
-
-const app = express();
-const PORT = 3000;
-
-// Kích hoạt toàn bộ bộ lá chắn bảo mật HTTP Headers của Helmet
-app.use(helmet());
-
-// Tắt hoàn toàn tiêu đề tiết lộ phiên bản máy chủ
-app.disable('x-powered-by');
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Trang chu voi form dang nhap
-app.get('/', (req, res) => {
-  res.send(`
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <title>Portal Noi Bo - DevSecOps Demo</title>
-  <style>
-    body { font-family: sans-serif; margin: 40px; background: #f4f6f8; }
-    .card { background: white; padding: 24px; border-radius: 8px; max-width: 400px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    input { width: 100%; padding: 8px; margin: 8px 0 16px; box-sizing: border-box; }
-    button { background: #0066cc; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h2>Dang Nhap He Thong</h2>
-    <form action="/login" method="POST">
-      <label>Ten dang nhap:</label>
-      <input type="text" name="username" required>
-      <label>Mat khau:</label>
-      <input type="password" name="password" required>
-      <button type="submit">Xac Nhan</button>
-    </form>
-  </div>
-</body>
-</html>
-  `);
-});
-
-// Endpoint API suc khoe
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'UP', timestamp: new Date().toISOString() });
-});
-
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Target Web Application (Secured) dang chay tren cong ${PORT}`);
-});
+python3 - << 'EOF'
+p = "server.js"
+s = open(p).read()
+s = s.replace("const express = require('express');\n",
+              "const express = require('express');\nconst helmet = require('helmet');\n", 1)
+s = s.replace("const PORT = 3000;\n",
+              "const PORT = 3000;\n\n// Bat bo HTTP Security Headers cua Helmet\napp.use(helmet());\n", 1)
+open(p, "w").write(s)
+print("Da tich hop Helmet")
 EOF
+head -n 10 server.js
 ```{{exec}}
 
 ---
 
-### 2. Khởi động lại ứng dụng và kiểm tra tiêu đề HTTP
-
-Tắt tiến trình cũ và khởi chạy phiên bản đã được bảo vệ:
+### 2. Khởi động lại ứng dụng và kiểm tra header
 
 ```bash
-pkill -f "node server.js" || true
-sleep 1
-nohup node server.js > app.log 2>&1 &
-sleep 2
+pkill -f "node server.js"; sleep 1; nohup node server.js > app.log 2>&1 & sleep 2; curl -I http://localhost:3000
 ```{{exec}}
 
-Kiểm tra lại Response Headers của ứng dụng:
-
-```bash
-curl -I http://localhost:3000
-```{{exec}}
-
-Quan sát các tiêu đề an ninh mới xuất hiện:
+Các header bảo mật mới xuất hiện:
 ```http
-HTTP/1.1 200 OK
-Content-Security-Policy: default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests
-Cross-Origin-Opener-Policy: same-origin
-Cross-Origin-Resource-Policy: same-origin
-Origin-Agent-Cluster: ?1
-Referrer-Policy: no-referrer
-Strict-Transport-Security: max-age=31536000; includeSubDomains
+Content-Security-Policy: default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';...
+Strict-Transport-Security: max-age=15552000; includeSubDomains
 X-Content-Type-Options: nosniff
-X-DNS-Prefetch-Control: off
-X-Download-Options: noopen
 X-Frame-Options: SAMEORIGIN
-X-Permitted-Cross-Domain-Policies: none
-X-XSS-Protection: 0
+...
 ```
-> Tiêu đề `X-Powered-By` đã biến mất hoàn toàn, và các cơ chế chống Clickjacking, CSP, MIME-sniffing đã hoạt động.
+Header `X-Powered-By` đã biến mất.
 
 ---
 
-### 3. Thực thi quét nghiệm thu DAST với OWASP ZAP
-
-Chạy lại OWASP ZAP Baseline Scan để nghiệm thu:
+### 3. Quét nghiệm thu với OWASP ZAP
 
 ```bash
-zap-baseline.py -t http://localhost:3000 -J zap-final-report.json -r zap-final-report.html
+docker run --rm --network host -v /root/dast-target-app/zap-reports:/zap/wrk:rw ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:3000 -J zap-final-report.json -r zap-final-report.html -I; echo "Exit code: $?"
 ```{{exec}}
 
-Quan sát thông báo nghiệm thu an ninh từ ZAP:
-```
-------------------------------------------------------------
-PASS: 1	WARN: 0	FAIL: 0	SKIP: 0
-------------------------------------------------------------
-
-[ZAP SCAN FINISHED] Hoan thanh quet DAST khong phat hien canh bao moi!
-```
-
-Kiểm tra số lượng cảnh báo trong tệp nghiệm thu JSON:
+So sánh danh sách mã plugin trước và sau khi sửa:
 
 ```bash
-jq '.site[0].alerts | length' zap-final-report.json
+echo "TRUOC:" $(jq -r '[.site[0].alerts[].pluginid] | sort | join(" ")' zap-reports/zap-initial-report.json); echo "SAU:  " $(jq -r '[.site[0].alerts[].pluginid] | sort | join(" ")' zap-reports/zap-final-report.json)
 ```{{exec}}
 
-Kết quả trả về `0` và mã thoát (exit code) là `0`. Toàn bộ ứng dụng đã đáp ứng các tiêu chuẩn an ninh động (DAST) sẵn sàng phát hành lên Production!
+Kiểm tra riêng 4 cảnh báo đã xử lý:
 
-Nhấn **Check** để hoàn thành bài lab!
+```bash
+for id in 10020 10021 10037 10038; do if jq -e --arg id "$id" '.site[0].alerts[] | select(.pluginid == $id)' zap-reports/zap-final-report.json > /dev/null; then echo "$id: VAN CON"; else echo "$id: DA KHAC PHUC"; fi; done
+```{{exec}}
+
+Cả 4 mã `10020`, `10021`, `10037`, `10038` đều báo **DA KHAC PHUC**.
+
+Báo cáo sau có thể vẫn còn một số cảnh báo mới, ví dụ **CSP: style-src unsafe-inline (10055)** do cấu hình CSP mặc định của Helmet, hoặc **Permissions Policy Header Not Set (10063)**. Trên thực tế, mỗi lần quét DAST thường giúp tìm ra điểm cần siết chặt tiếp. Đây là quá trình cải thiện liên tục, không phải kiểm tra một lần.
+
+Nhấn **Check** để hoàn thành bài lab.

@@ -1,42 +1,54 @@
 # Bước 2: Thực Thi Quét Động DAST Với OWASP ZAP Baseline Scan
 
-**OWASP ZAP Baseline Scan** là chế độ quét thụ động (Passive Scan) được thiết kế đặc biệt cho các CI/CD pipeline. Chế độ này không gửi các payload phá hoại hay làm sập ứng dụng, mà phân tích toàn diện các thông điệp HTTP Request và Response để tìm kiếm các sai phạm cấu hình an ninh thời gian thực.
+**ZAP Baseline Scan** là chế độ quét thụ động (Passive Scan) dành cho CI/CD. ZAP chạy spider khoảng 1 phút để thu thập các URL, sau đó phân tích request và response tìm sai sót cấu hình bảo mật. Chế độ này **không gửi payload tấn công** nên an toàn khi chạy với môi trường staging.
 
 ---
 
-### 1. Kích hoạt OWASP ZAP Baseline Scan
+### 1. Kéo Docker image OWASP ZAP
 
-Thực thi lệnh quét nhắm vào ứng dụng đang chạy tại `http://localhost:3000`, đồng thời xuất báo cáo dưới cả hai định dạng JSON (`-J`) và HTML (`-r`):
+Image chính thức của ZAP có dung lượng lớn, khoảng 1.5 đến 2GB. Quá trình tải có thể mất vài phút:
 
 ```bash
-cd /root/dast-target-app
-zap-baseline.py -t http://localhost:3000 -J zap-initial-report.json -r zap-initial-report.html -w
+docker pull ghcr.io/zaproxy/zaproxy:stable
 ```{{exec}}
-
-> **Giải thích tham số:**
-> * `-t`: Chỉ định URL mục tiêu cần quét.
-> * `-J`: Đường dẫn xuất báo cáo chi tiết định dạng JSON cho máy tính và CI pipeline xử lý.
-> * `-r`: Đường dẫn xuất báo cáo giao diện HTML trực quan.
-> * `-w`: Chế độ cảnh báo (Warning Mode) cho phép ghi nhận toàn bộ lỗ hổng mà không ngắt kịch bản.
 
 ---
 
-### 2. Quan sát kết quả phân tích trên Terminal
-
-Quan sát các cảnh báo được ZAP phát hiện:
-```
-WARN-NEW: Anti-clickjacking Header (X-Frame-Options) Not Set [10020] x 1 (http://localhost:3000) - Risk: Medium
-WARN-NEW: Content Security Policy (CSP) Header Not Set [10038] x 1 (http://localhost:3000) - Risk: Medium
-WARN-NEW: X-Content-Type-Options Header Missing [10021] x 1 (http://localhost:3000) - Risk: Low
-WARN-NEW: Server Leaks Information via 'X-Powered-By' HTTP Response Header Field [10004] x 1 (http://localhost:3000) - Risk: Low
-```
-
-Kiểm tra số lượng cảnh báo được ghi lại trong tệp báo cáo JSON:
+### 2. Chạy ZAP Baseline Scan
 
 ```bash
-jq '.site[0].alerts | length' zap-initial-report.json
+cd /root/dast-target-app && docker run --rm --network host -v /root/dast-target-app/zap-reports:/zap/wrk:rw ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:3000 -J zap-initial-report.json -r zap-initial-report.html -I; echo "Exit code: $?"
 ```{{exec}}
 
-Kết quả hiển thị `4` cảnh báo lỗ hổng an ninh động.
+Giải thích tham số:
+* `--network host`: container dùng chung mạng với máy chủ để truy cập `localhost:3000`.
+* `-v .../zap-reports:/zap/wrk`: ZAP ghi báo cáo vào `/zap/wrk`, được ánh xạ ra thư mục `zap-reports` trên máy chủ.
+* `-t`: URL mục tiêu.
+* `-J` và `-r`: xuất báo cáo dạng JSON và HTML.
+* `-I`: không trả về mã lỗi khi chỉ có cảnh báo mức WARN, phù hợp lần quét khảo sát đầu tiên.
 
-Nhấn **Check** để hoàn thành bước 2!
+Mã thoát của `zap-baseline.py` khi không dùng `-I`: `0` là không có cảnh báo, `1` là có FAIL, `2` là có WARN. Pipeline CI dựa vào mã này để quyết định chặn hay cho qua.
+
+---
+
+### 3. Quan sát kết quả
+
+Phần tổng kết cuối cùng có dạng:
+```
+WARN-NEW: Missing Anti-clickjacking Header [10020] x 1
+WARN-NEW: X-Content-Type-Options Header Missing [10021] x 2
+WARN-NEW: Server Leaks Information via "X-Powered-By" HTTP Response Header Field(s) [10037] x 2
+WARN-NEW: Content Security Policy (CSP) Header Not Set [10038] x 1
+...
+FAIL-NEW: 0  FAIL-INPROG: 0  WARN-NEW: ...  WARN-INPROG: 0  INFO: 0  IGNORE: 0  PASS: ...
+```
+
+Số lượng cảnh báo chính xác phụ thuộc phiên bản ZAP. Mỗi cảnh báo gồm tên, mã plugin trong ngoặc vuông và số URL bị ảnh hưởng.
+
+Kiểm tra các tệp báo cáo:
+
+```bash
+ls -la zap-reports/ && jq '.site[0].alerts | length' zap-reports/zap-initial-report.json
+```{{exec}}
+
+Nhấn **Check** để hoàn thành bước 2.
