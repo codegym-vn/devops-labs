@@ -4,17 +4,11 @@ Trong dự án thực tế, cấu hình quét của SonarScanner được lưu t
 
 ---
 
-### 1. Cài đặt Node.js và SonarScanner CLI
+### 1. Cài đặt SonarScanner CLI
 
-Bộ phân tích JavaScript của SonarQube 9.9 cần **Node.js 14.17 trở lên** trên máy chạy scanner. Nếu thiếu Node.js, scanner sẽ báo lỗi khi phân tích tệp `.js`.
+SonarScanner CLI là công cụ dòng lệnh chính thức để quét và phân tích mã nguồn. Bản phân phối Linux đã đóng gói sẵn môi trường Java (OpenJDK 17) độc lập, giúp thực thi quét trực tiếp các ngôn ngữ như Python, Java, Secrets, Dockerfile mà không đòi hỏi cài đặt môi trường runtime bên ngoài.
 
-Cài Node.js 18 dạng binary:
-
-```bash
-curl -fsSL https://nodejs.org/dist/v18.20.4/node-v18.20.4-linux-x64.tar.gz | tar -xz -C /opt && ln -sf /opt/node-v18.20.4-linux-x64/bin/* /usr/local/bin/ && node -v
-```{{exec}}
-
-Cài SonarScanner CLI. Bản này đã đóng gói sẵn Java nên không cần cài JDK:
+Cài đặt SonarScanner CLI và tạo liên kết tượng trưng (symlink):
 
 ```bash
 curl -fsSL https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip -o /tmp/sonar-scanner.zip && unzip -qo /tmp/sonar-scanner.zip -d /opt && ln -sf /opt/sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner && sonar-scanner -v
@@ -43,10 +37,6 @@ sonar.sourceEncoding=UTF-8
 # Dia chi may chu SonarQube
 sonar.host.url=http://localhost:9000
 
-# Duong dan Node.js cho bo phan tich JavaScript/ESLint
-sonar.nodejs.executable=/usr/local/bin/node
-sonar.javascript.node.maxspace=512
-
 # Bo qua cam bien SCM de toi uu toc do va bo nho RAM
 sonar.scm.disabled=true
 EOF
@@ -57,18 +47,16 @@ cat sonar-project.properties
 
 ### 3. Kích hoạt SonarScanner CLI
 
-SonarScanner đọc cấu hình từ `sonar-project.properties`, tải bộ quy tắc từ server, phân tích mã nguồn trong `src/` và gửi báo cáo về Compute Engine.
+SonarScanner đọc cấu hình từ `sonar-project.properties`, tải bộ quy tắc phân tích từ server, quét mã nguồn trong `src/` và gửi báo cáo về Compute Engine.
 
-Biến `SONAR_SCANNER_OPTS` cấu hình giới hạn RAM 256MB và ép dùng ngăn xếp IPv4 (`-Djava.net.preferIPv4Stack=true`) giúp kết nối nội bộ giữa Java và Node.js diễn ra mượt mà, tránh nghẽn loopback:
+Biến `SONAR_SCANNER_OPTS="-Xmx256m"` giới hạn bộ nhớ JVM của SonarScanner ở mức 256MB, giúp quá trình phân tích diễn ra nhẹ nhàng, mượt mà và hoàn thành chỉ trong vài giây:
 
 ```bash
-cd /root/sonarqube-lab && SONAR_SCANNER_OPTS="-Xmx256m -Djava.net.preferIPv4Stack=true" sonar-scanner -Dsonar.login="$(cat sonar-token.txt)"
+cd /root/sonarqube-lab && SONAR_SCANNER_OPTS="-Xmx256m" sonar-scanner -Dsonar.login="$(cat sonar-token.txt)"
 ```{{exec}}
 
 **Lưu ý quan trọng về SonarQube 9.9 LTS:**
-
 * **Tham số token:** Sử dụng cờ `-Dsonar.login`. Tham số `-Dsonar.token` chỉ bắt đầu hỗ trợ từ bản 10.0. Nếu token gặp lỗi, có thể xác thực trực tiếp: `sonar-scanner -Dsonar.login=admin -Dsonar.password=AdminSecurePass123`
-* **Trường hợp gặp timeout 300s:** Nếu màn hình xuất hiện thông báo "Failed to start server (300s timeout)" nhưng các dòng cuối vẫn báo **ANALYSIS SUCCESSFUL** và **EXECUTION SUCCESS**: Quá trình quét vẫn **thành công 100%** và báo cáo đã được tải lên server đầy đủ. Bạn hoàn toàn có thể nhấn **Check** để sang bước tiếp theo.
 
 ---
 

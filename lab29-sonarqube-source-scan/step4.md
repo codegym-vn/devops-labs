@@ -20,9 +20,9 @@ cd /root/sonarqube-lab && TASK_ID=$(grep ceTaskId .scannerwork/report-task.txt |
 curl -s -u admin:AdminSecurePass123 "http://localhost:9000/api/issues/search?componentKeys=express-api-service" | jq '{total: .total, issues: [.issues[] | {rule: .rule, severity: .severity, message: .message, line: .line}]}'
 ```{{exec}}
 
-SonarQube chỉ ra các dòng mã có vấn đề trong `src/app.js`, ví dụ:
-* Rule `javascript:S1481`: biến `unusedVariable` khai báo nhưng không sử dụng.
-* Rule `javascript:S125`: đoạn mã bị comment lại thay vì xóa bỏ.
+SonarQube chỉ ra các dòng mã có vấn đề trong `src/app.py`, ví dụ:
+* Rule `python:S1481`: biến `unused_variable` khai báo nhưng không sử dụng.
+* Rule `python:S125`: đoạn mã bị comment lại thay vì xóa bỏ.
 
 ---
 
