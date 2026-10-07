@@ -137,6 +137,10 @@
     {
       "path": "lab31-dast-owasp-zap",
       "title": "Lab 31: Tích hợp OWASP ZAP quét ứng dụng đang chạy"
+    },
+    {
+      "path": "lab32-dependency-vulnerability-scan",
+      "title": "Lab 32: Quét lỗ hổng Dependency trong ứng dụng"
     }
   ]
 }
