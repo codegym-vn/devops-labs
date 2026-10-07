@@ -46,10 +46,13 @@ Thực hiện lệnh quét với Token xác thực:
 
 ```bash
 SONAR_TOKEN=$(cat /root/sonarqube-lab/sonar-token.txt)
-sonar-scanner -Dsonar.token="$SONAR_TOKEN"
+sonar-scanner -Dsonar.login="$SONAR_TOKEN"
 ```
 
-> **Lưu ý:** Nếu phiên bản SonarScanner hỗ trợ tham số token dưới dạng login, bạn cũng có thể truyền `-Dsonar.login="$SONAR_TOKEN"`. Cả hai tham số này đều được hỗ trợ.
+> **Lưu ý quan trọng về phiên bản SonarQube 9.9 LTS:**
+> * Đối với máy chủ SonarQube LTS (phiên bản 9.9), tham số nạp User Token trên SonarScanner CLI là `-Dsonar.login="$SONAR_TOKEN"` (tham số `-Dsonar.token` chỉ bắt đầu hỗ trợ từ SonarQube 10.0+).
+> * Bạn cũng có thể xác thực trực tiếp bằng tài khoản quản trị:
+>   `sonar-scanner -Dsonar.login=admin -Dsonar.password=AdminSecurePass123`
 
 ---
 

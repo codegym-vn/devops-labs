@@ -32,17 +32,15 @@ Dự án đã được lưu trữ trong cơ sở dữ liệu của SonarQube.
 
 Mã Analysis Token cho phép công cụ `sonar-scanner` xác thực an toàn với máy chủ mà không làm lộ mật khẩu của quản trị viên.
 
-Tạo token mới có tên `scanner-ci-token`:
+# Thu hoi token cu neu da tung tao truoc do (tranh loi trung ten token)
+curl -u admin:AdminSecurePass123 -s -X POST "http://localhost:9000/api/user_tokens/revoke?name=scanner-ci-token" > /dev/null 2>&1 || true
 
-```bash
+# Sinh token moi
 TOKEN_RESPONSE=$(curl -u admin:AdminSecurePass123 -s -X POST "http://localhost:9000/api/user_tokens/generate?name=scanner-ci-token")
 echo "$TOKEN_RESPONSE" | jq .
-```
 
-Trích xuất giá trị token và lưu vào tệp `/root/sonarqube-lab/sonar-token.txt`:
-
-```bash
-SONAR_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.token')
+# Trich xuat va luu token vao tep
+SONAR_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.token // empty')
 echo "$SONAR_TOKEN" > /root/sonarqube-lab/sonar-token.txt
 echo "Da luu Token: $SONAR_TOKEN"
 ```
