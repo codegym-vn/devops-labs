@@ -42,6 +42,9 @@ sonar.sourceEncoding=UTF-8
 
 # Dia chi may chu SonarQube
 sonar.host.url=http://localhost:9000
+
+# Bo qua cam bien SCM de toi uu toc do va bo nho RAM
+sonar.scm.disabled=true
 EOF
 cat sonar-project.properties
 ```{{exec}}
@@ -52,8 +55,10 @@ cat sonar-project.properties
 
 SonarScanner đọc cấu hình từ `sonar-project.properties`, tải bộ quy tắc JavaScript từ server, phân tích mã nguồn trong `src/` và gửi báo cáo về Compute Engine.
 
+Biến `SONAR_SCANNER_OPTS="-Xmx256m"` giới hạn bộ nhớ JVM của SonarScanner ở mức 256MB, giúp quá trình phân tích diễn ra nhẹ nhàng, mượt mà và không gây nghẽn RAM:
+
 ```bash
-cd /root/sonarqube-lab && sonar-scanner -Dsonar.login="$(cat sonar-token.txt)"
+cd /root/sonarqube-lab && SONAR_SCANNER_OPTS="-Xmx256m" sonar-scanner -Dsonar.login="$(cat sonar-token.txt)"
 ```{{exec}}
 
 > **Lưu ý về SonarQube 9.9 LTS:** tham số truyền token là `-Dsonar.login`. Tham số `-Dsonar.token` chỉ được hỗ trợ từ SonarQube 10.0. Nếu token gặp lỗi, có thể xác thực bằng tài khoản quản trị: `sonar-scanner -Dsonar.login=admin -Dsonar.password=AdminSecurePass123`

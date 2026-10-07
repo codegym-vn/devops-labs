@@ -27,10 +27,10 @@ sysctl -w vm.max_map_count=262144
 Kéo image và chạy SonarQube Community Edition trên cổng `9000`. Quá trình tải image khoảng 600MB nên có thể mất 1 đến 2 phút:
 
 ```bash
-docker run -d --name sonarqube -p 9000:9000 -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true sonarqube:lts-community
+docker run -d --name sonarqube -p 9000:9000 -e SONAR_SEARCH_JAVAADDITIONALOPTS="-Xmx256m -Xms256m" -e SONAR_WEB_JAVAADDITIONALOPTS="-Xmx256m -Xms256m" -e SONAR_CE_JAVAADDITIONALOPTS="-Xmx256m -Xms256m" -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true sonarqube:lts-community
 ```{{exec}}
 
-Biến môi trường `SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true` tắt các bài kiểm tra khởi động khắt khe của Elasticsearch, phù hợp cho môi trường lab có tài nguyên hạn chế. Không dùng cờ này trên Production.
+Biến môi trường `SONAR_*_JAVAADDITIONALOPTS` giới hạn bộ nhớ RAM tối đa cho 3 tiến trình Java (Web, Compute Engine, Elasticsearch) ở mức 256MB mỗi tiến trình, giúp hệ thống hoạt động ổn định và không làm cạn kiệt RAM của máy chủ lab.
 
 Kiểm tra container đang chạy:
 
