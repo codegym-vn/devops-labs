@@ -37,19 +37,19 @@ sleep 6
 
 ### 2. Truy vấn Thông lượng xử lý (Requests Per Second - RPS)
 
-Hàm `rate()` tính toán tốc độ tăng trung bình trên mỗi giây của một Counter trong khoảng thời gian xác định (ví dụ 1 phút `[1m]`):
+Hàm **rate()** tính toán tốc độ tăng trung bình trên mỗi giây của một Counter trong khoảng thời gian xác định (ví dụ 1 phút `[1m]`):
 
 ```bash
 curl -s -G --data-urlencode 'query=sum(rate(http_requests_total[1m]))' http://localhost:9090/api/v1/query | jq '.data.result[] | {metric: .metric, rps: .value[1]}'
 ```{{exec}}
 
-Giá trị `rps` thể hiện số lượng request trên giây mà dịch vụ đang phục vụ.
+Giá trị **rps** thể hiện số lượng request trên giây mà dịch vụ đang phục vụ.
 
 ---
 
 ### 3. Tính toán Tỷ lệ lỗi hệ thống (Error Rate Percentage)
 
-Lấy tỷ lệ của các request có mã lỗi `500` chia cho tổng số request, sau đó nhân 100 để tính tỷ lệ phần trăm:
+Lấy tỷ lệ của các request có mã lỗi 500 chia cho tổng số request, sau đó nhân 100 để tính tỷ lệ phần trăm:
 
 ```bash
 curl -s -G --data-urlencode 'query=(sum(rate(http_requests_total{status_code="500"}[1m])) / sum(rate(http_requests_total[1m]))) * 100' http://localhost:9090/api/v1/query | jq '.data.result[] | {metric: "Error Rate %", percentage: .value[1]}'
@@ -61,13 +61,13 @@ Chỉ số này là căn cứ trực tiếp để thiết lập cảnh báo tự
 
 ### 4. Tính toán Độ trễ phân vị p95 (95th Percentile Latency)
 
-Trung bình cộng (Average) không phản ánh đúng trải nghiệm của người dùng vì bị triệt tiêu bởi các giá trị ngoại lai. Trong kỹ thuật SRE, chúng ta sử dụng hàm `histogram_quantile` để xác định ngưỡng thời gian mà 95% người dùng nhận phản hồi:
+Trung bình cộng (Average) không phản ánh đúng trải nghiệm của người dùng vì bị triệt tiêu bởi các giá trị ngoại lai. Trong kỹ thuật SRE, chúng ta sử dụng hàm **histogram_quantile** để xác định ngưỡng thời gian mà 95% người dùng nhận phản hồi:
 
 ```bash
 curl -s -G --data-urlencode 'query=histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[1m])) by (le))' http://localhost:9090/api/v1/query | jq '.data.result[] | {metric: "p95 Latency (seconds)", latency: .value[1]}'
 ```{{exec}}
 
-Lưu kết quả phân tích PromQL ra tệp `promql-analysis.json`:
+Lưu kết quả phân tích PromQL ra tệp **promql-analysis.json**:
 
 ```bash
 curl -s -G --data-urlencode 'query=sum(rate(http_requests_total[1m]))' http://localhost:9090/api/v1/query > promql-analysis.json

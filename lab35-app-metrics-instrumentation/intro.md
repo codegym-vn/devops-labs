@@ -24,7 +24,7 @@ Một sai lầm phổ biến của các kỹ sư mới bắt đầu là chỉ gi
 
 ## 2. Mục Tiêu Bạn Cần Đạt Được Trong Bài Lab Này
 
-1. **Khởi tạo dịch vụ và kích hoạt thu thập chỉ số runtime:** Tích hợp thư viện `prom-client` và kích hoạt bộ thu thập chỉ số mặc định của tiến trình Node.js (CPU, Heap Memory, Event Loop).
+1. **Khởi tạo dịch vụ và kích hoạt thu thập chỉ số runtime:** Tích hợp thư viện **prom-client** và kích hoạt bộ thu thập chỉ số mặc định của tiến trình Node.js (CPU, Heap Memory, Event Loop).
 2. **Xây dựng Custom Metrics đo lường chuyên sâu:** Tự thiết kế và cài đặt ba loại metric cốt lõi gồm Counter đếm request, Histogram đo độ trễ p95 và Gauge đo số kết nối đồng thời.
 3. **Triển khai Prometheus Server:** Cấu hình và khởi chạy Prometheus ở chế độ thu thập tự động (Scrape Job) kết nối với ứng dụng.
 4. **Phân tích hiệu năng bằng PromQL:** Sinh tải lưu lượng đa dạng (thành công, lỗi 500) và viết các câu lệnh truy vấn PromQL tính toán thông lượng RPS, tỷ lệ lỗi và độ trễ phản hồi.

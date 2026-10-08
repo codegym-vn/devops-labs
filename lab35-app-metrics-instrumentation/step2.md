@@ -6,15 +6,15 @@ Chỉ số tài nguyên hệ điều hành là chưa đủ để hiểu được
 
 ### 1. Ba loại Metric nghiệp vụ cốt lõi trong Prometheus
 
-1. **Counter (`http_requests_total`):** Là thước đo chỉ tăng lũy kế theo thời gian (hoặc reset về 0 khi dịch vụ khởi động lại). Phù hợp để đếm tổng số lượt truy cập API, phân loại theo nhãn (Labels) như phương thức `method`, đường dẫn `route`, và mã trạng thái `status_code`.
-2. **Histogram (`http_request_duration_seconds`):** Đo lường và phân phối các quan sát vào từng khoảng giới hạn (Buckets). Là công cụ duy nhất giúp tính toán chính xác độ trễ phân vị p50, p90, p95, p99 (ví dụ: 95% người dùng nhận kết quả dưới 200ms).
-3. **Gauge (`active_requests`):** Đo lường giá trị tức thời có thể tăng hoặc giảm liên tục theo thời gian thực (số lượng request đang được xử lý đồng thời, số kết nối cơ sở dữ liệu mở).
+1. **Counter (http_requests_total):** Là thước đo chỉ tăng lũy kế theo thời gian (hoặc reset về 0 khi dịch vụ khởi động lại). Phù hợp để đếm tổng số lượt truy cập API, phân loại theo nhãn (Labels) như method, route, và status_code.
+2. **Histogram (http_request_duration_seconds):** Đo lường và phân phối các quan sát vào từng khoảng giới hạn (Buckets). Là công cụ duy nhất giúp tính toán chính xác độ trễ phân vị p50, p90, p95, p99 (ví dụ: 95% người dùng nhận kết quả dưới 200ms).
+3. **Gauge (active_requests):** Đo lường giá trị tức thời có thể tăng hoặc giảm liên tục theo thời gian thực (số lượng request đang được xử lý đồng thời, số kết nối cơ sở dữ liệu mở).
 
 ---
 
 ### 2. Cài đặt Custom Metrics và Middleware đo lường
 
-Cập nhật mã nguồn `server.js` để tích hợp Counter, Histogram, Gauge và Express Middleware:
+Cập nhật mã nguồn **server.js** để tích hợp Counter, Histogram, Gauge và Express Middleware:
 
 ```bash
 cd /root/app-monitoring-lab
@@ -145,7 +145,7 @@ curl -s -X POST http://localhost:3000/api/checkout > /dev/null
 curl -s -X POST http://localhost:3000/api/checkout > /dev/null
 ```{{exec}}
 
-Kiểm tra số liệu Counter vừa được ghi nhận tại `/metrics`:
+Kiểm tra số liệu Counter vừa được ghi nhận tại **/metrics**:
 
 ```bash
 curl -s http://localhost:3000/metrics | grep -E "http_requests_total\{"
