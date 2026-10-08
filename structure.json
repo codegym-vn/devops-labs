@@ -149,6 +149,10 @@
     {
       "path": "lab34-docker-image-signing-cosign",
       "title": "Lab 34: Ký số và Xác thực Docker Image với Cosign"
+    },
+    {
+      "path": "lab35-app-metrics-instrumentation",
+      "title": "Lab 35: Instrument ứng dụng để thu thập Metrics"
     }
   ]
 }

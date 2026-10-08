@@ -1,0 +1,41 @@
+{
+  "title": "Lab 35: Instrument Ứng Dụng Để Thu Thập Metrics",
+  "description": "Làm chủ kỹ thuật gắn cảm biến đo lường (Application Instrumentation) trong Observability: tích hợp thư viện prom-client vào dịch vụ Node.js Express, xây dựng các loại metric chuẩn Prometheus (Counter, Gauge, Histogram đo độ trễ p95), expose endpoint /metrics, khởi chạy Prometheus server thu thập dữ liệu realtime, sinh tải mô phỏng và thực thi các câu truy vấn PromQL phân tích hiệu năng.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khởi Tạo Ứng Dụng & Cài Đặt prom-client",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Cài Đặt Custom Metrics Counter, Histogram & Gauge",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Khởi Chạy Prometheus & Cấu Hình Scrape Target",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Sinh Tải Tự Động & Thực Thi Truy Vấn PromQL",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}
