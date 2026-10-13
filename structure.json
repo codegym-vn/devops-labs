@@ -157,6 +157,10 @@
     {
       "path": "lab36-infra-metrics-logs",
       "title": "Lab 36: Thu Thập Metrics Và Logs Từ Hạ Tầng"
+    },
+    {
+      "path": "lab37-centralized-logging",
+      "title": "Lab 37: Xây Dựng Hệ Thống Centralized Logging"
     }
   ]
 }

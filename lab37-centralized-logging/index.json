@@ -1,0 +1,41 @@
+{
+  "title": "Lab 37: Xây Dựng Hệ Thống Centralized Logging",
+  "description": "Làm chủ kỹ thuật xây dựng hệ thống thu thập và xử lý nhật ký tập trung (Centralized Logging Pipeline) chuẩn doanh nghiệp: triển khai log shipper thế hệ mới Fluent Bit từ CNCF, thiết kế bộ giải mã Parser cấu trúc hóa log ứng dụng JSON và Nginx Combined Log, áp dụng bộ lọc Filter gắn nhãn metadata và che dấu dữ liệu nhạy cảm (Data Masking), định tuyến (Routing) đa luồng về cụm lưu trữ tập trung Grafana Loki, mô phỏng chuỗi giao dịch phân tán và truy vết sự cố xuyên suốt đa tầng dịch vụ bằng LogQL.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khởi Tạo Môi Trường Đa Nguồn & Khảo Sát Log Phân Tán",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Thiết Kế Pipeline Xử Lý Log Với Fluent Bit",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Khởi Chạy Loki & Định Tuyến Log Về Cụm Lưu Trữ",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Truy Vết Sự Cố Đa Nguồn & Phân Tích Bằng LogQL",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}
