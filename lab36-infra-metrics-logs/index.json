@@ -1,0 +1,41 @@
+{
+  "title": "Lab 36: Thu Thập Metrics Và Logs Từ Hạ Tầng",
+  "description": "Làm chủ kỹ thuật quan sát hạ tầng toàn diện (Infrastructure Observability): triển khai Prometheus Node Exporter thu thập chỉ số phần cứng và kernel Linux (CPU, Memory, Disk I/O, Network), tích hợp Prometheus Scrape Target và phân tích hiệu năng bằng các truy vấn PromQL cốt lõi; triển khai cụm lưu trữ nhật ký tập trung Grafana Loki kết hợp Promtail Shipper thu thập logs hệ thống (/var/log), mô phỏng sự cố thực tế và truy vấn bóc tách log chuyên sâu bằng LogQL.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Triển Khai Node Exporter Thu Thập Metrics Máy Chủ",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Cấu Hình Prometheus Scrape & Phân Tích Bằng PromQL",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Triển Khai Grafana Loki & Promtail Shipper Thu Thập Logs",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Mô Phỏng Sự Kiện Hạ Tầng & Truy Vấn Log Bằng LogQL",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

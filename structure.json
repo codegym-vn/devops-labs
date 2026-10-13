@@ -153,6 +153,10 @@
     {
       "path": "lab35-app-metrics-instrumentation",
       "title": "Lab 35: Instrument ứng dụng để thu thập Metrics"
+    },
+    {
+      "path": "lab36-infra-metrics-logs",
+      "title": "Lab 36: Thu Thập Metrics Và Logs Từ Hạ Tầng"
     }
   ]
 }
