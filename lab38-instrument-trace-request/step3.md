@@ -234,7 +234,7 @@ curl -s "http://localhost:16686/api/traces?service=order-service&limit=1" | jq '
 }'
 ```{{exec}}
 
-Hãy mở [Jaeger UI]({{TRAFFIC_HOST1_16686}}), tải lại trang và chọn Trace mới nhất. Bạn sẽ thấy biểu đồ Waterfall hiển thị cấu trúc phân cấp đa tầng:
+Hãy mở <a href="{{TRAFFIC_HOST1_16686}}" target="_blank">Jaeger UI</a> (mở sang tab mới), tải lại trang và chọn Trace mới nhất. Bạn sẽ thấy biểu đồ Waterfall hiển thị cấu trúc phân cấp đa tầng:
 - **order-service**: POST /api/orders
   - **order-service**: validate_payload
   - **order-service**: database_save_order

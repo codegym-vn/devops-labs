@@ -116,7 +116,7 @@ Phản hồi từ Order Service trả về mã lỗi 500 do Payment Service từ
 }
 ```
 
-Mở [Jaeger UI]({{TRAFFIC_HOST1_16686}}):
+Mở <a href="{{TRAFFIC_HOST1_16686}}" target="_blank">Jaeger UI</a> (mở sang tab mới):
 1. Tại ô **Service**, chọn **order-service**.
 2. Nhấn **Find Traces**.
 3. Bạn sẽ thấy Trace mới nhất xuất hiện một dấu chấm tròn đỏ báo hiệu lỗi (**error=true**).
@@ -138,7 +138,7 @@ curl -s -X POST http://localhost:8081/api/pay \
   }' | jq .
 ```{{exec}}
 
-Kiểm tra trên [Jaeger UI]({{TRAFFIC_HOST1_16686}}):
+Kiểm tra trên <a href="{{TRAFFIC_HOST1_16686}}" target="_blank">Jaeger UI</a> (mở sang tab mới):
 Chọn Service là **payment-service** và bấm **Find Traces**. Trên thanh Timeline, bạn sẽ thấy tổng thời gian thực thi lên tới hơn **680ms**, trong đó Span **fraud_and_credit_check** chiếm tới gần **95%** tổng thời gian thực hiện của toàn bộ request!
 
 ---

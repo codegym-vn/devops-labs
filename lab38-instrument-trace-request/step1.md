@@ -65,8 +65,8 @@ curl -s http://localhost:16686/api/services | jq .
 }
 ```
 
-Bạn có thể mở giao diện quản trị Jaeger bằng cách nhấp vào liên kết sau:
-[Mở Jaeger UI]({{TRAFFIC_HOST1_16686}})
+Bạn có thể mở giao diện quản trị Jaeger bằng cách nhấp vào liên kết sau (mở sang tab mới):
+<a href="{{TRAFFIC_HOST1_16686}}" target="_blank">Mở Jaeger UI (Cổng 16686)</a>
 
 Hoặc trên thanh công cụ terminal Killercoda, bấm vào dấu **+** -> Chọn **Select Port to View on Host 1** -> Nhập **16686** và nhấn **Open Port**.
 

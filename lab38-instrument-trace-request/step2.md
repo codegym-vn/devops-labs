@@ -181,6 +181,6 @@ Bạn sẽ thấy 3 Span tương ứng trong một Trace:
 2. **validate_payload** (Child Span 1)
 3. **database_save_order** (Child Span 2)
 
-Hãy mở [Jaeger UI]({{TRAFFIC_HOST1_16686}}), chọn Service là **order-service**, bấm **Find Traces** và nhấp vào kết quả để xem biểu đồ Timeline (Waterfall) đầu tiên!
+Hãy mở <a href="{{TRAFFIC_HOST1_16686}}" target="_blank">Jaeger UI</a> (mở sang tab mới), chọn Service là **order-service**, bấm **Find Traces** và nhấp vào kết quả để xem biểu đồ Timeline (Waterfall) đầu tiên!
 
 Bấm **Check** để hoàn thành bước 2.

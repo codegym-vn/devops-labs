@@ -84,7 +84,7 @@ curl -s -G --data-urlencode 'query=count_over_time({job="centralized-logging"} |
 
 Sau khi truy vấn bằng dòng lệnh, bạn có thể mở giao diện đồ họa Grafana để phân tích đồ thị và theo dõi luồng log trực quan:
 
-* **Cách 1 (Nhanh nhất trên Killercoda):** Bấm trực tiếp vào liên kết sau để mở giao diện Grafana trong tab mới: [Mở Grafana Dashboard (Cổng 3000)]({{TRAFFIC_HOST1_3000}})
+* **Cách 1 (Nhanh nhất trên Killercoda):** Bấm trực tiếp vào liên kết sau để mở giao diện Grafana trong tab mới: <a href="{{TRAFFIC_HOST1_3000}}" target="_blank">Mở Grafana Dashboard (Cổng 3000)</a>
 * **Cách 2:** Trên thanh điều hướng phía trên của Killercoda (ngay cạnh **Tab 1**, **Tab 2**), bấm vào dấu cộng **+** -> Chọn **Select Port to View on Host 1** -> Nhập số cổng **3000** và nhấn Enter.
 * **Cách 3 (Nếu thực hành trên máy tính cá nhân):** Mở trình duyệt web và truy cập địa chỉ **http://localhost:3000**.
 
