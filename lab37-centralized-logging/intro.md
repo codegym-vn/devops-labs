@@ -45,9 +45,8 @@ Hệ thống trong bài thực hành sử dụng **Fluent Bit** (dự án mã ng
 
 ## 2. Mục Tiêu Bạn Cần Đạt Được Trong Bài Lab Này
 
-1. **Khảo sát nỗi đau phân mảnh dữ liệu:** Khởi chạy hệ thống đa nguồn log (Web Gateway định dạng chuỗi văn bản và Backend Service định dạng JSON) và phân tích các hạn chế của phương pháp xem log cục bộ truyền thống.
-2. **Thiết kế Pipeline xử lý log với Fluent Bit:** Khai báo cấu hình toàn diện gồm 4 tầng cốt lõi: Input (Tail log), Parser (giải mã Nginx Combined và JSON), Filter (làm giàu metadata và che dấu thông tin nhạy cảm) và Buffer an toàn.
-3. **Vận hành cụm lưu trữ tập trung Grafana Loki & Định tuyến:** Cấu hình Output định tuyến đa luồng từ Fluent Bit sang Loki, bảo đảm mỗi loại dịch vụ được gắn đúng nhãn phân loại tự động.
-4. **Truy vết sự cố phân tán bằng LogQL:** Mô phỏng sự cố lỗi thanh toán xuyên tầng và thực hiện các câu truy vấn LogQL liên kết (Correlated Query) để truy vết toàn bộ vòng đời giao dịch từ Nginx Gateway vào sâu trong Order Service.
+1. **Thiết kế Pipeline xử lý nhật ký với Fluent Bit:** Nắm vững chuỗi xử lý (Input, Parser, Filter, Output) để thu thập, chuẩn hóa định dạng (JSON & Nginx regex) và làm giàu metadata cho các luồng log phân tán.
+2. **Vận hành cụm lưu trữ tập trung Grafana Loki & Định tuyến:** Cấu hình định tuyến Tag-based Routing trong Fluent Bit để phân loại và đẩy log đa nguồn về Loki theo từng stream dịch vụ logic.
+3. **Truy vết sự cố xuyên tầng bằng LogQL:** Vận dụng LogQL để lọc lỗi và thực hiện kỹ thuật liên kết giao dịch (Correlated Tracing) qua mã **req_id** trên toàn bộ hệ thống.
 
 Nhấn **Next** để bắt đầu bước đầu tiên!
