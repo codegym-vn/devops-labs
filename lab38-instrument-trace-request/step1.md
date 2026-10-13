@@ -21,6 +21,7 @@ Chúng ta sẽ sử dụng **Jaeger All-in-One** làm cụm xử lý và lưu tr
 Chạy lệnh sau để khởi động container Jaeger:
 
 ```bash
+docker rm -f jaeger 2>/dev/null || true
 docker run -d --name jaeger \
   -e COLLECTOR_OTLP_ENABLED=true \
   -p 16686:16686 \

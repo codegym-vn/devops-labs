@@ -1,7 +1,9 @@
 #!/bin/bash
 echo "Dang khoi tao moi truong OpenTelemetry va Jaeger, vui long cho trong giay lat..."
-while [ ! -f /tmp/background-finished ]; do
+WAIT_SEC=0
+while [ ! -f /tmp/background-finished ] && [ $WAIT_SEC -lt 30 ]; do
   sleep 1
+  WAIT_SEC=$((WAIT_SEC + 1))
 done
 clear
 echo "=================================================================="
