@@ -36,12 +36,12 @@ Cập nhật **server.js** để kích hoạt **collectDefaultMetrics** và expo
 
 ```bash
 cd /root/app-monitoring-lab
-python3 - << 'EOF'
-p = "server.js"
-s = open(p).read()
-
-instrument_code = '''
+cat << 'EOF' > server.js
+const express = require('express');
 const client = require('prom-client');
+
+const app = express();
+app.use(express.json());
 
 // 1. Kich hoat bo thu thap chi so mac dinh cua tien trinh (CPU, Memory, Event Loop)
 client.collectDefaultMetrics({ register: client.register });
@@ -55,12 +55,41 @@ app.get('/metrics', async (req, res) => {
     res.status(500).end(err.message);
   }
 });
-'''
 
-s = s.replace("app.use(express.json());\n", "app.use(express.json());\n" + instrument_code)
-open(p, "w").write(s)
-print("Da tich hop prom-client vao server.js")
+// Endpoint 1: Xu ly lay danh sach don hang
+app.get('/api/orders', (req, res) => {
+  res.json({
+    status: 'SUCCESS',
+    orders: [
+      { id: 101, item: 'Laptop Dell XPS', amount: 1500 },
+      { id: 102, item: 'Ban phim co Keychron', amount: 95 }
+    ]
+  });
+});
+
+// Endpoint 2: Xu ly thanh toan (mo phong do tre va loi 500)
+app.post('/api/checkout', (req, res) => {
+  const isError = Math.random() < 0.2; // 20% xac suat loi
+  const delay = Math.floor(Math.random() * 250) + 50; // Do tre tu 50ms - 300ms
+
+  setTimeout(() => {
+    if (isError) {
+      return res.status(500).json({ status: 'FAILED', message: 'Cong thanh toan khong phan hoi' });
+    }
+    res.json({ status: 'COMPLETED', transactionId: 'txn_' + Date.now() });
+  }, delay);
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'UP', service: 'order-api' });
+});
+
+const PORT = 3000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Order API dang chay tren cong ${PORT}`);
+});
 EOF
+echo "Da tich hop prom-client vao server.js thanh cong"
 ```{{exec}}
 
 Kiểm tra nội dung **server.js** sau khi chèn mã:
@@ -76,7 +105,9 @@ head -n 25 server.js
 Khởi chạy ứng dụng ở chế độ nền trên cổng 3000:
 
 ```bash
+fuser -k 3000/tcp 2>/dev/null || true
 pkill -f "node server.js" 2>/dev/null || true
+sleep 1
 nohup node server.js > app.log 2>&1 & sleep 2
 curl -s http://localhost:3000/health | jq .
 ```{{exec}}

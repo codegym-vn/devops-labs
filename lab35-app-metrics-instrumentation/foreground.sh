@@ -6,5 +6,9 @@ echo "================================================================"
 echo "Thu muc du an: /root/app-monitoring-lab"
 echo "Hay lam theo huong dan ben trai de bat dau."
 echo "================================================================"
+while [ ! -f /tmp/background-finished ]; do
+  sleep 1
+done
+
 mkdir -p /root/app-monitoring-lab
 cd /root/app-monitoring-lab
