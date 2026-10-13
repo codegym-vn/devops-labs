@@ -22,15 +22,15 @@ cat << 'EOF' > package.json
 }
 EOF
 
-# 2. Cai dat Node.js v18 neu he thong chua co san
-if ! command -v node >/dev/null 2>&1; then
-  curl -fsSL https://nodejs.org/dist/v18.20.4/node-v18.20.4-linux-x64.tar.gz | tar -xz -C /opt 2>/dev/null || true
-  ln -sf /opt/node-v18.20.4-linux-x64/bin/node /usr/local/bin/node 2>/dev/null || true
-  ln -sf /opt/node-v18.20.4-linux-x64/bin/npm /usr/local/bin/npm 2>/dev/null || true
+# 2. Cai dat Node.js v22 (LTS) neu he thong chua co san
+if ! command -v node >/dev/null 2>&1 || [[ "$(node -v)" != v22* ]]; then
+  curl -fsSL https://nodejs.org/dist/v22.12.0/node-v22.12.0-linux-x64.tar.gz | tar -xz -C /opt 2>/dev/null || true
+  ln -sf /opt/node-v22.12.0-linux-x64/bin/node /usr/local/bin/node 2>/dev/null || true
+  ln -sf /opt/node-v22.12.0-linux-x64/bin/npm /usr/local/bin/npm 2>/dev/null || true
 fi
 
 # 3. Cai dat thu vien Node trong background
-export PATH="/usr/local/bin:/opt/node-v18.20.4-linux-x64/bin:$PATH"
+export PATH="/usr/local/bin:/opt/node-v22.12.0-linux-x64/bin:$PATH"
 npm install --no-audit --no-fund > /dev/null 2>&1 || true
 
 # 4. Pull ngam Docker image Jaeger de tiet kiem thoi gian
