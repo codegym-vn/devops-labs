@@ -12,6 +12,12 @@ if [ -z "$(docker ps -q -f name=fluent-bit)" ]; then
   exit 1
 fi
 
+# Kiem tra container grafana dang chay
+if [ -z "$(docker ps -q -f name=grafana)" ]; then
+  echo "Container grafana chua duoc khoi chay."
+  exit 1
+fi
+
 # Kiem tra trang thai ready cua Loki
 READY=$(curl -s http://localhost:3100/ready 2>/dev/null)
 if ! echo "$READY" | grep -q "ready"; then

@@ -18,8 +18,21 @@ cat << 'EOF' > /var/log/apps/nginx-access.log
 192.168.1.52 - - [13/Oct/2026:09:00:05 +0000] "GET /health HTTP/1.1" 200 24 "-" "HealthChecker/1.0"
 EOF
 
-# 3. Pre-pull docker images ngam
+# 3. Tao cau hinh tu dong nap Datasource Loki cho Grafana (Provisioning)
+mkdir -p /root/centralized-logging-lab/datasources
+cat << 'EOF' > /root/centralized-logging-lab/datasources/loki-ds.yaml
+apiVersion: 1
+datasources:
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://localhost:3100
+    isDefault: true
+EOF
+
+# 4. Pre-pull docker images ngam
 docker pull fluent/fluent-bit:2.2 > /dev/null 2>&1 &
 docker pull grafana/loki:2.9.2 > /dev/null 2>&1 &
+docker pull grafana/grafana:10.2.0 > /dev/null 2>&1 &
 
 touch /tmp/background-finished

@@ -80,7 +80,26 @@ curl -s -G --data-urlencode 'query=count_over_time({job="centralized-logging"} |
 
 ---
 
-### 3. Xuất báo cáo tổng kết hệ thống Centralized Logging
+### 3. Trực quan hóa nhật ký trên giao diện Grafana Dashboard UI
+
+Sau khi truy vấn bằng dòng lệnh, bạn có thể chuyển sang giao diện trực quan của Grafana để phân tích đồ thị tần suất log và xem dữ liệu theo thời gian thực:
+
+1. Chuyển sang tab **Grafana Dashboard** trên thanh điều hướng phía trên của Killercoda (hoặc mở trình duyệt truy cập địa chỉ **http://localhost:3000** nếu thực hành trên máy cá nhân).
+2. Giao diện Grafana đã được cấu hình tự động đăng nhập quyền Quản trị (Admin) và gắn sẵn nguồn dữ liệu **Loki**.
+3. Tại menu bên trái, nhấn vào biểu tượng la bàn **Explore** (khám phá dữ liệu).
+4. Tại thanh nhập câu lệnh truy vấn (Query builder), nhập:
+   **{job="centralized-logging"}**
+   Sau đó nhấn nút xanh **Run query** (hoặc tổ hợp phím Shift + Enter).
+5. Quan sát các thành phần trực quan:
+   * **Biểu đồ cột (Log Volume Bar Chart):** Hiển thị trực quan mật độ log theo từng giây, giúp phát hiện đột biến lưu lượng (Spike).
+   * **Danh sách log chi tiết:** Nhấn vào một dòng log bất kỳ để mở rộng xem các trường đã được Fluent Bit bóc tách tự động: **service**, **cluster**, **req_id**, **amount**, **environment**.
+6. Thử nghiệm lọc riêng các lỗi hệ thống:
+   **{service="order-api"} |= "error"**
+   Nhấn **Live** ở góc trên bên phải để theo dõi luồng log đổ về trực tiếp theo thời gian thực.
+
+---
+
+### 4. Xuất báo cáo tổng kết hệ thống Centralized Logging
 
 Lưu kết quả điều tra sự cố liên kết ra tệp báo cáo **centralized-logging-report.json**:
 

@@ -22,7 +22,29 @@ curl -s http://localhost:3100/ready
 
 ---
 
-### 2. Cấu hình cơ chế định tuyến (Routing) trong Fluent Bit
+### 2. Khởi chạy Grafana Dashboard UI
+
+Khởi chạy Grafana trên cổng **3000** với chế độ xác thực Anonymous Admin (không cần nhập tài khoản/mật khẩu) và tự động gắn kết Datasource Loki từ thư mục provisioning:
+
+```bash
+docker rm -f grafana 2>/dev/null || true
+docker run -d --name grafana --network host \
+  -e "GF_AUTH_ANONYMOUS_ENABLED=true" \
+  -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \
+  -v /root/centralized-logging-lab/datasources:/etc/grafana/provisioning/datasources \
+  grafana/grafana:10.2.0
+```{{exec}}
+
+Kiểm tra sức khỏe dịch vụ Grafana qua HTTP API:
+
+```bash
+sleep 3
+curl -s http://localhost:3000/api/health | jq .
+```{{exec}}
+
+---
+
+### 3. Cấu hình cơ chế định tuyến (Routing) trong Fluent Bit
 
 Khả năng định tuyến theo nhãn (Tag-based Routing) là một trong những thế mạnh lớn nhất của Fluent Bit. Thay vì đổ dồn mọi log vào một stream duy nhất, ta cấu hình hai khối **[OUTPUT]** riêng biệt sử dụng bộ lọc so khớp **Match**:
 * Các bản ghi khớp nhãn **app.*** được gắn nhãn **service=order-api, type=application**.
@@ -81,7 +103,7 @@ cat fluent-bit.conf
 
 ---
 
-### 3. Khởi chạy Fluent Bit Daemon
+### 4. Khởi chạy Fluent Bit Daemon
 
 Khởi chạy container Fluent Bit dài hạn kết nối trực tiếp với Loki:
 
@@ -94,15 +116,15 @@ docker run -d --name fluent-bit --network host \
   fluent/fluent-bit:2.2 /fluent-bit/bin/fluent-bit -c /fluent-bit/etc/fluent-bit.conf
 ```{{exec}}
 
-Kiểm tra trạng thái cả hai container đang vận hành:
+Kiểm tra trạng thái cả ba container đang vận hành:
 
 ```bash
-docker ps --filter "name=loki" --filter "name=fluent-bit" --format "table {{.ID}}\t{{.Names}}\t{{.Status}}"
+docker ps --filter "name=loki" --filter "name=fluent-bit" --filter "name=grafana" --format "table {{.ID}}\t{{.Names}}\t{{.Status}}"
 ```{{exec}}
 
 ---
 
-### 4. Kiểm tra việc phân vùng luồng nhật ký trong Loki
+### 5. Kiểm tra việc phân vùng luồng nhật ký trong Loki
 
 Chờ 5 giây để Fluent Bit đẩy các bản ghi log ban đầu vào Loki, sau đó kiểm tra danh sách nhãn đã được phân vùng:
 
