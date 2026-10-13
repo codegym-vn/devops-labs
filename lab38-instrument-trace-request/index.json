@@ -1,0 +1,41 @@
+{
+  "title": "Lab 38: Instrument và Trace một Request",
+  "description": "Làm chủ kỹ thuật Distributed Tracing chuẩn OpenTelemetry: triển khai Jaeger All-in-One làm backend tập trung, tích hợp OpenTelemetry SDK thu thập in-process spans, thực hiện Context Propagation qua chuẩn W3C Trace Context (traceparent) giữa các microservices, và trực quan hóa trace waterfall để cô lập điểm nghẽn hiệu năng cùng mã lỗi phân tán.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khởi Dựng Tracing Backend Với Jaeger All-in-One",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Khởi Tạo OpenTelemetry SDK & Tạo In-Process Spans",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Context Propagation Xuyên Suốt Đa Tầng Microservices",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Mô Phỏng Sự Cố, Bắt Exception & Phân Tích Waterfall",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

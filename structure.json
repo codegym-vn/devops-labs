@@ -161,6 +161,10 @@
     {
       "path": "lab37-centralized-logging",
       "title": "Lab 37: Xây Dựng Hệ Thống Centralized Logging"
+    },
+    {
+      "path": "lab38-instrument-trace-request",
+      "title": "Lab 38: Instrument và Trace một Request"
     }
   ]
 }
