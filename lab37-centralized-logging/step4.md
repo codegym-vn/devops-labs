@@ -82,11 +82,15 @@ curl -s -G --data-urlencode 'query=count_over_time({job="centralized-logging"} |
 
 ### 3. Trực quan hóa nhật ký trên giao diện Grafana Dashboard UI
 
-Sau khi truy vấn bằng dòng lệnh, bạn có thể chuyển sang giao diện trực quan của Grafana để phân tích đồ thị tần suất log và xem dữ liệu theo thời gian thực:
+Sau khi truy vấn bằng dòng lệnh, bạn có thể mở giao diện đồ họa Grafana để phân tích đồ thị và theo dõi luồng log trực quan:
 
-1. Chuyển sang tab **Grafana Dashboard** trên thanh điều hướng phía trên của Killercoda (hoặc mở trình duyệt truy cập địa chỉ **http://localhost:3000** nếu thực hành trên máy cá nhân).
-2. Giao diện Grafana đã được cấu hình tự động đăng nhập quyền Quản trị (Admin) và gắn sẵn nguồn dữ liệu **Loki**.
-3. Tại menu bên trái, nhấn vào biểu tượng la bàn **Explore** (khám phá dữ liệu).
+* **Cách 1 (Nhanh nhất trên Killercoda):** Bấm trực tiếp vào liên kết sau để mở giao diện Grafana trong tab mới: [Mở Grafana Dashboard (Cổng 3000)]({{TRAFFIC_HOST1_3000}})
+* **Cách 2:** Trên thanh điều hướng phía trên của Killercoda (ngay cạnh **Tab 1**, **Tab 2**), bấm vào dấu cộng **+** -> Chọn **Select Port to View on Host 1** -> Nhập số cổng **3000** và nhấn Enter.
+* **Cách 3 (Nếu thực hành trên máy tính cá nhân):** Mở trình duyệt web và truy cập địa chỉ **http://localhost:3000**.
+
+Sau khi mở giao diện:
+1. Giao diện Grafana đã được cấu hình tự động đăng nhập quyền Quản trị (Admin) và gắn sẵn nguồn dữ liệu **Loki**.
+2. Tại menu bên trái, nhấn vào biểu tượng la bàn **Explore** (khám phá dữ liệu).
 4. Tại thanh nhập câu lệnh truy vấn (Query builder), nhập:
    **{job="centralized-logging"}**
    Sau đó nhấn nút xanh **Run query** (hoặc tổ hợp phím Shift + Enter).

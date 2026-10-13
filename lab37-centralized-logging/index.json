@@ -35,18 +35,6 @@
       "text": "finish.md"
     }
   },
-  "interface": {
-    "tabs": [
-      {
-        "name": "Terminal",
-        "terminal": true
-      },
-      {
-        "name": "Grafana Dashboard",
-        "port": 3000
-      }
-    ]
-  },
   "backend": {
     "imageid": "ubuntu"
   }
