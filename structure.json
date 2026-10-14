@@ -179,9 +179,10 @@
       "title": "Lab 41: Phân Tích Hệ Thống Bằng PromQL"
     },
     {
-      "path": "lab42-grafana-monitoring-dashboard",
-      "title": "Lab 42: Xây Dựng Monitoring Dashboard Với Grafana"
+      "path": "lab42-monitoring-dashboard",
+      "title": "Lab 42: Xây Dựng Monitoring Dashboard"
     }
   ]
 }
+
 

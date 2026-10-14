@@ -1,6 +1,6 @@
 {
-  "title": "Lab 42: Xây Dựng Monitoring Dashboard Với Grafana",
-  "description": "Làm chủ kỹ thuật xây dựng hệ thống trực quan hóa số liệu tập trung với Grafana: tự động hóa cấu hình qua cơ chế Provisioning (Dashboard as Code), thiết kế trực quan các Panels chuyên sâu (Stat, Gauge, Time-Series) cho hạ tầng Linux và ứng dụng Web theo chuẩn RED, làm chủ kỹ thuật Dashboard Variables (Dynamic Templating) để lọc dữ liệu linh hoạt, và chuẩn hóa Dashboard production.",
+  "title": "Lab 42: Xây Dựng Monitoring Dashboard",
+  "description": "Làm chủ kỹ thuật xây dựng hệ thống trực quan hóa số liệu tập trung: tự động hóa cấu hình qua cơ chế Grafana Provisioning (Dashboard as Code), thiết kế trực quan các Panels chuyên sâu (Stat, Gauge, Time-Series) cho hạ tầng Linux và ứng dụng Web theo chuẩn RED, làm chủ kỹ thuật Dashboard Variables (Dynamic Templating) để lọc dữ liệu linh hoạt, và chuẩn hóa Dashboard production.",
   "difficulty": "Intermediate",
   "time": "40-45 minutes",
   "details": {
