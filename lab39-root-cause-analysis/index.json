@@ -1,0 +1,41 @@
+{
+  "title": "Lab 39: [Case Study] Root Cause Analysis Trong Hệ Thống Phân Tán",
+  "description": "Đóng vai SRE On-Call trực tiếp giải cứu sự cố suy giảm dịch vụ nghiêm trọng (P1 Incident): tự điều tra truy vết nút thắt cổ chai qua Distributed Tracing (Jaeger), bóc tách nguyên nhân cạn kiệt Connection Pool qua Centralized Logging (Loki), và tiến hành Hotfix đưa hệ thống trở lại trạng thái ổn định.",
+  "difficulty": "Advanced",
+  "time": "45-50 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Tiếp Nhận Incident & Triage Hiện Trường",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Cô Lập Điểm Nghẽn Bằng Distributed Tracing",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Bóc Tách Nguyên Nhân Gốc Với Centralized Logging",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Hotfix Phục Hồi Dịch Vụ & Đánh Giá Post-Mortem",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

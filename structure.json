@@ -165,6 +165,10 @@
     {
       "path": "lab38-instrument-trace-request",
       "title": "Lab 38: Instrument và Trace một Request"
+    },
+    {
+      "path": "lab39-root-cause-analysis",
+      "title": "Lab 39: [Case Study] Phân Tích Nguyên Nhân Gốc Rễ (Root Cause Analysis)"
     }
   ]
 }
