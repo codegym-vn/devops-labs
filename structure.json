@@ -173,6 +173,10 @@
     {
       "path": "lab40-prometheus-exporters",
       "title": "Lab 40: Cấu Hình Prometheus Và Exporters"
+    },
+    {
+      "path": "lab41-promql-system-analysis",
+      "title": "Lab 41: Phân Tích Hệ Thống Bằng PromQL"
     }
   ]
 }

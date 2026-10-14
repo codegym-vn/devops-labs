@@ -53,6 +53,7 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | **Lab 38** | `lab38-instrument-trace-request/` | OpenTelemetry, Jaeger, W3C Trace Context, Spans | Triển khai Distributed Tracing chuẩn OpenTelemetry: Jaeger All-in-One, Context Propagation (traceparent), phân tích Waterfall | 40-45 phút |
 | **Lab 39** | `lab39-root-cause-analysis/` | RCA, SRE On-Call, Jaeger, Loki, 5 Whys, Hotfix | [Case Study] Đóng vai SRE On-Call điều tra P1 Incident: phối hợp Traces cô lập nút thắt, Logs tìm Root Cause (DB Pool), Hotfix và viết 5-Whys | 45-50 phút |
 | **Lab 40** | `lab40-prometheus-exporters/` | Prometheus, Node Exporter, Redis Exporter, Hot-reload | Cấu hình Scrape Targets đa nguồn trong prometheus.yml, làm giàu nhãn metadata, phân tích OpenMetrics format và Hot-reload Zero-downtime | 40-45 phút |
+| **Lab 41** | `lab41-promql-system-analysis/` | PromQL, Prometheus, RED Method, Histogram, Topk | Làm chủ truy vấn chuỗi thời gian, tính toán % CPU/RAM thực tế, phân tích SLA/SLO (Rate, Errors, p95 Duration) và điều kiện cảnh báo | 40-45 phút |
 
 ---
 
@@ -318,6 +319,12 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Triển khai Node Exporter thu thập toàn diện chỉ số hạt nhân Linux Kernel (CPU, Memory, Disk, Network) tại cổng `9100`.
 - Triển khai Redis Exporter kết nối cơ sở dữ liệu Redis tại cổng `9121`, khảo sát chuyển đổi thông số nội bộ thành OpenMetrics.
 - Thiết kế tệp cấu hình `prometheus.yml` thu thập đa nguồn, làm giàu nhãn quản trị (Metadata Labels) và làm chủ kỹ thuật Hot-reload (`/-/reload`) Zero-downtime.
+
+### Lab 41: Phân Tích Hệ Thống Bằng PromQL (`lab41-promql-system-analysis/`)
+- Phân biệt Instant Vector và Range Vector, làm chủ 4 bộ lọc nhãn (`=`, `!=`, `=~`, `!~`) với biểu thức chính quy Regex.
+- Nắm vững công thức kinh điển tính % CPU Usage thực tế từ metric Counter và % RAM tiêu thụ từ metric Gauge.
+- Đo lường và đánh giá SLA/SLO ứng dụng theo phương pháp RED: tính Throughput (RPS), Tỷ lệ lỗi % 5xx và độ trễ p95 bằng hàm `histogram_quantile`.
+- Thiết lập biểu thức lọc ngưỡng cảnh báo (Alert Expressions) và xếp hạng nút thắt lưu lượng bằng hàm `topk`.
 
 ---
 

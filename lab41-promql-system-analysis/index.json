@@ -1,0 +1,41 @@
+{
+  "title": "Lab 41: Phân Tích Hệ Thống Bằng PromQL",
+  "description": "Làm chủ ngôn ngữ truy vấn chuỗi thời gian PromQL chuyên sâu: phân biệt Instant Vector và Range Vector, làm chủ bộ lọc nhãn Regex, tính toán chính xác phần trăm sử dụng CPU và RAM máy chủ, đo lường chất lượng dịch vụ ứng dụng theo chuẩn RED (Rate, Errors, Duration p95 qua Histogram), thiết lập điều kiện cảnh báo ngưỡng và xếp hạng lưu lượng bằng topk.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Làm Chủ Bộ Lọc Nhãn & Phân Biệt Các Loại Vector",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Tính Toán Hiệu Năng Hạ Tầng (CPU, RAM & Network)",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Phân Tích SLA/SLO Ứng Dụng Theo Phương Pháp RED",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Điều Kiện Cảnh Báo Ngưỡng & Hàm Xếp Hạng Topk",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}
