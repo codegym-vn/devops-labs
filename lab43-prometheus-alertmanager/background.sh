@@ -272,18 +272,29 @@ docker run -d --name prometheus \
   --config.file=/etc/prometheus/prometheus.yml \
   --web.enable-lifecycle > /dev/null 2>&1
 
-# 10. Tao Wrapper Scripts cho promtool va amtool tren host
+# 10. Tao Wrapper Scripts cho promtool va amtool tren host (tu dong anh xa duong dan va chay quyen root)
 cat << 'EOF' > /usr/local/bin/promtool
 #!/bin/bash
-docker exec -i prometheus promtool "$@"
+ARGS=()
+for a in "$@"; do
+  ARGS+=("$(echo "$a" | sed 's|/root/alerting-lab|/etc/prometheus|g')")
+done
+docker exec -u root -i prometheus /bin/promtool "${ARGS[@]}"
 EOF
 chmod +x /usr/local/bin/promtool
 
 cat << 'EOF' > /usr/local/bin/amtool
 #!/bin/bash
-docker exec -i alertmanager amtool --alertmanager.url=http://localhost:9093 "$@"
+ARGS=()
+for a in "$@"; do
+  ARGS+=("$(echo "$a" | sed 's|/root/alerting-lab|/etc/alertmanager|g')")
+done
+docker exec -u root -i alertmanager /bin/amtool --alertmanager.url=http://localhost:9093 "${ARGS[@]}"
 EOF
 chmod +x /usr/local/bin/amtool
+
+chmod -R 777 /root/alerting-lab
+
 
 # 11. Khoi dong Traffic Generator ngam
 cat << 'EOF' > /root/alerting-lab/traffic-generator.sh
