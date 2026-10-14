@@ -181,8 +181,13 @@
     {
       "path": "lab42-monitoring-dashboard",
       "title": "Lab 42: Xây Dựng Monitoring Dashboard"
+    },
+    {
+      "path": "lab43-prometheus-alertmanager",
+      "title": "Lab 43: Thiết Lập Cảnh Báo (Alerting)"
     }
   ]
 }
+
 
 

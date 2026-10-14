@@ -1,0 +1,41 @@
+{
+  "title": "Lab 43: Thiết Lập Cảnh Báo (Alerting)",
+  "description": "Làm chủ toàn diện hệ thống cảnh báo tự động chuẩn SRE với Prometheus và Alertmanager: thiết kế Alerting Rules bằng PromQL cho hạ tầng và ứng dụng, cấu hình cây định tuyến (Routing & Grouping), triển khai cơ chế kìm hãm chống bão cảnh báo (Inhibition Rules), quản lý thời gian bảo trì (Silences), và thực chiến mô phỏng sự cố để kiểm chứng luồng bắn thông báo Firing & Resolved.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Thiết Kế Alerting Rules Cho Hạ Tầng & Ứng Dụng",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Cấu Hình Alertmanager & Định Tuyến Cảnh Báo (Routing)",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Cơ Chế Chống Bão Cảnh Báo (Inhibition) & Tắt Tiếng (Silences)",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Mô Phỏng Sự Cố Hệ Thống & Kiểm Chứng Luồng Firing / Resolved",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

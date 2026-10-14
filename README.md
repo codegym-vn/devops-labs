@@ -55,8 +55,10 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | **Lab 40** | `lab40-prometheus-exporters/` | Prometheus, Node Exporter, Redis Exporter, Hot-reload | Cấu hình Scrape Targets đa nguồn trong prometheus.yml, làm giàu nhãn metadata, phân tích OpenMetrics format và Hot-reload Zero-downtime | 40-45 phút |
 | **Lab 41** | `lab41-promql-system-analysis/` | PromQL, Prometheus, RED Method, Histogram, Topk | Làm chủ truy vấn chuỗi thời gian, tính toán % CPU/RAM thực tế, phân tích SLA/SLO (Rate, Errors, p95 Duration) và điều kiện cảnh báo | 40-45 phút |
 | **Lab 42** | `lab42-monitoring-dashboard/` | Grafana, Provisioning, Dashboard as Code, RED, Variables | Trực quan hóa số liệu tập trung: tự động hóa cấu hình bằng Provisioning YAML, thiết kế Panels (Stat, Gauge, Time-Series), mô hình RED và Dynamic Templating | 40-45 phút |
+| **Lab 43** | `lab43-prometheus-alertmanager/` | Alertmanager, Alerting Rules, PromQL, Routing, Inhibition | Thiết lập hệ thống cảnh báo tự động: cấu hình Alerting Rules bằng PromQL, cây định tuyến Routing/Grouping, Inhibition chống bão alert và Silences | 40-45 phút |
 
 ---
+
 
 
 
@@ -335,7 +337,14 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Xây dựng bảng điều khiển giám sát Microservices theo mô hình RED: đo lường thông lượng theo endpoint, tỷ lệ lỗi 5xx và độ trễ p95 SLA.
 - Làm chủ kỹ thuật Dynamic Templating (Variables): tạo bộ lọc Dropdown bằng hàm `label_values()` giúp người dùng lọc số liệu linh hoạt theo từng API endpoint.
 
+### Lab 43: Thiết Lập Cảnh Báo (Alerting) (`lab43-prometheus-alertmanager/`)
+- Thiết kế các quy tắc cảnh báo (Alerting Rules) chuẩn SRE bằng PromQL cho hạ tầng (CPU/RAM/Target Down) và ứng dụng (Tỷ lệ lỗi 5xx), kiểm thử cú pháp với `promtool`.
+- Triển khai và cấu hình Alertmanager: làm chủ cây định tuyến (Routing Tree), gom cụm cảnh báo bằng `group_by`, kiểm soát tần suất thông báo với `group_wait`, `group_interval` và `repeat_interval`.
+- Kỹ thuật phòng chống "Bão cảnh báo" (Alert Fatigue): áp dụng Inhibition Rules kìm hãm cảnh báo con khi cảnh báo gốc bùng phát và quản lý thời gian bảo trì (Silences) bằng `amtool`.
+- Thực chiến mô phỏng sự cố bằng Fault Injection, theo dõi vòng đời `Pending` ➔ `Firing` ➔ `Resolved` và kiểm chứng gói tin Webhook JSON.
+
 ---
+
 
 
 ## 3. Cấu Trúc File Chuẩn Của Mỗi Bài Lab
