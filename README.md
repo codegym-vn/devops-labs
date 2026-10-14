@@ -36,6 +36,22 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | **Lab 21** | `lab21-k8s-service-ingress-namespace-rbac/` | Namespace, ClusterIP, NodePort, Ingress, RBAC, ServiceAccount | Phân vùng tài nguyên Namespace, cân bằng tải ClusterIP & NodePort, định tuyến L7 với Ingress và kiểm soát truy cập phân quyền RBAC | 45-50 phút |
 | **Lab 22** | `lab22-k8s-storage-statefulset-hpa-helm/` | StorageClass, PVC, StatefulSet, Headless Service, HPA, Helm | Cấp phát động StorageClass & PVC, triển khai cơ sở dữ liệu StatefulSet, tự động mở rộng theo tải với HPA và đóng gói ứng dụng bằng Helm Chart | 45-50 phút |
 | **Lab 23** | `lab23-cicd-pipeline-test-package/` | GitHub Actions, act, Go test, Docker Registry | Pipeline as Code, quality gate (gofmt, vet, test, coverage 70%), Fail-Fast, đóng gói image gắn tag Git SHA, publish registry, smoke test & rollback | 45-50 phút |
+| **Lab 24** | `lab24-k8s-canary-deployment/` | Kubernetes, Service, Canary, Zero-downtime, Rollback | Chiến lược Canary Deployment, điều phối traffic bằng Service selector, giám sát lỗi và rollback tức thì | 40-45 phút |
+| **Lab 25** | `lab25-iac-security-checkov-tfsec/` | Terraform, Checkov, Tfsec, CIS Benchmarks, IaC SAST | Kiểm thử an ninh tĩnh cho Terraform, quét lỗi cấu hình và rò rỉ quyền, vá lỗ hổng và quản lý ngoại lệ | 40-45 phút |
+| **Lab 26** | `lab26-secret-scanning-gitleaks/` | Gitleaks, Git Hooks, Pre-commit, Secret Detection | Tự động phát hiện rò rỉ secret trong mã nguồn và Git history, thiết lập Pre-commit Hook và cấu hình .gitleaksignore | 35-40 phút |
+| **Lab 27** | `lab27-vault-secret-management/` | HashiCorp Vault, AppRole, KV-v2, Secret Injection | Quản trị bí mật với KV-v2, phân quyền Least Privilege với Vault Policy, xác thực AppRole và inject secret vào runtime | 40-45 phút |
+| **Lab 28** | `lab28-security-gates-pipeline/` | DevSecOps, GitHub Actions, Security Gates, Trivy, Gitleaks | Xây dựng cổng kiểm soát an ninh đa tầng trong CI/CD (Secret Scan, SCA, Container Scan), tự động chặn release khi có lỗi Critical | 45-50 phút |
+| **Lab 29** | `lab29-sonarqube-source-scan/` | SonarQube, SonarScanner, Quality Gates, SAST | Khởi chạy SonarQube Server, cấu hình SonarScanner, quét mã nguồn phân tích Bug/Vulnerability/Smell và cấu hình Quality Gate | 40-45 phút |
+| **Lab 30** | `lab30-sast-vulnerability-fix/` | SAST, OWASP Top 10, SQLi, XSS, Path Traversal | Phân tích và khắc phục trực tiếp các lỗ hổng OWASP Top 10: SQL Injection (Parameterized Query), XSS, Path Traversal | 40-45 phút |
+| **Lab 31** | `lab31-dast-owasp-zap/` | OWASP ZAP, DAST, Dynamic Scan, Helmet.js, Headers | Quét an ninh động DAST với ZAP Baseline Scan, phát hiện Missing Headers, Clickjacking, CSP và phòng thủ bằng Helmet | 40-45 phút |
+| **Lab 32** | `lab32-dependency-vulnerability-scan/` | SCA, Trivy, npm audit, SBOM, CycloneDX, CVE | Quét phân tích thành phần phần mềm (SCA), bóc tách cây phụ thuộc, vá CVE Prototype Pollution/Command Injection, xuất SBOM | 40-45 phút |
+| **Lab 33** | `lab33-docker-image-trivy-scan/` | Trivy, Docker Security, Multi-stage, Non-root, SBOM | Quét lỗ hổng từng layer của Docker Image, phát hiện misconfiguration trong Dockerfile, tối ưu Multi-stage Non-root và xuất SBOM | 40-45 phút |
+| **Lab 34** | `lab34-docker-image-signing-cosign/` | Sigstore Cosign, OCI Registry, Image Signing, Verification | Ký số mật mã container image với Cosign, xác thực chữ ký số bằng Public Key, chống tấn công giả mạo Tampering, đính kèm SBOM | 40-45 phút |
+| **Lab 35** | `lab35-app-metrics-instrumentation/` | Prometheus, prom-client, Node.js, Metrics (RED) | Gắn cảm biến đo lường vào ứng dụng (Counter, Gauge, Histogram đo p95), expose `/metrics`, thu thập realtime và truy vấn PromQL | 40-45 phút |
+| **Lab 36** | `lab36-infra-metrics-logs/` | Node Exporter, Prometheus, Grafana Loki, Promtail | Giám sát hạ tầng toàn diện: thu thập OS/Hardware metrics qua Node Exporter, thu thập system logs qua Promtail & Loki, truy vấn LogQL | 40-45 phút |
+| **Lab 37** | `lab37-centralized-logging/` | Fluent Bit, Grafana Loki, Nginx, LogQL, Routing | Xây dựng Pipeline Centralized Logging: Fluent Bit thu thập/parse JSON & Combined log, gắn nhãn filter, định tuyến đa luồng về Loki | 40-45 phút |
+| **Lab 38** | `lab38-instrument-trace-request/` | OpenTelemetry, Jaeger, W3C Trace Context, Spans | Triển khai Distributed Tracing chuẩn OpenTelemetry: Jaeger All-in-One, Context Propagation (traceparent), phân tích Waterfall | 40-45 phút |
+| **Lab 39** | `lab39-root-cause-analysis/` | RCA, SRE On-Call, Jaeger, Loki, 5 Whys, Hotfix | [Case Study] Đóng vai SRE On-Call điều tra P1 Incident: phối hợp Traces cô lập nút thắt, Logs tìm Root Cause (DB Pool), Hotfix và viết 5-Whys | 45-50 phút |
 
 ---
 
@@ -199,6 +215,102 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Thực hành vòng Fail-Fast trên nhánh tính năng có lỗi: đọc log pipeline đỏ, sửa format và bug logic, rebase và merge an toàn vào `main`.
 - Đóng gói Docker image bất biến với job phụ thuộc `needs`, điều kiện `if`, gắn tag Git SHA + `latest`, publish lên registry nội bộ và lưu artifact coverage.
 - Tự động smoke test image sau build, phát hành phiên bản mới và diễn tập rollback bằng tag SHA.
+
+### Lab 24: Triển Khai Ứng Dụng Lên Cụm Kubernetes Theo Chiến Lược Canary Deployment (`lab24-k8s-canary-deployment/`)
+- Làm chủ chiến lược phát hành phần mềm không gián đoạn (Zero-downtime) chuẩn doanh nghiệp với Stable v1 và Canary v2.
+- Điều phối lưu lượng giao thông thông minh qua Kubernetes Service selector và trọng số Pod phân bổ tải.
+- Tự động hóa giám sát sức khỏe, tỷ lệ lỗi và tiến hành thăng cấp phiên bản (Promotion) an toàn lên toàn cụm.
+- Mô phỏng sự cố phiên bản mới và kích hoạt cơ chế Rollback khẩn cấp tức thì bảo vệ trải nghiệm người dùng.
+
+### Lab 25: Quét Lỗ Hổng Bảo Mật Mã Nguồn Terraform Với Checkov & Tfsec (`lab25-iac-security-checkov-tfsec/`)
+- Tiếp cận tư duy kiểm thử an ninh tĩnh (SAST) chuyên sâu cho hạ tầng dạng mã nguồn (IaC).
+- Khám phá mã nguồn Terraform, phát hiện cấu hình sai lệch và rò rỉ quyền truy cập bằng công cụ Tfsec.
+- Quét phân tích chuyên sâu tuân thủ bộ tiêu chuẩn bảo mật quốc tế CIS Benchmarks với Checkov.
+- Khắc phục toàn diện các vi phạm an ninh (Remediation) và quản lý ngoại lệ an toàn qua cơ chế Suppression.
+
+### Lab 26: Tự Động Quét Lộ Mật Khẩu, Token & Khóa Bí Mật Với Gitleaks (`lab26-secret-scanning-gitleaks/`)
+- Nhận thức rủi ro rò rỉ thông tin mật (Secret Leak) và thực thi quét tự động mã nguồn với Gitleaks CLI.
+- Rà soát toàn bộ lịch sử Git Commit để truy vết các thông tin mật từng bị commit ngoài ý muốn và xuất báo cáo SARIF/JSON.
+- Thiết lập Git Pre-commit Hook tự động ngăn chặn lập trình viên commit credentials ngay từ máy trạm.
+- Quản trị quy tắc ngoại lệ linh hoạt bằng tệp cấu hình `.gitleaksignore` và bộ rule regex tùy chỉnh.
+
+### Lab 27: Quản Trị & Inject Secret An Toàn Vào Pipeline Với HashiCorp Vault (`lab27-vault-secret-management/`)
+- Khởi tạo cụm HashiCorp Vault Server, làm chủ cơ chế lưu trữ mật mã phiên bản Key-Value (KV-v2) Secrets Engine.
+- Thiết lập ma trận phân quyền tối thiểu (Principle of Least Privilege) bằng Vault Policy dạng HCL.
+- Cấu hình phương thức xác thực chuẩn CI/CD bằng Vault AppRole (Role ID & Secret ID).
+- Inject động các tham số bí mật vào ứng dụng lúc khởi chạy (Runtime) mà không lưu vết trong mã nguồn hay image.
+
+### Lab 28: Xây Dựng Security Gates Trong CI/CD Pipeline (`lab28-security-gates-pipeline/`)
+- Hiện thực hóa mô hình DevSecOps chuẩn doanh nghiệp qua quy trình kiểm soát an ninh đa tầng (Shift-Left Security).
+- Tích hợp liên hoàn 3 cổng kiểm soát (Security Gates): Secret Scanning (Gate 1), Phân tích thư viện phụ thuộc SCA (Gate 2) và Quét lỗ hổng Container Image (Gate 3).
+- Thiết lập quy tắc tự động ngắt pipeline (Fail Pipeline) khi phát hiện lỗ hổng mức độ Critical/High.
+- Diễn tập phát hành ứng dụng an toàn khi toàn bộ các tiêu chí an ninh được đáp ứng.
+
+### Lab 29: Cấu Hình SonarQube Quét Mã Nguồn & Phân Tích Chất Lượng (`lab29-sonarqube-source-scan/`)
+- Khởi chạy máy chủ SonarQube Server chuyên nghiệp và làm quen với giao diện phân tích mã nguồn.
+- Cấu hình SonarScanner CLI, tạo dự án và quản lý token xác thực an toàn.
+- Thiết lập tệp cấu hình `sonar-project.properties` tối ưu cho các ngôn ngữ lập trình phổ biến.
+- Đọc hiểu báo cáo Bugs, Vulnerabilities, Security Hotspots, Code Smells và thiết lập Cổng chất lượng Quality Gate.
+
+### Lab 30: Phân Tích Lỗ Hổng Mã Nguồn & Kỹ Thuật Sửa Lỗi An Toàn (`lab30-sast-vulnerability-fix/`)
+- Quét mã nguồn bằng công cụ SAST và phân loại mức độ rủi ro theo tiêu chuẩn bảo mật OWASP Top 10.
+- Giải mã cơ chế tấn công và vá triệt để lỗ hổng SQL Injection bằng kỹ thuật Parameterized Queries / Prepared Statements.
+- Khắc phục lỗ hổng Cross-Site Scripting (XSS) thông qua Data Sanitization và Content Encoding.
+- Xử lý lỗ hổng Path Traversal (Directory Traversal) bằng kỹ thuật kiểm tra ranh giới đường dẫn an toàn (Safe Path Handling).
+
+### Lab 31: Tích Hợp OWASP ZAP Quét Ứng Dụng Đang Chạy (DAST) (`lab31-dast-owasp-zap/`)
+- Tiếp cận phương pháp kiểm thử an ninh động (Dynamic Application Security Testing - DAST) trên ứng dụng runtime.
+- Thực thi quét tự động với OWASP ZAP Baseline Scan để phát hiện các lỗ hổng thời gian thực.
+- Phân tích các mối nguy hiểm: Thiếu Security Headers, Clickjacking, lỏng lẻo Content Security Policy (CSP) và lộ thông tin nhạy cảm.
+- Triển khai middleware phòng thủ toàn diện với Helmet.js và quét nghiệm thu an toàn sau khi vá lỗi.
+
+### Lab 32: Quét Lỗ Hổng Dependency Trong Ứng Dụng (SCA) (`lab32-dependency-vulnerability-scan/`)
+- Khảo sát cấu trúc phụ thuộc trực tiếp và gián tiếp (Direct vs Transitive Dependencies) của dự án.
+- Quét phân tích thành phần phần mềm (SCA) bằng Trivy và npm audit để phát hiện các mã định danh CVE.
+- Phân tích cơ chế khai thác các lỗ hổng kinh điển: Prototype Pollution và Remote Command Injection.
+- Nâng cấp phiên bản an toàn, thiết lập Dependency Security Gate trong CI/CD và xuất danh mục SBOM chuẩn CycloneDX.
+
+### Lab 33: Quét Docker Image Với Trivy (Container Security) (`lab33-docker-image-trivy-scan/`)
+- Kiểm thử an ninh container chuyên sâu: bóc tách và soi chiếu từng layer của Docker Image bằng Trivy.
+- Phân biệt lỗ hổng hệ điều hành nền (OS Packages) và lỗ hổng gói mã nguồn thư viện ứng dụng (Language Packages).
+- Phát hiện các sai sót cấu hình (Misconfiguration) trong Dockerfile: chạy quyền Root, gắn tag bất biến, rò rỉ file mật.
+- Tái cấu trúc Dockerfile Multi-stage với Non-root user để triệt tiêu CVE và cấu hình `.trivyignore` có kiểm soát.
+
+### Lab 34: Ký Số Và Xác Thực Docker Image Với Cosign (`lab34-docker-image-signing-cosign/`)
+- Xây dựng chuỗi cung ứng phần mềm an toàn (Software Supply Chain Security) bằng công cụ Sigstore Cosign.
+- Khởi tạo kho lưu trữ OCI Registry cục bộ và tạo cặp khóa mật mã bất đối xứng (Public/Private Keypair).
+- Thực thi ký số Cryptographic Digest của Image và xác thực chữ ký trước khi triển khai (Pre-deployment Verification).
+- Mô phỏng và ngăn chặn các cuộc tấn công đánh tráo Image (Tampering Attack) và đính kèm SBOM trực tiếp vào Image Manifest.
+
+### Lab 35: Instrument Ứng Dụng Để Thu Thập Metrics (`lab35-app-metrics-instrumentation/`)
+- Tiếp cận trụ cột đầu tiên của Observability (Metrics) và phương pháp giám sát RED (Rate, Errors, Duration).
+- Tích hợp thư viện `prom-client` vào ứng dụng backend, xây dựng các loại metric chuẩn: Counter, Gauge, Histogram.
+- Expose endpoint chuẩn hóa `/metrics`, khởi chạy máy chủ Prometheus và cấu hình Scrape Target định kỳ.
+- Sinh tải tự động và thực thi các câu truy vấn PromQL phân tích hiệu năng: tỷ lệ lỗi 5xx, throughput và độ trễ p95/p99.
+
+### Lab 36: Thu Thập Metrics Và Logs Từ Hạ Tầng (`lab36-infra-metrics-logs/`)
+- Xây dựng hệ thống quan sát hạ tầng máy chủ toàn diện kết hợp giữa Metrics và Logs.
+- Triển khai Prometheus Node Exporter thu thập chỉ số phần cứng và Linux Kernel (CPU, Memory, Disk I/O, Network).
+- Triển khai cụm lưu trữ nhật ký tập trung Grafana Loki kết hợp Promtail Shipper thu thập logs hệ thống (`/var/log`).
+- Mô phỏng các sự kiện hạ tầng thực tế và viết truy vấn phân tích, lọc lỗi chuyên sâu bằng ngôn ngữ LogQL.
+
+### Lab 37: Xây Dựng Hệ Thống Centralized Logging (`lab37-centralized-logging/`)
+- Thiết kế Pipeline xử lý nhật ký tập trung chuẩn CNCF với Fluent Bit và Grafana Loki.
+- Cấu hình Parser bóc tách đa định dạng: cấu trúc hóa log ứng dụng JSON và Nginx Combined Log dạng regex.
+- Áp dụng Filter làm giàu metadata hạ tầng (environment, cluster) và che dấu dữ liệu nhạy cảm (Data Masking).
+- Thiết lập định tuyến theo nhãn (Tag-based Routing) về Loki và thực hiện truy vết giao dịch xuyên tầng bằng LogQL.
+
+### Lab 38: Instrument Và Trace Một Request (`lab38-instrument-trace-request/`)
+- Làm chủ kỹ thuật Distributed Tracing chuẩn OpenTelemetry trên kiến trúc Microservices phân tán.
+- Triển khai Jaeger All-in-One làm backend thu thập và trực quan hóa trace tập trung.
+- Tích hợp OpenTelemetry SDK thu thập in-process spans và thực hiện Context Propagation qua chuẩn W3C Trace Context (`traceparent`).
+- Mô phỏng sự cố trễ và exception, phân tích biểu đồ Waterfall trên Jaeger UI để cô lập chính xác nút thắt cổ chai.
+
+### Lab 39: [Case Study] Phân Tích Nguyên Nhân Gốc Rễ — Root Cause Analysis (`lab39-root-cause-analysis/`)
+- Đóng vai SRE On-Call trực tiếp vào hiện trường xử lý sự cố P1 Incident (Checkout API bị timeout 504 và sập tỷ lệ thanh toán).
+- Áp dụng chu trình điều tra sự cố khoa học 4 bước: Triage hiện trường, Pinpoint bằng Tracing, Root Cause bằng Logging, Mitigate & Post-Mortem.
+- Kết hợp Jaeger cô lập dịch vụ nghẽn và Grafana Loki LogQL bắt trọn exception `ConnectionPoolExhaustedError` do cấu hình `DB_POOL_MAX=2`.
+- Tiến hành Hotfix cứu hệ thống, xác thực phục hồi 100% bằng load test và lập báo cáo sự cố chuẩn mực 5-Whys.
 
 ---
 
