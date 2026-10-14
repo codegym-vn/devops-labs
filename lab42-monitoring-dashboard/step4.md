@@ -235,7 +235,11 @@ cat << 'EOF' > /root/grafana-lab/dashboards/production-system-overview.json
         "multi": true,
         "name": "path",
         "label": "API Endpoint",
-        "query": { "query": "label_values(http_requests_total, path)", "refId": "StandardVariableQuery" },
+        "query": {
+          "qryType": 1,
+          "query": "label_values(http_requests_total, path)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
         "refresh": 1,
         "type": "query"
       }

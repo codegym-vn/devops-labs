@@ -239,7 +239,23 @@ EOF
 chmod +x /root/grafana-lab/traffic-generator.sh
 nohup /root/grafana-lab/traffic-generator.sh > /dev/null 2>&1 &
 
-# 8. Khoi tao truoc tep Dashboard Provider de Grafana dang ky provider ngay tu luc boot
+# 8. Khoi tao truoc tep Datasource va Dashboard Provider de Grafana dang ky ngay tu luc boot
+cat << 'EOF' > /root/grafana-lab/provisioning/datasources/prometheus-datasource.yml
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    access: proxy
+    url: http://localhost:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      httpMethod: POST
+      timeInterval: 2s
+EOF
+
 cat << 'EOF' > /root/grafana-lab/provisioning/dashboards/dashboard-provider.yml
 apiVersion: 1
 
@@ -255,6 +271,7 @@ providers:
 EOF
 
 chmod -R 777 /root/grafana-lab/provisioning /root/grafana-lab/dashboards
+
 
 # 9. Khoi chay Grafana Server (voi cac bien moi truong cho phep truy cap admin khong can login phuc tap)
 docker run -d --name grafana \
