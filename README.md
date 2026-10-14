@@ -52,6 +52,7 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | **Lab 37** | `lab37-centralized-logging/` | Fluent Bit, Grafana Loki, Nginx, LogQL, Routing | Xây dựng Pipeline Centralized Logging: Fluent Bit thu thập/parse JSON & Combined log, gắn nhãn filter, định tuyến đa luồng về Loki | 40-45 phút |
 | **Lab 38** | `lab38-instrument-trace-request/` | OpenTelemetry, Jaeger, W3C Trace Context, Spans | Triển khai Distributed Tracing chuẩn OpenTelemetry: Jaeger All-in-One, Context Propagation (traceparent), phân tích Waterfall | 40-45 phút |
 | **Lab 39** | `lab39-root-cause-analysis/` | RCA, SRE On-Call, Jaeger, Loki, 5 Whys, Hotfix | [Case Study] Đóng vai SRE On-Call điều tra P1 Incident: phối hợp Traces cô lập nút thắt, Logs tìm Root Cause (DB Pool), Hotfix và viết 5-Whys | 45-50 phút |
+| **Lab 40** | `lab40-prometheus-exporters/` | Prometheus, Node Exporter, Redis Exporter, Hot-reload | Cấu hình Scrape Targets đa nguồn trong prometheus.yml, làm giàu nhãn metadata, phân tích OpenMetrics format và Hot-reload Zero-downtime | 40-45 phút |
 
 ---
 
@@ -311,6 +312,12 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Áp dụng chu trình điều tra sự cố khoa học 4 bước: Triage hiện trường, Pinpoint bằng Tracing, Root Cause bằng Logging, Mitigate & Post-Mortem.
 - Kết hợp Jaeger cô lập dịch vụ nghẽn và Grafana Loki LogQL bắt trọn exception `ConnectionPoolExhaustedError` do cấu hình `DB_POOL_MAX=2`.
 - Tiến hành Hotfix cứu hệ thống, xác thực phục hồi 100% bằng load test và lập báo cáo sự cố chuẩn mực 5-Whys.
+
+### Lab 40: Cấu Hình Prometheus Và Exporters (`lab40-prometheus-exporters/`)
+- Làm chủ kiến trúc giám sát Pull-based, nguyên lý hoạt động của Prometheus Retrieval Engine và các chuẩn định dạng OpenMetrics.
+- Triển khai Node Exporter thu thập toàn diện chỉ số hạt nhân Linux Kernel (CPU, Memory, Disk, Network) tại cổng `9100`.
+- Triển khai Redis Exporter kết nối cơ sở dữ liệu Redis tại cổng `9121`, khảo sát chuyển đổi thông số nội bộ thành OpenMetrics.
+- Thiết kế tệp cấu hình `prometheus.yml` thu thập đa nguồn, làm giàu nhãn quản trị (Metadata Labels) và làm chủ kỹ thuật Hot-reload (`/-/reload`) Zero-downtime.
 
 ---
 

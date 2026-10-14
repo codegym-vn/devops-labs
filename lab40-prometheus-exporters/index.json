@@ -1,0 +1,41 @@
+{
+  "title": "Lab 40: Cấu Hình Prometheus Và Exporters",
+  "description": "Làm chủ kiến trúc giám sát Pull-based chuẩn Prometheus: triển khai Node Exporter giám sát máy chủ Linux và Redis Exporter giám sát dịch vụ cơ sở dữ liệu, thiết kế tệp cấu hình prometheus.yml thu thập dữ liệu đa nguồn (Multi-target Scraping), làm giàu nhãn metadata môi trường và thực hành kỹ thuật Hot-reload cấu hình không gián đoạn dịch vụ.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Triển Khai Node Exporter & Khảo Sát Định Dạng OpenMetrics",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Triển Khai Redis Exporter Giám Sát Dịch Vụ CSDL",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Cấu Hình Scrape Targets Đa Nguồn Trong prometheus.yml",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Kỹ Thuật Hot-Reload Cấu Hình Zero-Downtime",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

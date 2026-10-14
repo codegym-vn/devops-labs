@@ -169,6 +169,10 @@
     {
       "path": "lab39-root-cause-analysis",
       "title": "Lab 39: [Case Study] Phân Tích Nguyên Nhân Gốc Rễ (Root Cause Analysis)"
+    },
+    {
+      "path": "lab40-prometheus-exporters",
+      "title": "Lab 40: Cấu Hình Prometheus Và Exporters"
     }
   ]
 }
