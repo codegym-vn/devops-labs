@@ -8,22 +8,47 @@ Trong môi trường doanh nghiệp quy mô lớn, máy chủ và container liê
 
 ### 1. Thử Thách Cập Nhật Nhãn Metadata
 
-Bổ sung thêm một nhãn định danh quản trị mới `tier: 'backend'` vào tác vụ thu thập của `node`:
+Bổ sung thêm một nhãn định danh quản trị mới `tier: 'backend'` vào tác vụ thu thập của `node` trong tệp **/root/prometheus-lab/prometheus.yml**:
 
 ```bash
-sed -i "/datacenter: 'hanoi-dc1'/a \          tier: 'backend'" /root/prometheus-lab/prometheus.yml
-git diff /root/prometheus-lab/prometheus.yml 2>/dev/null || cat /root/prometheus-lab/prometheus.yml
+cat << 'EOF' > /root/prometheus-lab/prometheus.yml
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']
+        labels:
+          environment: 'production'
+          datacenter: 'hanoi-dc1'
+          tier: 'backend'
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['localhost:9121']
+        labels:
+          environment: 'production'
+          service: 'cache-layer'
+EOF
+cat /root/prometheus-lab/prometheus.yml
 ```
 
 Lúc này, tệp cấu hình trên đĩa đã thay đổi, nhưng trong bộ nhớ của Prometheus vẫn đang chạy cấu hình cũ.
 
 ---
 
-### 2. Kích Hoạt Hot-Reload Bằng HTTP POST
+### 2. Đồng Bộ Tệp Vào Container & Kích Hoạt Hot-Reload
 
-Gửi HTTP POST request vào endpoint vòng đời `/-/reload`:
+Đồng bộ tệp cấu hình mới vào container và gửi HTTP POST request vào endpoint vòng đời `/-/reload`:
 
 ```bash
+docker cp /root/prometheus-lab/prometheus.yml prometheus:/etc/prometheus/prometheus.yml 2>/dev/null || true
 curl -i -X POST http://localhost:9090/-/reload
 ```
 

@@ -56,7 +56,7 @@ Khởi chạy container Prometheus và gắn kèm tệp cấu hình vừa tạo.
 ```bash
 docker run -d --name prometheus \
   --network host \
-  -v /root/prometheus-lab/prometheus.yml:/etc/prometheus/prometheus.yml \
+  -v /root/prometheus-lab:/etc/prometheus \
   prom/prometheus:v2.51.0 \
   --config.file=/etc/prometheus/prometheus.yml \
   --web.enable-lifecycle
