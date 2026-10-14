@@ -1,4 +1,4 @@
-# 🏆 Chúc mừng! Bạn đã hoàn thành Lab: Cloud FinOps — Quản Trị & Tối Ưu Chi Phí Đám Mây
+# Chúc mừng! Bạn đã hoàn thành Lab: Cloud FinOps — Quản Trị & Tối Ưu Chi Phí Đám Mây
 
 Bạn vừa hoàn thành một trong những kỹ năng giá trị nhất của kỹ sư Cloud / DevOps hiện đại: **FinOps (Financial Operations)** — biến chi phí đám mây từ một "hộp đen" khó lường thành một hệ thống minh bạch, có kiểm soát và được tối ưu liên tục!
 

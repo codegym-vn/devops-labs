@@ -38,7 +38,7 @@ TG_ARN=$(aws elbv2 create-target-group \
   --query 'TargetGroups[0].TargetGroupArn' \
   --output text)
 
-echo "✅ Đã tạo Target Group thành công!"
+echo "[OK] Đã tạo Target Group thành công!"
 echo "TG_ARN=$TG_ARN" >> /tmp/lab-env.sh
 ```{{exec}}
 
@@ -58,7 +58,7 @@ ALB_ARN=$(aws elbv2 create-load-balancer \
   --query 'LoadBalancers[0].LoadBalancerArn' \
   --output text)
 
-echo "✅ Đã tạo Application Load Balancer thành công!"
+echo "[OK] Đã tạo Application Load Balancer thành công!"
 echo "ALB_ARN=$ALB_ARN" >> /tmp/lab-env.sh
 ```{{exec}}
 
@@ -77,7 +77,7 @@ LISTENER_ARN=$(aws elbv2 create-listener \
   --query 'Listeners[0].ListenerArn' \
   --output text)
 
-echo "✅ Đã tạo Listener thành công: $LISTENER_ARN"
+echo "[OK] Đã tạo Listener thành công: $LISTENER_ARN"
 echo "LISTENER_ARN=$LISTENER_ARN" >> /tmp/lab-env.sh
 ```{{exec}}
 
@@ -92,7 +92,7 @@ aws autoscaling attach-load-balancer-target-groups \
   --auto-scaling-group-name "web-asg" \
   --target-group-arns $TG_ARN
 
-echo "✅ Đã liên kết thành công: Auto Scaling Group ➔ Target Group ➔ ALB!"
+echo "[OK] Đã liên kết thành công: Auto Scaling Group -> Target Group -> ALB!"
 ```{{exec}}
 
 ---

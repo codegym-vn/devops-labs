@@ -55,7 +55,7 @@ WEB_SG_ID=$(aws ec2 create-security-group \
   --query 'GroupId' \
   --output text)
 
-echo "✅ Đã tạo web-sg: $WEB_SG_ID"
+echo "[OK] Đã tạo web-sg: $WEB_SG_ID"
 echo "WEB_SG_ID=$WEB_SG_ID" >> /tmp/lab-env.sh
 ```{{exec}}
 
@@ -96,7 +96,7 @@ DB_SG_ID=$(aws ec2 create-security-group \
   --query 'GroupId' \
   --output text)
 
-echo "✅ Đã tạo db-sg: $DB_SG_ID"
+echo "[OK] Đã tạo db-sg: $DB_SG_ID"
 echo "DB_SG_ID=$DB_SG_ID" >> /tmp/lab-env.sh
 ```{{exec}}
 
@@ -113,7 +113,7 @@ aws ec2 authorize-security-group-ingress \
   --port 5432 \
   --source-group $WEB_SG_ID
 
-echo "✅ Đã liên kết: db-sg chỉ chấp nhận traffic từ web-sg!"
+echo "[OK] Đã liên kết: db-sg chỉ chấp nhận traffic từ web-sg!"
 ```{{exec}}
 
 Kiểm tra lại toàn bộ quy tắc Inbound của `db-sg`:

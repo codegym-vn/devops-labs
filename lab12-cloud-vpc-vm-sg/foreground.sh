@@ -1,7 +1,7 @@
 #!/bin/bash
 clear
 echo "================================================================"
-echo " 🚀 DevOps Labs: Khởi tạo môi trường Cloud (AWS & LocalStack)"
+echo " DevOps Labs: Khởi tạo môi trường Cloud (AWS & LocalStack)"
 echo "================================================================"
 echo ""
 
@@ -21,9 +21,9 @@ while [ ! -f /tmp/.lab_ready ]; do
   i=$((i + 1))
 done
 
-printf "\r\033[K ✅ Môi trường Cloud & AWS CLI đã sẵn sàng!\n\n"
+printf "\r\033[K [OK] Môi trường Cloud & AWS CLI đã sẵn sàng!\n\n"
 echo "----------------------------------------------------------------"
-echo "💡 Thông tin môi trường:"
+echo "Thông tin môi trường:"
 echo "   - AWS Endpoint : http://localhost:4566 (LocalStack)"
 echo "   - Default Region: us-east-1"
 echo "   - Lệnh sử dụng : aws [command] hoặc awslocal [command]"

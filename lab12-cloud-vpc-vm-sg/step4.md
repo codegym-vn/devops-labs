@@ -8,11 +8,11 @@ Trong bước cuối cùng, bạn sẽ kiểm tra bức tranh tổng thể của
 
 ### 1.1 — Luồng gói tin (Traffic Flow)
 * **Từ ngoài Internet vào Web Server:**
-  `User ➔ IGW ➔ Route Table (0.0.0.0/0) ➔ Public Subnet ➔ web-sg (Port 80/443) ➔ web-server-1`
+  `User -> IGW -> Route Table (0.0.0.0/0) -> Public Subnet -> web-sg (Port 80/443) -> web-server-1`
 * **Từ ngoài Internet vào Database Server:**
-  `Hacker / Scanner ➔ (Không có route ra IGW) ➔ ❌ Bị chặn hoàn toàn tại cửa mạng!`
+  `Hacker / Scanner -> (Không có route ra IGW) -> [FAIL] Bị chặn hoàn toàn tại cửa mạng!`
 * **Từ Web Server sang Database Server:**
-  `web-server-1 ➔ Giao tiếp nội bộ VPC ➔ db-sg (Kiểm tra source-group: web-sg) ➔ ✅ Cho phép kết nối port 5432!`
+  `web-server-1 -> Giao tiếp nội bộ VPC -> db-sg (Kiểm tra source-group: web-sg) -> [OK] Cho phép kết nối port 5432!`
 
 ### 1.2 — Thứ tự phụ thuộc khi dọn dẹp tài nguyên (Dependency Order)
 Trên Cloud, bạn **không thể** xóa bừa bãi một tài nguyên cha nếu các tài nguyên con bên trong nó vẫn còn tồn tại. Thứ tự dọn dẹp chuẩn:
@@ -65,17 +65,17 @@ Trong thực tế (FinOps), các máy ảo thuộc môi trường Development ho
 1. **Tạm dừng máy ảo Web Server:**
    ```bash
    aws ec2 stop-instances --instance-ids $WEB_INST_ID
-   echo "⏳ Đang chuyển trạng thái sang stopped..."
+   echo "Đang chuyển trạng thái sang stopped..."
    aws ec2 wait instance-stopped --instance-ids $WEB_INST_ID
-   echo "✅ Instance $WEB_INST_ID đã dừng (stopped) thành công!"
+   echo "[OK] Instance $WEB_INST_ID đã dừng (stopped) thành công!"
    ```{{exec}}
 
 2. **Khởi động lại máy ảo:**
    ```bash
    aws ec2 start-instances --instance-ids $WEB_INST_ID
-   echo "⏳ Đang khởi động lại..."
+   echo "Đang khởi động lại..."
    aws ec2 wait instance-running --instance-ids $WEB_INST_ID
-   echo "✅ Instance $WEB_INST_ID đã hoạt động (running) trở lại!"
+   echo "[OK] Instance $WEB_INST_ID đã hoạt động (running) trở lại!"
    ```{{exec}}
 
 ---

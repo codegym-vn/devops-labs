@@ -1,4 +1,4 @@
-# 🏆 Chúc Mừng! Bạn Đã Hoàn Thành Lab 16: Terraform CLI & Cloud IaC
+# Chúc Mừng! Bạn Đã Hoàn Thành Lab 16: Terraform CLI & Cloud IaC
 
 Bạn vừa hoàn thành xuất sắc bài thực hành **Khởi tạo và quản trị hạ tầng Cloud bằng Terraform CLI** trên môi trường giả lập **LocalStack**!
 

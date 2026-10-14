@@ -57,7 +57,7 @@ aws ec2 create-tags \
     Key=Owner,Value=team-frontend \
     Key=CostCenter,Value=CC-001
 
-echo "✅ Đã gắn Tags thành công cho cụm dự án e-commerce!"
+echo "[OK] Đã gắn Tags thành công cho cụm dự án e-commerce!"
 ```{{exec}}
 
 ---
@@ -85,7 +85,7 @@ aws ec2 create-tags \
     Key=Owner,Value=team-devops \
     Key=CostCenter,Value=CC-003
 
-echo "✅ Đã gắn Tags cho Data Platform và Reporting Server!"
+echo "[OK] Đã gắn Tags cho Data Platform và Reporting Server!"
 ```{{exec}}
 
 ---

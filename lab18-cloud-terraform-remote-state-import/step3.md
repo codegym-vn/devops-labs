@@ -46,7 +46,7 @@ aws ec2 authorize-security-group-ingress \
   --port 80 \
   --cidr 0.0.0.0/0
 
-echo "✅ Đã tạo Security Group thủ công: $LEGACY_SG_ID (VPC: $VPC_ID)"
+echo "[OK] Đã tạo Security Group thủ công: $LEGACY_SG_ID (VPC: $VPC_ID)"
 echo "LEGACY_SG_ID=$LEGACY_SG_ID" > /tmp/import-env.sh
 ```{{exec}}
 

@@ -37,7 +37,7 @@ aws s3api create-bucket \
   --bucket devops-tfstate-bucket \
   --region us-east-1
 
-echo "✅ Đã tạo S3 Bucket: devops-tfstate-bucket"
+echo "[OK] Đã tạo S3 Bucket: devops-tfstate-bucket"
 
 # 2. Tạo DynamoDB Table lưu State Lock (Bắt buộc khóa chính LockID)
 aws dynamodb create-table \
@@ -46,7 +46,7 @@ aws dynamodb create-table \
   --key-schema AttributeName=LockID,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST
 
-echo "✅ Đã tạo DynamoDB Table: devops-tfstate-locks"
+echo "[OK] Đã tạo DynamoDB Table: devops-tfstate-locks"
 ```{{exec}}
 
 ---

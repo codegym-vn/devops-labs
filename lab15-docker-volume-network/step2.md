@@ -10,7 +10,7 @@ Khi cài đặt Docker, hệ thống tự động tạo ra một mạng cầu n�
 
 | Tiêu chí so sánh | Default Bridge (`bridge`) | Custom Bridge (`docker network create`) |
 | :--- | :--- | :--- |
-| **Phân giải DNS (Service Discovery)** | ❌ **Không hỗ trợ.** Buộc phải dùng IP hoặc flag `--link` (lỗi thời) | ✅ **Tự động phân giải qua Container Name / Alias** |
+| **Phân giải DNS (Service Discovery)** | [FAIL] **Không hỗ trợ.** Buộc phải dùng IP hoặc flag `--link` (lỗi thời) | [OK] **Tự động phân giải qua Container Name / Alias** |
 | **Máy chủ DNS nội bộ** | Kế thừa `/etc/resolv.conf` từ máy host | Tích hợp **Embedded DNS Server** tại `127.0.0.11` |
 | **Tính cô lập & Bảo mật** | Kém: Mọi container không chỉ định network đều gom chung vào đây | Cao: Chỉ các container cùng custom network mới giao tiếp được |
 | **Gắn/ngắt kết nối động** | Phải dừng container mới đổi được mạng | Hỗ trợ gắn nóng (`docker network connect/disconnect`) |

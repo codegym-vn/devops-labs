@@ -43,4 +43,4 @@ Hiện tại, kho lưu trữ TSDB của bạn đã ngập tràn các chuỗi th�
 - Đo lường lưu lượng mạng theo giây?
 
 Hãy tiếp tục bước sang bài học và bài thực hành tiếp theo:
-👉 **"Lab 41: Phân Tích Hệ Thống Bằng PromQL"**!
+**"Lab 41: Phân Tích Hệ Thống Bằng PromQL"**!

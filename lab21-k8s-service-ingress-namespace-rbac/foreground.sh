@@ -1,7 +1,7 @@
 #!/bin/bash
 clear
 echo "================================================================"
-echo " 🚀 DevOps Labs: Services, Ingress, Namespaces & RBAC"
+echo " DevOps Labs: Services, Ingress, Namespaces & RBAC"
 echo "================================================================"
 echo ""
 
@@ -21,9 +21,9 @@ while [ ! -f /tmp/.lab_ready ]; do
   i=$((i + 1))
 done
 
-printf "\r\033[K ✅ Cum Kubernetes 2 Nodes da san sang!\n\n"
+printf "\r\033[K [OK] Cum Kubernetes 2 Nodes da san sang!\n\n"
 echo "----------------------------------------------------------------"
-echo "💡 Thong tin moi truong:"
+echo "Thong tin moi truong:"
 echo "   - Cum gom 2 Nodes : controlplane (Master) & node01 (Worker)"
 echo "   - Tien ich co san : Lenh 'kubectl' hoac go tat 'k'"
 echo "   - Thu muc thuc hanh: /root/k8s-networking"
@@ -31,7 +31,7 @@ echo "----------------------------------------------------------------"
 echo ""
 
 if command -v kubectl >/dev/null 2>&1; then
-  echo "📊 Trang thai cac Node hien tai:"
+  echo "Trang thai cac Node hien tai:"
   kubectl get nodes
 fi
 

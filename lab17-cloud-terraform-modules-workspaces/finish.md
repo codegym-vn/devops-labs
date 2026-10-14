@@ -1,4 +1,4 @@
-# 🏆 Chúc Mừng! Bạn Đã Hoàn Thành Lab 17: Terraform Modules & Workspaces
+# Chúc Mừng! Bạn Đã Hoàn Thành Lab 17: Terraform Modules & Workspaces
 
 Bạn vừa làm chủ thành công hai kỹ thuật quan trọng nhất trong việc quản trị hạ tầng Terraform ở quy mô doanh nghiệp: **Đóng gói Modules tái sử dụng** và **Triển khai đa môi trường độc lập với Workspaces**!
 

@@ -45,7 +45,7 @@ aws ec2 authorize-security-group-ingress \
   --group-id $ALB_SG_ID --protocol tcp --port 80 --cidr 0.0.0.0/0
 
 echo "ALB_SG_ID=$ALB_SG_ID" >> /tmp/lab-env.sh
-echo "✅ Đã tạo alb-sg: $ALB_SG_ID"
+echo "[OK] Đã tạo alb-sg: $ALB_SG_ID"
 
 # 2. Tạo Security Group cho Backend Instances
 APP_SG_ID=$(aws ec2 create-security-group \
@@ -58,7 +58,7 @@ aws ec2 authorize-security-group-ingress \
   --group-id $APP_SG_ID --protocol tcp --port 80 --source-group $ALB_SG_ID
 
 echo "APP_SG_ID=$APP_SG_ID" >> /tmp/lab-env.sh
-echo "✅ Đã tạo app-sg: $APP_SG_ID"
+echo "[OK] Đã tạo app-sg: $APP_SG_ID"
 ```{{exec}}
 
 ---
@@ -100,7 +100,7 @@ aws ec2 create-launch-template \
   --version-description "v1-production" \
   --launch-template-data file:///tmp/lt-data.json
 
-echo "✅ Đã tạo Launch Template 'web-launch-template' thành công!"
+echo "[OK] Đã tạo Launch Template 'web-launch-template' thành công!"
 ```{{exec}}
 
 ---
@@ -118,7 +118,7 @@ aws autoscaling create-auto-scaling-group \
   --desired-capacity 2 \
   --vpc-zone-identifier "$SUBNET_1,$SUBNET_2"
 
-echo "✅ Đã kích hoạt Auto Scaling Group 'web-asg' (Desired: 2)!"
+echo "[OK] Đã kích hoạt Auto Scaling Group 'web-asg' (Desired: 2)!"
 ```{{exec}}
 
 ---

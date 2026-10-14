@@ -56,7 +56,7 @@ avg = sum(daily.values()) / len(daily)
 print(f"Chi phí trung bình/ngày: ${avg:.2f}")
 print("\nNgày cao bất thường (>150% trung bình):")
 for date, cost in sorted(daily.items()):
-    flag = "  🚨 SPIKE" if cost > avg * 1.5 else ""
+    flag = "  SPIKE" if cost > avg * 1.5 else ""
     print(f"  {date}: ${cost:.2f}{flag}")
 EOF
 ```{{exec}}

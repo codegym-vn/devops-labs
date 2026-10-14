@@ -1,4 +1,4 @@
-# 🏆 Chúc mừng! Bạn đã hoàn thành Lab: Docker Named Volume & Custom Bridge Network
+# Chúc mừng! Bạn đã hoàn thành Lab: Docker Named Volume & Custom Bridge Network
 
 Bạn vừa tự tay làm chủ cơ chế lưu trữ bền vững và thiết kế kiến trúc mạng an toàn đa tầng cho container trên Docker Host!
 
@@ -80,5 +80,5 @@ docker network rm app-net 2>/dev/null
 # Dọn dẹp các volume đã tạo
 docker volume rm app_data redis_data 2>/dev/null
 
-echo "✅ Đã dọn dẹp sạch sẽ tài nguyên bài thực hành!"
+echo "[OK] Đã dọn dẹp sạch sẽ tài nguyên bài thực hành!"
 ```

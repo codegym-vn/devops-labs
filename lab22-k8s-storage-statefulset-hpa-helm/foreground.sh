@@ -1,7 +1,7 @@
 #!/bin/bash
 clear
 echo "================================================================"
-echo " 🚀 DevOps Labs: StorageClass, StatefulSet, HPA & Helm"
+echo " DevOps Labs: StorageClass, StatefulSet, HPA & Helm"
 echo "================================================================"
 echo ""
 
@@ -21,9 +21,9 @@ while [ ! -f /tmp/.lab_ready ]; do
   i=$((i + 1))
 done
 
-printf "\r\033[K ✅ Cum Kubernetes da san sang!\n\n"
+printf "\r\033[K [OK] Cum Kubernetes da san sang!\n\n"
 echo "----------------------------------------------------------------"
-echo "💡 Thong tin moi truong:"
+echo "Thong tin moi truong:"
 echo "   - Cum gom 2 Nodes : controlplane (Master) & node01 (Worker)"
 echo "   - Cong cu san co  : kubectl (alias k), helm 3, metrics-server"
 echo "   - StorageClass    : local-path (mac dinh)"
@@ -32,7 +32,7 @@ echo "----------------------------------------------------------------"
 echo ""
 
 if command -v kubectl >/dev/null 2>&1; then
-  echo "📊 Trang thai cac Node hien tai:"
+  echo "Trang thai cac Node hien tai:"
   kubectl get nodes
 fi
 

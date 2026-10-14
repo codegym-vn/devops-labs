@@ -1,4 +1,4 @@
-# 🏆 Chúc mừng! Bạn đã hoàn thành Lab: Xây Dựng Mạng VPC & Security Groups trên AWS
+# Chúc mừng! Bạn đã hoàn thành Lab: Xây Dựng Mạng VPC & Security Groups trên AWS
 
 Bạn vừa tự tay xây dựng một hệ thống mạng Cloud cô lập hoàn chỉnh bằng **AWS CLI** trên môi trường giả lập **LocalStack**!
 

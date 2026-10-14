@@ -51,7 +51,7 @@ aws ec2 create-key-pair \
 # Khóa quyền file private key (600 hoặc 400 - chỉ owner được đọc)
 chmod 400 /tmp/devops-key.pem
 
-echo "✅ Đã tạo SSH Key Pair và lưu tại /tmp/devops-key.pem"
+echo "[OK] Đã tạo SSH Key Pair và lưu tại /tmp/devops-key.pem"
 ls -la /tmp/devops-key.pem
 ```{{exec}}
 
@@ -72,7 +72,7 @@ WEB_INST_ID=$(aws ec2 run-instances \
   --query 'Instances[0].InstanceId' \
   --output text)
 
-echo "✅ Web Server đã khởi chạy với Instance ID: $WEB_INST_ID"
+echo "[OK] Web Server đã khởi chạy với Instance ID: $WEB_INST_ID"
 echo "WEB_INST_ID=$WEB_INST_ID" >> /tmp/lab-env.sh
 ```{{exec}}
 
@@ -93,7 +93,7 @@ DB_INST_ID=$(aws ec2 run-instances \
   --query 'Instances[0].InstanceId' \
   --output text)
 
-echo "✅ Database Server đã khởi chạy với Instance ID: $DB_INST_ID"
+echo "[OK] Database Server đã khởi chạy với Instance ID: $DB_INST_ID"
 echo "DB_INST_ID=$DB_INST_ID" >> /tmp/lab-env.sh
 ```{{exec}}
 

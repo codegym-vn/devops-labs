@@ -1,7 +1,7 @@
 #!/bin/bash
 clear
 echo "================================================================"
-echo " 🚀 DevOps Labs: Khởi tạo môi trường FinOps & AWS Simulator"
+echo " DevOps Labs: Khởi tạo môi trường FinOps & AWS Simulator"
 echo "================================================================"
 echo ""
 
@@ -21,9 +21,9 @@ while [ ! -f /tmp/.lab_ready ]; do
   i=$((i + 1))
 done
 
-printf "\r\033[K ✅ Môi trường FinOps & AWS CLI đã sẵn sàng!\n\n"
+printf "\r\033[K [OK] Môi trường FinOps & AWS CLI đã sẵn sàng!\n\n"
 echo "----------------------------------------------------------------"
-echo "💡 Thông tin môi trường:"
+echo "Thông tin môi trường:"
 echo "   - AWS Endpoint : http://localhost:4566 (LocalStack)"
 echo "   - Default Region: us-east-1"
 echo "   - 5 EC2 instances mẫu đã được khởi tạo"

@@ -29,4 +29,4 @@ Bạn đã hoàn thành xuất sắc bài thực hành **Lab 41: Phân Tích H�
 Các câu truy vấn bạn vừa viết chính là **"nguyên liệu vàng"** để xây dựng giao diện trực quan hóa. Không ai đọc số liệu dạng text thô trên Production!
 
 Hãy cùng bước sang bài thực hành tiếp theo:
-👉 **"Lab 42: Xây Dựng Monitoring Dashboard Với Grafana"** — kết nối Grafana với Prometheus và biến các câu truy vấn PromQL này thành các Panel, biểu đồ Gauge, Time-series và Heatmap tuyệt đẹp!
+**"Lab 42: Xây Dựng Monitoring Dashboard Với Grafana"** — kết nối Grafana với Prometheus và biến các câu truy vấn PromQL này thành các Panel, biểu đồ Gauge, Time-series và Heatmap tuyệt đẹp!

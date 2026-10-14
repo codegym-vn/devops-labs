@@ -171,11 +171,11 @@ Sau cả 3 bước thực hành, bạn đã xây dựng thành công kiến trú
 ┌───────────────────────────────────────────────────────────────┐
 │                        Nginx (Port 80)                        │
 ├───────────────────────────────────────────────────────────────┤
-│  ✓ Reverse Proxy    : proxy_pass http://backend_pool          │
-│  ✓ Client Headers   : X-Real-IP, X-Forwarded-For, Host, Proto │
-│  ✓ Load Balancing   : Round Robin / Weighted / Least Conn     │
-│  ✓ Connection Pool  : keepalive 32, HTTP/1.1, Connection ""   │
-│  ✓ Timeout Tuning   : connect 5s, read 30s                    │
+│  [OK] Reverse Proxy    : proxy_pass http://backend_pool          │
+│  [OK] Client Headers   : X-Real-IP, X-Forwarded-For, Host, Proto │
+│  [OK] Load Balancing   : Round Robin / Weighted / Least Conn     │
+│  [OK] Connection Pool  : keepalive 32, HTTP/1.1, Connection ""   │
+│  [OK] Timeout Tuning   : connect 5s, read 30s                    │
 ├───────────────────────────────────────────────────────────────┤
 │                     upstream backend_pool                     │
 │  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐  │

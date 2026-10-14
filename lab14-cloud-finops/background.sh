@@ -220,7 +220,7 @@ print(f"\n=== Phân Bổ Chi Phí Theo {group_by} ===")
 for k, v in sorted(costs.items(), key=lambda x: -x[1]):
     bar = "█" * int(v / 10)
     print(f"  {k:25s}: ${v:8.2f} {bar}")
-print(f"\n  👉 Tổng Chi Phí: ${sum(costs.values()):.2f}")
+print(f"\n  Tổng Chi Phí: ${sum(costs.values()):.2f}")
 PYEOF
 
 # Script đánh giá Budget Alerts
@@ -249,7 +249,7 @@ for b in budgets_cfg:
     spent_pct = (actual / limit) * 100
     forecast_pct = spent_pct * 1.15
 
-    print(f"📌 Budget: {name} (Giới hạn: ${limit:.2f})")
+    print(f"Budget: {name} (Giới hạn: ${limit:.2f})")
     print(f"   Thực chi (Actual): ${actual:.2f} ({spent_pct:.1f}%)")
 
     for a in b["alerts"]:
@@ -257,7 +257,7 @@ for b in budgets_cfg:
         atype = a["type"]
         notify = a["notify"]
         triggered = (spent_pct >= thresh) if atype == "ACTUAL" else (forecast_pct >= thresh)
-        status = f"🚨 KÍCH HOẠT CẢNH BÁO -> Gửi tới {notify}" if triggered else "✅ Bình thường"
+        status = f"KÍCH HOẠT CẢNH BÁO -> Gửi tới {notify}" if triggered else "[OK] Bình thường"
         print(f"   - Rule [{atype} >= {thresh}%]: {status}")
     print()
 PYEOF
@@ -281,15 +281,15 @@ for inst in instances:
     cost = inst["monthly_cost_usd"]
     if cpu < threshold:
         idle_count += 1
-        if cpu < 5:    rec = "🚨 TERMINATE hoặc tắt ngay"
-        elif cpu < 15: rec = "⚡ RIGHT-SIZE: Downgrade instance type"
-        else:          rec = "📅 Lập lịch tự động Stop ngoài giờ làm việc"
+        if cpu < 5:    rec = "TERMINATE hoặc tắt ngay"
+        elif cpu < 15: rec = "RIGHT-SIZE: Downgrade instance type"
+        else:          rec = "Lập lịch tự động Stop ngoài giờ làm việc"
         print(f"  {inst['name']:25s} CPU:{cpu:5.1f}%  ${cost:.2f}/tháng")
         print(f"  → Khuyến nghị FinOps: {rec}\n")
     else:
-        print(f"  ✅ {inst['name']:25s} CPU:{cpu:5.1f}%  ${cost:.2f}/tháng (Tối ưu tốt)\n")
+        print(f"  [OK] {inst['name']:25s} CPU:{cpu:5.1f}%  ${cost:.2f}/tháng (Tối ưu tốt)\n")
 
-print(f"👉 Tổng tài nguyên lãng phí (CPU < {threshold}%): {idle_count}/{len(instances)} instances")
+print(f"Tổng tài nguyên lãng phí (CPU < {threshold}%): {idle_count}/{len(instances)} instances")
 PYEOF
 
 chmod +x /opt/lab-data/*.py

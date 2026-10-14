@@ -7,7 +7,7 @@ while [ ! -f /tmp/background-finished ] && [ $WAIT_SEC -lt 40 ]; do
 done
 clear
 echo "================================================================================"
-echo "  🚨 P1 INCIDENT ALERT: CHECKOUT SERVICE DEGRADATION                            "
+echo "  P1 INCIDENT ALERT: CHECKOUT SERVICE DEGRADATION                            "
 echo "  Thoi gian: 02:15 AM | Mức độ nghiêm trọng: P1 (Critical Outage)              "
 echo "================================================================================"
 echo "  Trieu chung: Khach hang khong the thanh toan don hang tren toan he thong.    "

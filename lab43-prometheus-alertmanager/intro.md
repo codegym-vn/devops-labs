@@ -20,7 +20,7 @@ flowchart TD
     subgraph PrometheusServer ["Prometheus Server (:9090)"]
         TSDB["Time-Series DB"]
         EVAL["Rule Evaluation Engine<br/>(Chu kỳ 2s - 15s)"]
-        STATE["Alert States:<br/>Inactive ➔ Pending ➔ Firing"]
+        STATE["Alert States:<br/>Inactive -> Pending -> Firing"]
     end
 
     subgraph AlertmanagerServer ["Alertmanager (:9093)"]

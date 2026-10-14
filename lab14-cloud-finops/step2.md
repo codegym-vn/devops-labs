@@ -60,7 +60,7 @@ cat << 'EOF' > /opt/lab-data/budgets/config.json
 }
 EOF
 
-echo "✅ Đã tạo cấu hình AWS Budgets thành công!"
+echo "[OK] Đã tạo cấu hình AWS Budgets thành công!"
 ```{{exec}}
 
 ---
@@ -88,7 +88,7 @@ Chạy script đánh giá để đối chiếu dữ liệu chi phí thực tế 
 /opt/lab-data/budgets/eval-budgets.py
 ```{{exec}}
 
-Quan sát terminal: Bạn sẽ thấy hệ thống đánh giá từng rule, tính toán tỷ lệ thực chi (%) và tự động phát hiện những rule bị **🚨 KÍCH HOẠT CẢNH BÁO**!
+Quan sát terminal: Bạn sẽ thấy hệ thống đánh giá từng rule, tính toán tỷ lệ thực chi (%) và tự động phát hiện những rule bị **KÍCH HOẠT CẢNH BÁO**!
 
 ---
 

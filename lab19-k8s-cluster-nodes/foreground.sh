@@ -1,7 +1,7 @@
 #!/bin/bash
 clear
 echo "================================================================"
-echo " 🚀 DevOps Labs: Quản Trị Cụm Kubernetes 2 Nodes Qua kubectl"
+echo " DevOps Labs: Quản Trị Cụm Kubernetes 2 Nodes Qua kubectl"
 echo "================================================================"
 echo ""
 
@@ -21,9 +21,9 @@ while [ ! -f /tmp/.lab_ready ]; do
   i=$((i + 1))
 done
 
-printf "\r\033[K ✅ Cụm Kubernetes 2 Nodes đã sẵn sàng!\n\n"
+printf "\r\033[K [OK] Cụm Kubernetes 2 Nodes đã sẵn sàng!\n\n"
 echo "----------------------------------------------------------------"
-echo "💡 Thông tin môi trường:"
+echo "Thông tin môi trường:"
 echo "   - Cụm gồm 2 Nodes : controlplane (Master) & node01 (Worker)"
 echo "   - Tiện ích có sẵn : Lệnh 'kubectl' hoặc gõ tắt 'k'"
 echo "   - Thư mục thực hành: /root/k8s-lab"
@@ -31,7 +31,7 @@ echo "----------------------------------------------------------------"
 echo ""
 
 if command -v kubectl >/dev/null 2>&1; then
-  echo "📊 Trạng thái các Node hiện tại:"
+  echo "Trạng thái các Node hiện tại:"
   kubectl get nodes
 fi
 

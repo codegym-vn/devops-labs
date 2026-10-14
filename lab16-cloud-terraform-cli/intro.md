@@ -67,24 +67,24 @@ Bạn sẽ lập trình toàn bộ kiến trúc sau bằng ngôn ngữ HashiCorp
 Trong suốt bài lab, bạn sẽ làm chủ chu trình 6 lệnh kinh điển của mọi DevOps Engineer:
 
 ```
-    terraform init      👉 Khởi tạo project, tải provider plugin & tạo lockfile
+    terraform init      Khởi tạo project, tải provider plugin & tạo lockfile
          │
          ▼
-    terraform fmt       👉 Chuẩn hóa định dạng code HCL theo chuẩn cộng đồng
-    terraform validate  👉 Kiểm tra tính hợp lệ về cú pháp & tham chiếu biến
+    terraform fmt       Chuẩn hóa định dạng code HCL theo chuẩn cộng đồng
+    terraform validate  Kiểm tra tính hợp lệ về cú pháp & tham chiếu biến
          │
          ▼
-    terraform plan      👉 Lập kế hoạch thực thi, xem trước các thay đổi (+, ~, -)
+    terraform plan      Lập kế hoạch thực thi, xem trước các thay đổi (+, ~, -)
          │
          ▼
-    terraform apply     👉 Áp dụng thay đổi lên Cloud & cập nhật state file
+    terraform apply     Áp dụng thay đổi lên Cloud & cập nhật state file
          │
          ▼
-    terraform state     👉 Truy vấn, kiểm tra các thuộc tính trong terraform.tfstate
+    terraform state     Truy vấn, kiểm tra các thuộc tính trong terraform.tfstate
     terraform show      
          │
          ▼
-    terraform destroy   👉 Dọn dẹp sạch sẽ toàn bộ hạ tầng chỉ trong 1 lệnh duy nhất
+    terraform destroy   Dọn dẹp sạch sẽ toàn bộ hạ tầng chỉ trong 1 lệnh duy nhất
 ```
 
 ---

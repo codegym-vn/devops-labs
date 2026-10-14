@@ -48,6 +48,6 @@ Sự cố vừa rồi đã chứng minh mối liên kết hữu cơ không thể
 ## 3. Bước Tiếp Theo
 
 Trải nghiệm thực chiến từ Case Study này chính là chìa khóa mở đường hoàn hảo cho bài thảo luận tiếp theo:
-👉 **"Metrics nói gì, Logs nói gì, Traces nói gì?"**
+**"Metrics nói gì, Logs nói gì, Traces nói gì?"**
 
 Hãy chuyển sang bài tiếp theo để cùng đào sâu và đúc kết những nguyên tắc vàng trong việc thiết kế kiến trúc giám sát toàn diện cho doanh nghiệp!

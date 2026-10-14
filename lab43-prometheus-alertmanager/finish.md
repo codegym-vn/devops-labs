@@ -1,10 +1,10 @@
-# Hoàn Thành Xuất Sắc Lab 43: Thiết Lập Cảnh Báo (Alerting)! 🚀
+# Hoàn Thành Xuất Sắc Lab 43: Thiết Lập Cảnh Báo (Alerting)!
 
 Chúc mừng bạn đã hoàn thành bài thực hành chuyên sâu về **Hệ thống Cảnh báo tự động chuẩn SRE** kết hợp giữa Prometheus và Alertmanager!
 
 ---
 
-## 🏆 Những Năng Lực Cốt Lõi Bạn Đã Làm Chủ
+## Những Năng Lực Cốt Lõi Bạn Đã Làm Chủ
 
 1. **Thiết Kế Alerting Rules Bằng PromQL:** Nắm vững cấu trúc khai báo một Alert chuẩn quốc tế gồm biểu thức toán tử nhị phân, khoảng trễ chống chập chờn (`for`), nhãn phân loại (`severity`, `tier`) và chú thích hướng dẫn xử lý (`runbook_url`).
 2. **Kỹ Thuật Linting Tự Động:** Sử dụng thành thạo bộ đôi công cụ dòng lệnh **`promtool`** và **`amtool`** để kiểm thử cú pháp YAML trước khi triển khai, ngăn chặn tuyệt đối lỗi cú pháp làm sập tiến trình giám sát.
@@ -12,11 +12,11 @@ Chúc mừng bạn đã hoàn thành bài thực hành chuyên sâu về **Hệ 
 4. **Phòng Chống Bão Cảnh Báo (Alert Fatigue):** 
    - Ứng dụng **Inhibition Rules** để tự động tắt tiếng các cảnh báo thứ cấp khi sự cố gốc đã được phát hiện.
    - Sử dụng **Silences** để thiết lập khung giờ bảo trì có kế hoạch mà không cần xóa bỏ quy tắc giám sát.
-5. **Thực Chiến Fault Injection & Tín Hiệu Resolved:** Trực tiếp kích hoạt sự cố thực tế, quan sát vòng đời chuyển trạng thái `Pending` ➔ `Firing` ➔ `Resolved` và phân tích gói tin JSON Webhook.
+5. **Thực Chiến Fault Injection & Tín Hiệu Resolved:** Trực tiếp kích hoạt sự cố thực tế, quan sát vòng đời chuyển trạng thái `Pending` -> `Firing` -> `Resolved` và phân tích gói tin JSON Webhook.
 
 ---
 
-## 💡 Bảng Quy Chuẩn Vàng Khi Thiết Kế Cảnh Báo SRE
+## Bảng Quy Chuẩn Vàng Khi Thiết Kế Cảnh Báo SRE
 
 | Tiêu chuẩn | Thực hành khuyến nghị | Mục tiêu vận hành |
 | :--- | :--- | :--- |
@@ -27,7 +27,7 @@ Chúc mừng bạn đã hoàn thành bài thực hành chuyên sâu về **Hệ 
 
 ---
 
-## 🎓 Chúc Mừng Bạn Đã Hoàn Thành Chuỗi Chuyên Đề: Giám Sát Với Metrics & Alerting!
+## Chúc Mừng Bạn Đã Hoàn Thành Chuỗi Chuyên Đề: Giám Sát Với Metrics & Alerting!
 
 Trải qua chuỗi 4 bài lab thực chiến:
 1. **Lab 40:** Cấu Hình Prometheus Và Exporters

@@ -341,7 +341,7 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Thiết kế các quy tắc cảnh báo (Alerting Rules) chuẩn SRE bằng PromQL cho hạ tầng (CPU/RAM/Target Down) và ứng dụng (Tỷ lệ lỗi 5xx), kiểm thử cú pháp với `promtool`.
 - Triển khai và cấu hình Alertmanager: làm chủ cây định tuyến (Routing Tree), gom cụm cảnh báo bằng `group_by`, kiểm soát tần suất thông báo với `group_wait`, `group_interval` và `repeat_interval`.
 - Kỹ thuật phòng chống "Bão cảnh báo" (Alert Fatigue): áp dụng Inhibition Rules kìm hãm cảnh báo con khi cảnh báo gốc bùng phát và quản lý thời gian bảo trì (Silences) bằng `amtool`.
-- Thực chiến mô phỏng sự cố bằng Fault Injection, theo dõi vòng đời `Pending` ➔ `Firing` ➔ `Resolved` và kiểm chứng gói tin Webhook JSON.
+- Thực chiến mô phỏng sự cố bằng Fault Injection, theo dõi vòng đời `Pending` -> `Firing` -> `Resolved` và kiểm chứng gói tin Webhook JSON.
 
 ---
 

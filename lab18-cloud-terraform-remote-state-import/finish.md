@@ -1,4 +1,4 @@
-# 🏆 Chúc Mừng! Bạn Đã Hoàn Thành Lab 18: Remote Backend & Import Hạ Tầng
+# Chúc Mừng! Bạn Đã Hoàn Thành Lab 18: Remote Backend & Import Hạ Tầng
 
 Bạn vừa làm chủ thành công những kỹ năng nâng cao nhất trong quản trị vòng đời mã nguồn Terraform: **Bảo vệ State tập trung với S3 + DynamoDB**, **Xử lý sự cố kẹt khóa**, **Tái cấu trúc không downtime với State CLI**, và **Hiện đại hóa hạ tầng có sẵn bằng khối `import {}`**!
 

@@ -1,6 +1,6 @@
 # [Case Study] Phân Tích Nguyên Nhân Gốc Rễ (Root Cause Analysis)
 
-## 🚨 Bối Cảnh Tình Huống: Báo Động Đỏ Lúc 02:15 Sáng
+## Bối Cảnh Tình Huống: Báo Động Đỏ Lúc 02:15 Sáng
 
 Bạn là kỹ sư SRE (Site Reliability Engineer) / DevOps đang trong ca trực On-Call. Đồng hồ điểm 02:15 sáng, điện thoại rung liên hồi từ hệ thống cảnh báo tự động và kênh PagerDuty:
 

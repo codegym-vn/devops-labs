@@ -27,7 +27,7 @@ VPC_ID=$(aws ec2 create-vpc \
   --query 'Vpc.VpcId' \
   --output text)
 
-echo "✅ Đã tạo VPC thành công với ID: $VPC_ID"
+echo "[OK] Đã tạo VPC thành công với ID: $VPC_ID"
 echo "VPC_ID=$VPC_ID" > /tmp/lab-env.sh
 ```{{exec}}
 
@@ -56,7 +56,7 @@ PUB_SUBNET_ID=$(aws ec2 create-subnet \
   --query 'Subnet.SubnetId' \
   --output text)
 
-echo "✅ Đã tạo Public Subnet: $PUB_SUBNET_ID"
+echo "[OK] Đã tạo Public Subnet: $PUB_SUBNET_ID"
 echo "PUB_SUBNET_ID=$PUB_SUBNET_ID" >> /tmp/lab-env.sh
 ```{{exec}}
 
@@ -70,7 +70,7 @@ PRIV_SUBNET_ID=$(aws ec2 create-subnet \
   --query 'Subnet.SubnetId' \
   --output text)
 
-echo "✅ Đã tạo Private Subnet: $PRIV_SUBNET_ID"
+echo "[OK] Đã tạo Private Subnet: $PRIV_SUBNET_ID"
 echo "PRIV_SUBNET_ID=$PRIV_SUBNET_ID" >> /tmp/lab-env.sh
 ```{{exec}}
 
@@ -87,7 +87,7 @@ IGW_ID=$(aws ec2 create-internet-gateway \
   --query 'InternetGateway.InternetGatewayId' \
   --output text)
 
-echo "✅ Đã tạo Internet Gateway: $IGW_ID"
+echo "[OK] Đã tạo Internet Gateway: $IGW_ID"
 echo "IGW_ID=$IGW_ID" >> /tmp/lab-env.sh
 
 # 2. Gắn (Attach) IGW vào VPC
@@ -95,7 +95,7 @@ aws ec2 attach-internet-gateway \
   --vpc-id $VPC_ID \
   --internet-gateway-id $IGW_ID
 
-echo "✅ Đã gắn IGW $IGW_ID vào VPC $VPC_ID"
+echo "[OK] Đã gắn IGW $IGW_ID vào VPC $VPC_ID"
 ```{{exec}}
 
 ---
@@ -115,7 +115,7 @@ RT_ID=$(aws ec2 create-route-table \
   --query 'RouteTable.RouteTableId' \
   --output text)
 
-echo "✅ Đã tạo Route Table: $RT_ID"
+echo "[OK] Đã tạo Route Table: $RT_ID"
 echo "RT_ID=$RT_ID" >> /tmp/lab-env.sh
 
 # 2. Thêm route dẫn 0.0.0.0/0 ra Internet Gateway
@@ -129,7 +129,7 @@ aws ec2 associate-route-table \
   --subnet-id $PUB_SUBNET_ID \
   --route-table-id $RT_ID
 
-echo "✅ Đã cấu hình Public Subnet định tuyến ra Internet thành công!"
+echo "[OK] Đã cấu hình Public Subnet định tuyến ra Internet thành công!"
 ```{{exec}}
 
 ---

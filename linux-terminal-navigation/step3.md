@@ -93,7 +93,7 @@ mv /tmp/my-app/configs/app.conf.old /tmp/my-app/logs/
 rm -rf /tmp/my-app/src-backup
 ```{{exec}}
 
-> ### ⚠️ Cảnh Báo An Toàn Sống Còn Trong Vận Hành Hệ Thống
+> ### Cảnh Báo An Toàn Sống Còn Trong Vận Hành Hệ Thống
 > Trên Linux Terminal, **KHÔNG CÓ THÙNG RÁC (Recycle Bin)**. Một khi bạn đã chạy lệnh `rm -rf`, dữ liệu sẽ biến mất vĩnh viễn khỏi ổ cứng!
 > 
 > Một trong những thảm họa kinh điển của kỹ sư là biến số rỗng trong Bash Script:

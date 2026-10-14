@@ -33,7 +33,7 @@ Trong thiết kế hạ tầng Production, các dịch vụ lưu trữ dữ li�
        ┌───────────────────────────┐        └─────────────────────────┘
        │ Container: isolated-box   │
        │                           │
-       │ Lệnh ping redis-db ───────┼─ ❌ Bị chặn (Network Isolation)
+       │ Lệnh ping redis-db ───────┼─ [FAIL] Bị chặn (Network Isolation)
        └───────────────────────────┘
 ```
 

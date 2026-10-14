@@ -39,7 +39,7 @@ aws autoscaling set-desired-capacity \
   --auto-scaling-group-name "web-asg" \
   --desired-capacity 4
 
-echo "✅ Đã gửi lệnh Scale-out: Đặt Desired Capacity = 4!"
+echo "[OK] Đã gửi lệnh Scale-out: Đặt Desired Capacity = 4!"
 ```{{exec}}
 
 Kiểm tra sự thay đổi trong Auto Scaling Group:
@@ -90,7 +90,7 @@ echo "Đang xóa Target Group..."
 aws elbv2 delete-target-group \
   --target-group-arn $TG_ARN
 
-echo "✅ Đã dọn dẹp sạch sẽ toàn bộ cụm ALB và Auto Scaling Group!"
+echo "[OK] Đã dọn dẹp sạch sẽ toàn bộ cụm ALB và Auto Scaling Group!"
 ```{{exec}}
 
 > Nhấn nút **Check** ở góc dưới để hệ thống kiểm tra và xác nhận hoàn thành bài lab!

@@ -27,7 +27,7 @@ ALB định kỳ gửi request HTTP `GET /health` tới từng máy chủ:
 ```
 
 ### 1.2 — Thuật toán điều phối lưu lượng
-* **Round Robin (Mặc định):** Phân bổ tuần tự đều đặn các request theo vòng tròn (Request 1 ➔ Instance A, Request 2 ➔ Instance B).
+* **Round Robin (Mặc định):** Phân bổ tuần tự đều đặn các request theo vòng tròn (Request 1 -> Instance A, Request 2 -> Instance B).
 * **Least Outstanding Requests (LOR):** Chuyển tiếp request mới tới máy chủ nào đang xử lý ít request nhất (tối ưu cho các tác vụ tính toán nặng không đều).
 
 ---

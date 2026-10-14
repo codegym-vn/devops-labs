@@ -44,7 +44,7 @@ MANUAL_SUBNET_ID=$(aws ec2 create-subnet \
   --query "Subnet.SubnetId" \
   --output text)
 
-echo "✅ Đã tạo Subnet thủ công: $MANUAL_SUBNET_ID (CIDR: 10.0.88.0/24)"
+echo "[OK] Đã tạo Subnet thủ công: $MANUAL_SUBNET_ID (CIDR: 10.0.88.0/24)"
 echo "MANUAL_SUBNET_ID=$MANUAL_SUBNET_ID" > /tmp/manual-subnet.sh
 ```{{exec}}
 

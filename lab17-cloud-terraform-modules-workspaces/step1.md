@@ -16,9 +16,9 @@ Một Child Module chuẩn mực luôn tuân theo bộ 3 file kinh điển:
 
 ```text
 modules/vpc/
-├── variables.tf   👉 Định nghĩa các tham số ĐẦU VÀO (Inputs) mà Root module phải truyền vào
-├── main.tf        👉 Khai báo logic khởi tạo các tài nguyên (Resources)
-└── outputs.tf     👉 Định nghĩa các giá trị ĐẦU RA (Outputs) để các module khác sử dụng
+├── variables.tf   Định nghĩa các tham số ĐẦU VÀO (Inputs) mà Root module phải truyền vào
+├── main.tf        Khai báo logic khởi tạo các tài nguyên (Resources)
+└── outputs.tf     Định nghĩa các giá trị ĐẦU RA (Outputs) để các module khác sử dụng
 ```
 
 > [!IMPORTANT]

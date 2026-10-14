@@ -1,7 +1,7 @@
 #!/bin/bash
 clear
 echo "================================================================"
-echo " 🚀 DevOps Labs: Terraform Remote Backend & Import Hạ Tầng"
+echo " DevOps Labs: Terraform Remote Backend & Import Hạ Tầng"
 echo "================================================================"
 echo ""
 
@@ -21,9 +21,9 @@ while [ ! -f /tmp/.lab_ready ]; do
   i=$((i + 1))
 done
 
-printf "\r\033[K ✅ Môi trường Terraform Remote Backend & Import đã sẵn sàng!\n\n"
+printf "\r\033[K [OK] Môi trường Terraform Remote Backend & Import đã sẵn sàng!\n\n"
 echo "----------------------------------------------------------------"
-echo "💡 Thông tin môi trường:"
+echo "Thông tin môi trường:"
 echo "   - Thư mục làm việc: /root/terraform-remote-lab"
 echo "   - Cloud Backend   : LocalStack S3, DynamoDB, EC2 (http://localhost:4566)"
 echo "   - Region          : us-east-1"

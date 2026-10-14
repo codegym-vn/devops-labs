@@ -1,4 +1,4 @@
-# 🏆 Chúc mừng! Bạn đã hoàn thành Lab: Triển Khai ALB & Auto Scaling Group
+# Chúc mừng! Bạn đã hoàn thành Lab: Triển Khai ALB & Auto Scaling Group
 
 Bạn vừa làm chủ một trong những kiến trúc kinh điển và quan trọng nhất của kỹ sư Cloud / DevOps: **Xây dựng hệ thống tự phục hồi (Self-Healing) và co giãn không giới hạn (Auto-Scaling)** trên AWS!
 

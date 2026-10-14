@@ -20,7 +20,7 @@ done
 
 ---
 
-### 2. Quan Sát Chu Trình Cảnh Báo (Pending ➔ Firing)
+### 2. Quan Sát Chu Trình Cảnh Báo (Pending -> Firing)
 
 Sau khi kích hoạt lỗi, hãy chờ khoảng 15 đến 20 giây (bằng thời gian `for: 15s` đã cấu hình ở Bước 1) và kiểm tra trạng thái cảnh báo trên Prometheus:
 

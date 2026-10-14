@@ -1,4 +1,4 @@
-# 🏆 Chúc Mừng! Bạn Đã Hoàn Thành Lab 19: Quản Trị Cụm K8s & Node Qua kubectl
+# Chúc Mừng! Bạn Đã Hoàn Thành Lab 19: Quản Trị Cụm K8s & Node Qua kubectl
 
 Bạn vừa hoàn thành xuất sắc bài thực hành nhập môn **Container Orchestration với Kubernetes**, làm chủ các kỹ thuật tương tác với cụm đa máy chủ và đánh giá sức khỏe nút mạng chuẩn Production!
 

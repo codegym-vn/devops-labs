@@ -58,7 +58,7 @@ cat << 'EOF' > /tmp/finops-report.md
 | **reporting-server**| t3.xlarge | 3.1% | Right-size xuống t3.small + Lập lịch Stop ngoài giờ | ~$95.00 |
 | **worker-prod**     | t3.large  | 8.3% | Right-size xuống t3.medium | ~$29.95 |
 
-👉 **Tổng mức tiết kiệm ước tính:** ~$154.90/tháng (~53% ngân sách compute).
+**Tổng mức tiết kiệm ước tính:** ~$154.90/tháng (~53% ngân sách compute).
 EOF
 
 cat /tmp/finops-report.md
@@ -76,7 +76,7 @@ source /tmp/lab-env.sh
 echo "Đang gửi lệnh hủy máy ảo old-test-server: $SRV_TEST..."
 aws ec2 terminate-instances --instance-ids $SRV_TEST
 
-echo "✅ Đã hủy máy ảo old-test-server thành công để chấm dứt lãng phí chi phí!"
+echo "[OK] Đã hủy máy ảo old-test-server thành công để chấm dứt lãng phí chi phí!"
 ```{{exec}}
 
 Kiểm tra trạng thái để xác nhận máy ảo đã chuyển sang `shutting-down` hoặc `terminated`:
@@ -102,7 +102,7 @@ cat << 'EOF' >> /tmp/finops-report.md
 - Tiết kiệm ước tính: ~$17.97/tháng mà không ảnh hưởng hiệu năng hệ thống.
 EOF
 
-echo "✅ Đã cập nhật đề xuất cho api-server-prod vào báo cáo!"
+echo "[OK] Đã cập nhật đề xuất cho api-server-prod vào báo cáo!"
 ```{{exec}}
 
 > Nhấn nút **Check** ở góc dưới để hệ thống kiểm tra và hoàn thành toàn bộ bài lab!
