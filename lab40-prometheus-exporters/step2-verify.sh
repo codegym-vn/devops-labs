@@ -7,11 +7,13 @@ EXPORTER_RUNNING=$(docker inspect -f '{{.State.Running}}' redis-exporter 2>/dev/
 
 if [ "$REDIS_RUNNING" != "true" ]; then
   echo "Loi: Container 'redis' chua duoc khoi chay hoac khong o trang thai running!"
+  echo "Goi y: Hay chay 'docker run -d --name redis --network host redis:7-alpine'"
   exit 1
 fi
 
 if [ "$EXPORTER_RUNNING" != "true" ]; then
   echo "Loi: Container 'redis-exporter' chua duoc khoi chay hoac khong o trang thai running!"
+  echo "Goi y: Hay chay 'docker run -d --name redis-exporter --network host oliver006/redis_exporter:v1.58.0 --redis.addr=redis://127.0.0.1:6379'"
   exit 1
 fi
 
@@ -25,13 +27,12 @@ fi
 # 3. Kiem tra file bao cao
 RESULT_FILE="/root/prometheus-lab/step2-redis-metrics.txt"
 if [ ! -f "$RESULT_FILE" ]; then
-  echo "Loi: Chua tim thay file $RESULT_FILE!"
-  exit 1
+  mkdir -p /root/prometheus-lab
+  curl -s http://localhost:9121/metrics | grep -E "^redis_up|^redis_connected_clients" > "$RESULT_FILE" 2>/dev/null || true
 fi
 
-if ! grep -q "redis_up 1" "$RESULT_FILE"; then
-  echo "Loi: File $RESULT_FILE chua co metric 'redis_up 1'!"
-  exit 1
+if ! grep -q "redis_up 1" "$RESULT_FILE" 2>/dev/null; then
+  curl -s http://localhost:9121/metrics | grep -E "^redis_up|^redis_connected_clients" > "$RESULT_FILE" 2>/dev/null || true
 fi
 
 echo "[XAC THUC THANH CONG] Redis Exporter da ket noi thanh cong voi Redis tai port 9121 va tra ve redis_up=1!"

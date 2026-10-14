@@ -52,7 +52,10 @@ Một khối metric tiêu chuẩn luôn bao gồm 3 phần:
 Hãy trích xuất 5 dòng mẫu chứa cả metric dạng `counter` (`node_cpu_seconds_total`) và dạng `gauge` (`node_memory_MemAvailable_bytes`) lưu vào tệp **/root/prometheus-lab/step1-metrics.txt**:
 
 ```bash
-curl -s http://localhost:9100/metrics | grep -E "^node_cpu_seconds_total|^node_memory_MemAvailable_bytes" | head -n 5 > /root/prometheus-lab/step1-metrics.txt
+{
+  curl -s http://localhost:9100/metrics | grep "^node_cpu_seconds_total" | head -n 2
+  curl -s http://localhost:9100/metrics | grep "^node_memory_MemAvailable_bytes" | head -n 2
+} > /root/prometheus-lab/step1-metrics.txt
 cat /root/prometheus-lab/step1-metrics.txt
 ```
 

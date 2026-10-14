@@ -5,6 +5,7 @@ set -e
 PROM_STATUS=$(docker inspect -f '{{.State.Running}}' prometheus 2>/dev/null || echo "false")
 if [ "$PROM_STATUS" != "true" ]; then
   echo "Loi: Container 'prometheus' chua duoc khoi chay hoac khong o trang thai running!"
+  echo "Goi y: Hay chay container prometheus voi '--web.enable-lifecycle' theo huong dan."
   exit 1
 fi
 
@@ -22,11 +23,19 @@ if [ "$UP_CODE" != "200" ]; then
   exit 1
 fi
 
-# 4. Kiem tra cac Targets deu o trang thai 'up'
-TARGETS_JSON=$(curl -s http://localhost:9090/api/v1/targets || echo "{}")
+# 4. Kiem tra cac Targets deu o trang thai 'up' (Co vong lap cho Prometheus scrape lan dau)
+NODE_UP=""
+REDIS_UP=""
+for i in {1..10}; do
+  TARGETS_JSON=$(curl -s http://localhost:9090/api/v1/targets || echo "{}")
+  NODE_UP=$(echo "$TARGETS_JSON" | jq -r '.data.activeTargets[] | select(.labels.job == "node") | .health' 2>/dev/null || echo "")
+  REDIS_UP=$(echo "$TARGETS_JSON" | jq -r '.data.activeTargets[] | select(.labels.job == "redis") | .health' 2>/dev/null || echo "")
 
-NODE_UP=$(echo "$TARGETS_JSON" | jq -r '.data.activeTargets[] | select(.labels.job == "node") | .health' 2>/dev/null || echo "")
-REDIS_UP=$(echo "$TARGETS_JSON" | jq -r '.data.activeTargets[] | select(.labels.job == "redis") | .health' 2>/dev/null || echo "")
+  if [ "$NODE_UP" = "up" ] && [ "$REDIS_UP" = "up" ]; then
+    break
+  fi
+  sleep 1
+done
 
 if [ "$NODE_UP" != "up" ]; then
   echo "Loi: Target job 'node' chua o trang thai 'up' (Hien tai: '$NODE_UP')!"
