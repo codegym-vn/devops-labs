@@ -1,0 +1,41 @@
+{
+  "title": "Lab 45: Correlate Load Test Với Monitoring",
+  "description": "Kết nối và phân tích tương quan dữ liệu kiểm thử tải thời gian thực giữa công cụ tạo tải (k6) và hệ thống giám sát hạ tầng (Prometheus & Grafana): vừa bơm tải vừa quan sát diễn biến tài nguyên hệ thống, đối chiếu Client-side metrics với Server-side metrics để xác định chính xác nút thắt cổ chai (Bottleneck Identification) và lập báo cáo Capacity Planning.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khảo Sát Kiến Trúc Tương Quan & Khởi Chạy Observability",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Thực Thi Tải Nền & Quan Sát Thời Gian Thực Trên Grafana",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Đẩy Tải Tới Ngưỡng Bão Hòa & Xác Định Nút Thắt Cổ Chai (Bottleneck)",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Phân Tích Tương Quan Chỉ Số & Lập Báo Cáo Capacity Planning",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

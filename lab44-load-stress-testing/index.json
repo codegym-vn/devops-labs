@@ -1,0 +1,41 @@
+{
+  "title": "Lab 44: Xây Dựng Kịch Bản Load & Stress Testing",
+  "description": "Làm chủ kỹ thuật kiểm thử tải và sức chịu đựng chuẩn công nghiệp với k6: thiết kế kịch bản kiểm thử tải Baseline, đo lường Throughput và Latency phân vị (p90, p95, p99), cấu hình kịch bản Stress Test đa giai đoạn (Ramping Stages) để xác định điểm gãy (Breaking Point), và thiết lập ngưỡng đánh giá tự động (Thresholds) phục vụ cổng chất lượng CI/CD.",
+  "difficulty": "Intermediate",
+  "time": "35-40 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khởi Tạo Kịch Bản Kiểm Thử Tải Baseline Với k6",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Thực Thi Kiểm Thử Baseline & Đo Lường Throughput, Latency",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Cấu Hình Kịch Bản Stress Test & Xác Định Điểm Gãy (Breaking Point)",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Thiết Lập Ngưỡng Kiểm Định Tự Động (Thresholds / Quality Gate)",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

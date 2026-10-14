@@ -343,6 +343,18 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Kỹ thuật phòng chống "Bão cảnh báo" (Alert Fatigue): áp dụng Inhibition Rules kìm hãm cảnh báo con khi cảnh báo gốc bùng phát và quản lý thời gian bảo trì (Silences) bằng `amtool`.
 - Thực chiến mô phỏng sự cố bằng Fault Injection, theo dõi vòng đời `Pending` -> `Firing` -> `Resolved` và kiểm chứng gói tin Webhook JSON.
 
+### Lab 44: Xây Dựng Kịch Bản Load & Stress Testing (`lab44-load-stress-testing/`)
+- Khởi tạo kịch bản kiểm thử tải Baseline với công cụ k6 (Testing as Code), đo lường Throughput (RPS), Latency phân vị (`p90`, `p95`, `p99`) và Error Rate.
+- Thiết lập kịch bản Stress Test đa giai đoạn (Ramping Stages) với cấu hình `stages` tăng dần từ 20 -> 50 -> 90 VUs để xác định điểm gãy (Breaking Point) của dịch vụ.
+- Đánh giá khả năng tự phục hồi (Self-healing) của hệ thống khi lượng truy cập hạ nhiệt (Ramp-down).
+- Tích hợp cơ chế Thresholds tự động (Pass/Fail criteria), biến kịch bản k6 thành cổng kiểm soát chất lượng (Quality Gate) chặn mã nguồn kém hiệu năng trong pipeline CI/CD.
+
+### Lab 45: Correlate Load Test Với Monitoring (`lab45-load-test-monitoring/`)
+- Xây dựng kiến trúc thu thập dữ liệu tải thời gian thực giữa ứng dụng mục tiêu, Prometheus (chu kỳ scrape 2s) và Grafana Dashboard.
+- Thực thi tải nền từ k6 kết hợp quan sát song song các đồ thị Throughput, Latency, Active Connections và CPU Utilization trên Grafana.
+- Kích hoạt tải đột biến (Spike) chạm ngưỡng bão hòa để thực hành kỹ năng đối chiếu (Correlation): phát hiện CPU vượt 85% kéo theo độ trễ tăng vọt và phát sinh lỗi 503 do cạn kiệt Worker Thread Pool.
+- Hoạch định năng lực (Capacity Planning): xác định 3 vùng tải (An toàn, Cảnh báo, Điểm gãy) và xuất báo cáo kiến trúc đề xuất giải pháp HPA và Hàng đợi bất đồng bộ.
+
 ---
 
 

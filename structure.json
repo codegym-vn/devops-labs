@@ -185,6 +185,14 @@
     {
       "path": "lab43-prometheus-alertmanager",
       "title": "Lab 43: Thiết Lập Cảnh Báo (Alerting)"
+    },
+    {
+      "path": "lab44-load-stress-testing",
+      "title": "Lab 44: Xây Dựng Kịch Bản Load & Stress Testing"
+    },
+    {
+      "path": "lab45-load-test-monitoring",
+      "title": "Lab 45: Correlate Load Test Với Monitoring"
     }
   ]
 }
