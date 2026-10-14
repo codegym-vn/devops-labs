@@ -21,7 +21,7 @@ if ! command -v k6 &> /dev/null; then
   docker pull grafana/k6:latest >/dev/null 2>&1 || true
   cat << 'WRAPPER' > /usr/local/bin/k6
 #!/bin/bash
-docker run --rm -i --network host -v "$(pwd):$(pwd)" -w "$(pwd)" grafana/k6:latest "$@"
+docker run --rm -i -u root --network host -v /root:/root -v "$(pwd):$(pwd)" -w "$(pwd)" grafana/k6:latest "$@"
 WRAPPER
   chmod +x /usr/local/bin/k6
 fi
