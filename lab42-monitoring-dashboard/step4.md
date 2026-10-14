@@ -20,7 +20,11 @@ Grafana hỗ trợ hàm đặc thù **`label_values()`** khi làm việc với P
 
 ### 2. Cấu Trúc Khai Báo Templating Trong JSON Schema
 
+> [!NOTE]
+> Đoạn mã JSON dưới đây là **cấu trúc giải thích lý thuyết** của Grafana Schema, **không copy chạy trực tiếp trên Terminal**. Lệnh tạo file hoàn chỉnh bằng Bash được cung cấp ở **Mục 3** ngay bên dưới.
+
 Phần `templating` trong schema JSON của Dashboard được định nghĩa như sau:
+
 
 ```json
 "templating": {
