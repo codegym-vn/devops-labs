@@ -188,8 +188,13 @@ Kích hoạt nạp lại Dashboards qua REST API của Grafana:
 # Nạp lại danh sách Dashboard
 curl -s -X POST -u admin:admin http://localhost:3000/api/admin/provisioning/dashboards/reload
 
+# Khởi động lại nhẹ Grafana để nhận diện Provider mới nếu cần
+docker restart grafana
+sleep 3
+
 # Kiểm tra danh sách Dashboard hiện có trên Grafana
 curl -s -u admin:admin http://localhost:3000/api/search?type=dash-db | jq .
+
 ```
 
 Mở trình duyệt truy cập `http://localhost:3000/d/linux-host-infra/linux-host-infrastructure-overview`. Bạn sẽ thấy một bảng điều khiển gồm 4 panel: 2 đồng hồ Gauge hiển thị % CPU/RAM sinh động và 2 đồ thị Time-series cập nhật mượt mà theo chu kỳ mỗi 5 giây!

@@ -239,7 +239,24 @@ EOF
 chmod +x /root/grafana-lab/traffic-generator.sh
 nohup /root/grafana-lab/traffic-generator.sh > /dev/null 2>&1 &
 
-# 8. Khoi chay Grafana Server (voi cac bien moi truong cho phep truy cap admin khong can login phuc tap)
+# 8. Khoi tao truoc tep Dashboard Provider de Grafana dang ky provider ngay tu luc boot
+cat << 'EOF' > /root/grafana-lab/provisioning/dashboards/dashboard-provider.yml
+apiVersion: 1
+
+providers:
+  - name: 'infrastructure-dashboards'
+    orgId: 1
+    folder: 'Infrastructure'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards
+EOF
+
+chmod -R 777 /root/grafana-lab/provisioning /root/grafana-lab/dashboards
+
+# 9. Khoi chay Grafana Server (voi cac bien moi truong cho phep truy cap admin khong can login phuc tap)
 docker run -d --name grafana \
   --network host \
   -e "GF_SECURITY_ADMIN_USER=admin" \
@@ -250,6 +267,7 @@ docker run -d --name grafana \
   -v /root/grafana-lab/provisioning:/etc/grafana/provisioning \
   -v /root/grafana-lab/dashboards:/var/lib/grafana/dashboards \
   grafana/grafana:10.4.1 > /dev/null 2>&1
+
 
 # Cho Grafana khoi dong san sang tren cong 3000
 for i in {1..30}; do
