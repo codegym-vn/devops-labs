@@ -1,0 +1,41 @@
+{
+  "title": "Lab 42: Xây Dựng Monitoring Dashboard Với Grafana",
+  "description": "Làm chủ kỹ thuật xây dựng hệ thống trực quan hóa số liệu tập trung với Grafana: tự động hóa cấu hình qua cơ chế Provisioning (Dashboard as Code), thiết kế trực quan các Panels chuyên sâu (Stat, Gauge, Time-Series) cho hạ tầng Linux và ứng dụng Web theo chuẩn RED, làm chủ kỹ thuật Dashboard Variables (Dynamic Templating) để lọc dữ liệu linh hoạt, và chuẩn hóa Dashboard production.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Tự Động Hóa Kết Nối Prometheus Bằng Grafana Provisioning",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Thiết Kế Dashboard Giám Sát Hạ Tầng (CPU, RAM & Network)",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Trực Quan Hóa Số Liệu Ứng Dụng Theo Mô Hình RED",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Tối Ưu Dashboard Với Variables (Dynamic Templating) & Xuất Bản",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

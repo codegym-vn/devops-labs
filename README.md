@@ -54,8 +54,10 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 | **Lab 39** | `lab39-root-cause-analysis/` | RCA, SRE On-Call, Jaeger, Loki, 5 Whys, Hotfix | [Case Study] Đóng vai SRE On-Call điều tra P1 Incident: phối hợp Traces cô lập nút thắt, Logs tìm Root Cause (DB Pool), Hotfix và viết 5-Whys | 45-50 phút |
 | **Lab 40** | `lab40-prometheus-exporters/` | Prometheus, Node Exporter, Redis Exporter, Hot-reload | Cấu hình Scrape Targets đa nguồn trong prometheus.yml, làm giàu nhãn metadata, phân tích OpenMetrics format và Hot-reload Zero-downtime | 40-45 phút |
 | **Lab 41** | `lab41-promql-system-analysis/` | PromQL, Prometheus, RED Method, Histogram, Topk | Làm chủ truy vấn chuỗi thời gian, tính toán % CPU/RAM thực tế, phân tích SLA/SLO (Rate, Errors, p95 Duration) và điều kiện cảnh báo | 40-45 phút |
+| **Lab 42** | `lab42-grafana-monitoring-dashboard/` | Grafana, Provisioning, Dashboard as Code, RED, Variables | Trực quan hóa số liệu tập trung: tự động hóa cấu hình bằng Provisioning YAML, thiết kế Panels (Stat, Gauge, Time-Series), mô hình RED và Dynamic Templating | 40-45 phút |
 
 ---
+
 
 
 ## 2. Tóm Tắt Nội Dung Từng Bài Lab
@@ -326,7 +328,14 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Đo lường và đánh giá SLA/SLO ứng dụng theo phương pháp RED: tính Throughput (RPS), Tỷ lệ lỗi % 5xx và độ trễ p95 bằng hàm `histogram_quantile`.
 - Thiết lập biểu thức lọc ngưỡng cảnh báo (Alert Expressions) và xếp hạng nút thắt lưu lượng bằng hàm `topk`.
 
+### Lab 42: Xây Dựng Monitoring Dashboard Với Grafana (`lab42-grafana-monitoring-dashboard/`)
+- Áp dụng triệt để tư duy Dashboard as Code: tự động hóa cấu hình Prometheus Data Source và Dashboards thông qua cơ chế Provisioning YAML.
+- Thiết kế bộ chỉ số hạ tầng Linux trực quan với các Panel: đồng hồ Gauge đo % CPU/RAM và biểu đồ Time-series lưu lượng mạng.
+- Xây dựng bảng điều khiển giám sát Microservices theo mô hình RED: đo lường thông lượng theo endpoint, tỷ lệ lỗi 5xx và độ trễ p95 SLA.
+- Làm chủ kỹ thuật Dynamic Templating (Variables): tạo bộ lọc Dropdown bằng hàm `label_values()` giúp người dùng lọc số liệu linh hoạt theo từng API endpoint.
+
 ---
+
 
 ## 3. Cấu Trúc File Chuẩn Của Mỗi Bài Lab
 

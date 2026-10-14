@@ -177,6 +177,11 @@
     {
       "path": "lab41-promql-system-analysis",
       "title": "Lab 41: Phân Tích Hệ Thống Bằng PromQL"
+    },
+    {
+      "path": "lab42-grafana-monitoring-dashboard",
+      "title": "Lab 42: Xây Dựng Monitoring Dashboard Với Grafana"
     }
   ]
 }
+
