@@ -193,6 +193,14 @@
     {
       "path": "lab45-load-test-monitoring",
       "title": "Lab 45: Correlate Load Test Với Monitoring"
+    },
+    {
+      "path": "lab46-application-optimization",
+      "title": "Lab 46: [Case Study] Phân Tích Báo Cáo & Tối Ưu Tầng Ứng Dụng"
+    },
+    {
+      "path": "lab47-infrastructure-tuning",
+      "title": "Lab 47: Tối Ưu Hóa Hạ Tầng & Hệ Điều Hành"
     }
   ]
 }

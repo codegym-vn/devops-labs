@@ -1,0 +1,41 @@
+{
+  "title": "Lab 46: [Case Study] Phân Tích Báo Cáo & Tối Ưu Tầng Ứng Dụng",
+  "description": "Thực chiến phân tích báo cáo hiệu năng và khắc phục nút thắt cổ chai ở tầng ứng dụng: đọc hiểu Performance Report nhận diện truy vấn chậm, đo lường Baseline trước tối ưu (Benchmark Before), triển khai mô hình Cache-Aside với Redis và kỹ thuật tối ưu hóa truy vấn, sau đó kiểm chứng hiệu năng vượt trội sau tối ưu (Benchmark After) với độ trễ giảm hơn 90% và thông lượng tăng gấp nhiều lần.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khảo Sát Hiện Trạng & Phân Tích Performance Report",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Đo Lường Hiệu Năng Ban Đầu (Benchmark Before)",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Triển Khai Tối Ưu Tầng Ứng Dụng Với Cache-Aside",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Kiểm Chứng Sau Tối Ưu (Benchmark After) & So Sánh Đối Chiếu",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}

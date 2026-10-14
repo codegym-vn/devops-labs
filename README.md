@@ -355,6 +355,19 @@ Tất cả các bài lab đều chạy trực tiếp trên môi trường ảo h
 - Kích hoạt tải đột biến (Spike) chạm ngưỡng bão hòa để thực hành kỹ năng đối chiếu (Correlation): phát hiện CPU vượt 85% kéo theo độ trễ tăng vọt và phát sinh lỗi 503 do cạn kiệt Worker Thread Pool.
 - Hoạch định năng lực (Capacity Planning): xác định 3 vùng tải (An toàn, Cảnh báo, Điểm gãy) và xuất báo cáo kiến trúc đề xuất giải pháp HPA và Hàng đợi bất đồng bộ.
 
+### Lab 46: [Case Study] Phân Tích Báo Cáo & Tối Ưu Tầng Ứng Dụng (`lab46-application-optimization/`)
+- Đọc hiểu Performance Report chẩn đoán điểm nghẽn truy vấn chậm và serialize dữ liệu lặp lại tại endpoint `/api/catalog`.
+- Thực hiện đo lường Benchmark Before với k6 (20 VUs, 15s) ghi nhận độ trễ p95 ~400ms và thông lượng ~60 RPS.
+- Triển khai mô hình Cache-Aside (Lazy Loading) với Redis / In-Memory Cache, cấu hình TTL 60s và bóc tách hai trạng thái Cache MISS và Cache HIT.
+- Kiểm chứng Benchmark After: chứng minh thông lượng tăng gần 600% (~380 RPS) và độ trễ p95 giảm hơn 97% (< 15ms) với $0 chi phí phần cứng.
+
+### Lab 47: Tối Ưu Hóa Hạ Tầng & Hệ Điều Hành (`lab47-infrastructure-tuning/`)
+- Nhận diện các điểm nghẽn tầng mạng và Web Server: hiện tượng Socket Churn, bão hòa worker connections (64) và thiếu cơ chế HTTP KeepAlive upstream.
+- Thực hiện Benchmark Before với tải cao (80 VUs) ghi nhận tỷ lệ lỗi rớt kết nối lên tới 15% - 25% kèm thông báo lỗi `worker_connections are not enough`.
+- Tinh chỉnh Nginx Reverse Proxy: nâng `worker_connections 4096`, kích hoạt HTTP KeepAlive Upstream Pool (`keepalive 64; proxy_http_version 1.1;`).
+- Tinh chỉnh tham số mạng Linux Kernel qua `sysctl`: tăng `net.core.somaxconn = 4096`, `net.ipv4.tcp_max_syn_backlog = 4096` và mở rộng dải cổng `net.ipv4.ip_local_port_range`.
+- Kiểm chứng Benchmark After: chứng minh tỷ lệ lỗi kết nối giảm về `0.00%` (Zero Drops) và thông lượng tăng hơn 300%.
+
 ---
 
 

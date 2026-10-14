@@ -1,0 +1,41 @@
+{
+  "title": "Lab 47: Tối Ưu Hóa Hạ Tầng & Hệ Điều Hành",
+  "description": "Làm chủ kỹ thuật tối ưu hóa hiệu năng tầng mạng, Web Server và hệ điều hành Linux: nhận diện giới hạn socket và kết nối mặc định, đo lường điểm nghẽn trước tối ưu (Benchmark Before) khi xuất hiện lỗi connection drops, cấu hình Nginx worker_connections và HTTP KeepAlive upstream connection pool, tinh chỉnh tham số hạt nhân Linux Kernel qua sysctl (somaxconn, tcp_max_syn_backlog, local port range), và kiểm chứng hiệu năng bứt phá sau tối ưu (Benchmark After) với tỷ lệ lỗi rớt về 0.00%.",
+  "difficulty": "Intermediate",
+  "time": "40-45 minutes",
+  "details": {
+    "steps": [
+      {
+        "title": "Khảo Sát Giới Hạn Mặc Định Của Nginx & Linux Kernel",
+        "text": "step1.md",
+        "verify": "step1-verify.sh"
+      },
+      {
+        "title": "Đo Lường Hiệu Năng Ban Đầu Dưới Tải Cao (Benchmark Before)",
+        "text": "step2.md",
+        "verify": "step2-verify.sh"
+      },
+      {
+        "title": "Tinh Chỉnh Nginx KeepAlive & Tham Số Hạt Nhân Linux (sysctl)",
+        "text": "step3.md",
+        "verify": "step3-verify.sh"
+      },
+      {
+        "title": "Kiểm Chứng Sau Tối Ưu (Benchmark After) & Nghiệm Thu",
+        "text": "step4.md",
+        "verify": "step4-verify.sh"
+      }
+    ],
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}
